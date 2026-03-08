@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { Copy, MessageCircle, Eye, Users, ExternalLink } from 'lucide-react';
+import { Copy, MessageCircle, Eye, Users, ExternalLink, Edit, Download, User } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +21,10 @@ const Dashboard = () => {
 
   const fetchEvents = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     const { data, error } = await supabase
       .from('events')
@@ -38,6 +43,30 @@ const Dashboard = () => {
     showSuccess('Link copied to clipboard!');
   };
 
+  const exportToCSV = (event: any) => {
+    if (event.rsvps.length === 0) {
+      showError('No RSVPs to export');
+      return;
+    }
+    const headers = ['Guest Name', 'Phone Number', 'Date'];
+    const rows = event.rsvps.map((r: any) => [
+      r.guest_name,
+      r.guest_phone,
+      new Date(r.created_at).toLocaleDateString()
+    ]);
+    
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${event.event_name}_guests.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const sendWhatsAppBlast = (event: any) => {
     const guestList = event.rsvps.map((r: any) => r.guest_name).join(', ');
     const message = `Hello everyone! Here is the guest list for ${event.event_name}: ${guestList}. See you all soon!`;
@@ -50,22 +79,36 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="max-w-7xl mx-auto py-12 px-6">
-        <div className="flex justify-between items-center mb-10">
-          <h1 className="text-3xl font-bold text-[#1a1a2e]">Your Events</h1>
-          <Button onClick={() => window.location.href = '/create-event'} className="bg-[#e94560] hover:bg-[#d43d56] text-white">
-            + Create New Event
-          </Button>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-[#1a1a2e]">Host Dashboard</h1>
+            <p className="text-gray-500">Manage your events and guest lists</p>
+          </div>
+          <div className="flex gap-3">
+            <Link to="/profile">
+              <Button variant="outline" className="rounded-xl">
+                <User className="w-4 h-4 mr-2" /> My Profile
+              </Button>
+            </Link>
+            <Link to="/create-event">
+              <Button className="bg-[#e94560] hover:bg-[#d43d56] text-white rounded-xl">
+                + Create New Event
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {events.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
             <p className="text-gray-500 mb-4">You haven't created any events yet.</p>
-            <Button onClick={() => window.location.href = '/create-event'} variant="outline">Create Your First Event</Button>
+            <Link to="/create-event">
+              <Button variant="outline">Create Your First Event</Button>
+            </Link>
           </div>
         ) : (
           <div className="grid gap-8">
             {events.map((event) => (
-              <Card key={event.id} className="overflow-hidden rounded-3xl border-none shadow-lg">
+              <Card key={event.id} className="overflow-hidden rounded-3xl border-none shadow-lg bg-white">
                 <div className="md:flex">
                   <div className="md:w-1/3 h-48 md:h-auto relative">
                     <img 
@@ -75,22 +118,30 @@ const Dashboard = () => {
                     />
                     {!event.is_paid && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                        <Button onClick={() => window.location.href = `/payment/${event.id}`} className="bg-[#e94560]">Activate Now</Button>
+                        <Button onClick={() => navigate(`/payment/${event.id}`)} className="bg-[#e94560]">Activate Now</Button>
                       </div>
                     )}
                   </div>
                   <div className="md:w-2/3 p-8">
-                    <div className="flex justify-between items-start mb-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                       <div>
-                        <h2 className="text-2xl font-bold text-[#1a1a2e] mb-1">{event.event_name}</h2>
-                        <p className="text-gray-500">{new Date(event.event_date).toLocaleDateString()}</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h2 className="text-2xl font-bold text-[#1a1a2e]">{event.event_name}</h2>
+                          <span className={`text-xs px-2 py-1 rounded-full ${event.is_paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {event.is_paid ? 'Active' : 'Pending Payment'}
+                          </span>
+                        </div>
+                        <p className="text-gray-500">{new Date(event.event_date).toLocaleDateString()} at {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => copyLink(event.slug)}>
-                          <Copy className="w-4 h-4 mr-2" /> Copy Link
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => copyLink(event.slug)} className="rounded-lg">
+                          <Copy className="w-4 h-4 mr-2" /> Link
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => window.open(`/event/${event.slug}`, '_blank')}>
-                          <ExternalLink className="w-4 h-4 mr-2" /> View Page
+                        <Button variant="outline" size="sm" onClick={() => navigate(`/edit-event/${event.id}`)} className="rounded-lg">
+                          <Edit className="w-4 h-4 mr-2" /> Edit
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => window.open(`/event/${event.slug}`, '_blank')} className="rounded-lg">
+                          <ExternalLink className="w-4 h-4 mr-2" /> View
                         </Button>
                       </div>
                     </div>
@@ -113,31 +164,39 @@ const Dashboard = () => {
                     </div>
 
                     <Tabs defaultValue="rsvps">
-                      <TabsList className="mb-4">
-                        <TabsTrigger value="rsvps">Guest List</TabsTrigger>
-                        <TabsTrigger value="actions">Actions</TabsTrigger>
-                      </TabsList>
+                      <div className="flex justify-between items-center mb-4">
+                        <TabsList className="bg-gray-100">
+                          <TabsTrigger value="rsvps">Guest List</TabsTrigger>
+                          <TabsTrigger value="actions">Actions</TabsTrigger>
+                        </TabsList>
+                        <Button variant="ghost" size="sm" onClick={() => exportToCSV(event)} className="text-gray-500">
+                          <Download className="w-4 h-4 mr-2" /> Export CSV
+                        </Button>
+                      </div>
                       <TabsContent value="rsvps">
-                        <div className="max-h-40 overflow-y-auto space-y-2">
+                        <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
                           {event.rsvps.length > 0 ? (
                             event.rsvps.map((rsvp: any) => (
-                              <div key={rsvp.id} className="flex justify-between p-3 bg-gray-50 rounded-xl">
-                                <span className="font-medium">{rsvp.guest_name}</span>
-                                <span className="text-gray-500">{rsvp.guest_phone}</span>
+                              <div key={rsvp.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <span className="font-medium text-[#1a1a2e]">{rsvp.guest_name}</span>
+                                <span className="text-gray-500 text-sm">{rsvp.guest_phone}</span>
                               </div>
                             ))
                           ) : (
-                            <p className="text-gray-400 text-sm italic">No RSVPs yet.</p>
+                            <div className="text-center py-8 text-gray-400 italic">No RSVPs yet. Share your link!</div>
                           )}
                         </div>
                       </TabsContent>
                       <TabsContent value="actions">
-                        <Button 
-                          onClick={() => sendWhatsAppBlast(event)}
-                          className="bg-[#25D366] hover:bg-[#128C7E] text-white w-full py-6 rounded-xl"
-                        >
-                          <MessageCircle className="w-5 h-5 mr-2" /> Send WhatsApp Blast to Guests
-                        </Button>
+                        <div className="space-y-3">
+                          <Button 
+                            onClick={() => sendWhatsAppBlast(event)}
+                            className="bg-[#25D366] hover:bg-[#128C7E] text-white w-full py-6 rounded-xl"
+                          >
+                            <MessageCircle className="w-5 h-5 mr-2" /> Send WhatsApp Blast to Guests
+                          </Button>
+                          <p className="text-xs text-gray-400 text-center">This will open WhatsApp with a pre-filled message containing your guest list.</p>
+                        </div>
                       </TabsContent>
                     </Tabs>
                   </div>
