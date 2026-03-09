@@ -5,10 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/ui/GlassCard';
-import { Search, MapPin, Phone, Instagram, Star, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Search, MapPin, Phone, Instagram, Star, ArrowRight, Bookmark, BookmarkCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { showSuccess, showError } from '@/utils/toast';
 
 const categories = ["All", "Catering", "Decor", "Photography", "Music", "Venues"];
 
@@ -17,6 +17,7 @@ const VendorDirectory = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [shortlisted, setShortlisted] = useState<string[]>([]);
 
   useEffect(() => {
     fetchVendors();
@@ -28,8 +29,22 @@ const VendorDirectory = () => {
       .select('*')
       .order('is_featured', { ascending: false });
 
-    if (!error) setVendors(data || []);
+    if (error) {
+      console.error("Error fetching vendors:", error);
+    } else {
+      setVendors(data || []);
+    }
     setLoading(false);
+  };
+
+  const toggleShortlist = (vendorId: string) => {
+    if (shortlisted.includes(vendorId)) {
+      setShortlisted(prev => prev.filter(id => id !== vendorId));
+      showSuccess("Removed from your shortlist");
+    } else {
+      setShortlisted(prev => [...prev, vendorId]);
+      showSuccess("Added to your shortlist");
+    }
   };
 
   const filteredVendors = vendors.filter(v => {
@@ -103,62 +118,81 @@ const VendorDirectory = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-12">
-            {filteredVendors.map((vendor, index) => (
-              <GlassCard key={vendor.id} delay={index * 0.1} className="group">
-                <div className="h-72 bg-gray-900 relative overflow-hidden">
-                  <img 
-                    src={`https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&category=${vendor.category.toLowerCase()}`} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
-                    alt={vendor.name}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
-                  {vendor.is_featured && (
-                    <div className="absolute top-6 right-6 bg-[#D4AF37] text-black px-4 py-1 text-[8px] font-black tracking-[0.2em] uppercase flex items-center gap-2">
-                      <Star className="w-3 h-3 fill-current" /> Elite Partner
-                    </div>
-                  )}
-                </div>
-                <div className="p-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h3 className="text-2xl font-serif italic text-white mb-2">{vendor.name}</h3>
-                      <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
-                        <MapPin className="w-3 h-3 text-[#D4AF37]" /> {vendor.location}
+            <AnimatePresence mode="popLayout">
+              {filteredVendors.map((vendor, index) => (
+                <GlassCard key={vendor.id} delay={index * 0.05} className="group relative">
+                  <div className="h-72 bg-gray-900 relative overflow-hidden">
+                    <img 
+                      src={`https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&sig=${vendor.id}`} 
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
+                      alt={vendor.name}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
+                    
+                    {/* Shortlist Button */}
+                    <button 
+                      onClick={() => toggleShortlist(vendor.id)}
+                      className="absolute top-6 left-6 z-20 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
+                    >
+                      {shortlisted.includes(vendor.id) ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+                    </button>
+
+                    {vendor.is_featured && (
+                      <div className="absolute top-6 right-6 bg-[#D4AF37] text-black px-4 py-1 text-[8px] font-black tracking-[0.2em] uppercase flex items-center gap-2 z-20">
+                        <Star className="w-3 h-3 fill-current" /> Elite Partner
                       </div>
-                    </div>
-                    <span className="text-[8px] font-black tracking-[0.2em] uppercase text-[#D4AF37] border border-[#D4AF37]/30 px-3 py-1">
-                      {vendor.category}
-                    </span>
+                    )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    <button 
-                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
-                      onClick={() => window.open(`tel:${vendor.phone}`)}
-                    >
-                      <Phone className="w-3 h-3" /> Call
-                    </button>
-                    <button 
-                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
-                      onClick={() => window.open(`https://instagram.com/${vendor.instagram?.replace('@', '')}`)}
-                    >
-                      <Instagram className="w-3 h-3" /> Instagram
-                    </button>
-                  </div>
+                  <div className="p-10">
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <h3 className="text-2xl font-serif italic text-white mb-2">{vendor.name}</h3>
+                        <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
+                          <MapPin className="w-3 h-3 text-[#D4AF37]" /> {vendor.location}
+                        </div>
+                      </div>
+                      <span className="text-[8px] font-black tracking-[0.2em] uppercase text-[#D4AF37] border border-[#D4AF37]/30 px-3 py-1">
+                        {vendor.category}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                      <button 
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
+                        onClick={() => window.open(`tel:${vendor.phone}`)}
+                      >
+                        <Phone className="w-3 h-3" /> Call
+                      </button>
+                      <button 
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
+                        onClick={() => window.open(`https://instagram.com/${vendor.instagram?.replace('@', '')}`)}
+                      >
+                        <Instagram className="w-3 h-3" /> Instagram
+                      </button>
+                    </div>
 
-                  <Button className="w-full bg-white/5 hover:bg-[#D4AF37] hover:text-black text-white border border-white/10 rounded-none py-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500">
-                    View Portfolio <ArrowRight className="w-3 h-3 ml-2" />
-                  </Button>
-                </div>
-              </GlassCard>
-            ))}
+                    <Button className="w-full bg-white/5 hover:bg-[#D4AF37] hover:text-black text-white border border-white/10 rounded-none py-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500">
+                      View Portfolio <ArrowRight className="w-3 h-3 ml-2" />
+                    </Button>
+                  </div>
+                </GlassCard>
+              ))}
+            </AnimatePresence>
           </div>
         )}
 
         {/* Empty State */}
         {!loading && filteredVendors.length === 0 && (
           <div className="text-center py-40 border border-dashed border-white/10">
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">No vendors found in this category.</p>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">No vendors found in this category.</p>
+            <Button 
+              variant="outline" 
+              onClick={() => {setSearch(''); setActiveCategory('All');}}
+              className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-none px-12 py-6 text-[10px] font-bold tracking-[0.2em] uppercase"
+            >
+              Clear Filters
+            </Button>
           </div>
         )}
       </div>
