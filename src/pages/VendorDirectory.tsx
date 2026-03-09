@@ -145,7 +145,7 @@ const VendorDirectory = () => {
                 <GlassCard key={vendor.id} delay={index * 0.05} className="group relative">
                   <div className="h-72 bg-gray-900 relative overflow-hidden">
                     <img 
-                      src={`https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&sig=${vendor.id}`} 
+                      src={vendor.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
                       alt={vendor.name}
                     />
