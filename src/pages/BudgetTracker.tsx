@@ -6,10 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const BudgetTracker = () => {
   const { id } = useParams();
@@ -47,7 +48,7 @@ const BudgetTracker = () => {
 
     if (error) showError(error.message);
     else {
-      showSuccess('Item added!');
+      showSuccess('Entry recorded in the ledger.');
       setNewItem({ description: '', amount: '', type: 'expense' });
       fetchBudget();
     }
@@ -57,7 +58,7 @@ const BudgetTracker = () => {
     const { error } = await supabase.from('budget_items').delete().eq('id', itemId);
     if (error) showError(error.message);
     else {
-      showSuccess('Item removed');
+      showSuccess('Entry removed.');
       fetchBudget();
     }
   };
@@ -66,46 +67,73 @@ const BudgetTracker = () => {
   const totalExpense = items.filter(i => i.type === 'expense').reduce((acc, i) => acc + i.amount, 0);
   const balance = totalIncome - totalExpense;
 
-  if (loading) return <div className="text-center mt-20">Loading...</div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">Loading Ledger...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
-      <div className="max-w-4xl mx-auto py-12 px-6">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
-        </Button>
+      
+      {/* Background Blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
+      </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="text-green-500 w-5 h-5" />
-              <span className="text-gray-500 text-sm uppercase font-bold">Total Income</span>
-            </div>
-            <div className="text-2xl font-black text-[#1a1a2e]">₦{totalIncome.toLocaleString()}</div>
-          </div>
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingDown className="text-red-500 w-5 h-5" />
-              <span className="text-gray-500 text-sm uppercase font-bold">Total Expenses</span>
-            </div>
-            <div className="text-2xl font-black text-[#1a1a2e]">₦{totalExpense.toLocaleString()}</div>
-          </div>
-          <div className="bg-[#1a1a2e] p-6 rounded-3xl shadow-lg text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <Wallet className="text-[#e94560] w-5 h-5" />
-              <span className="text-gray-400 text-sm uppercase font-bold">Balance</span>
-            </div>
-            <div className="text-2xl font-black">₦{balance.toLocaleString()}</div>
+      <div className="max-w-5xl mx-auto py-24 px-6 relative z-10">
+        <div className="flex justify-between items-center mb-16">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')} 
+            className="text-gray-400 hover:text-[#D4AF37] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+          </Button>
+          <div className="text-right">
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">Financial Suite</span>
+            <h1 className="text-4xl font-serif italic">The Ledger</h1>
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 mb-8">
-          <h2 className="text-xl font-bold mb-6">Add New Entry</h2>
-          <form onSubmit={addItem} className="grid md:grid-cols-4 gap-4">
+        {/* Summary Cards */}
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <GlassCard className="p-10 border-white/5" hover={false}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                <TrendingUp className="text-green-500 w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Total Income</span>
+            </div>
+            <div className="text-4xl font-serif italic text-white">₦{totalIncome.toLocaleString()}</div>
+          </GlassCard>
+
+          <GlassCard className="p-10 border-white/5" hover={false}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                <TrendingDown className="text-red-500 w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Total Expenses</span>
+            </div>
+            <div className="text-4xl font-serif italic text-white">₦{totalExpense.toLocaleString()}</div>
+          </GlassCard>
+
+          <GlassCard className="p-10 bg-[#D4AF37] border-none" hover={false}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">
+                <Wallet className="text-black w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">Current Balance</span>
+            </div>
+            <div className="text-4xl font-serif italic text-black">₦{balance.toLocaleString()}</div>
+          </GlassCard>
+        </div>
+
+        {/* Add Entry Form */}
+        <GlassCard className="p-10 mb-16 border-white/5">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-8">Record New Transaction</h2>
+          <form onSubmit={addItem} className="grid md:grid-cols-4 gap-6">
             <div className="md:col-span-2">
               <Input 
-                placeholder="Description (e.g. Catering Deposit)" 
+                className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                placeholder="Description (e.g. Champagne Supply)" 
                 value={newItem.description}
                 onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
               />
@@ -113,64 +141,75 @@ const BudgetTracker = () => {
             <div>
               <Input 
                 type="number" 
+                className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
                 placeholder="Amount" 
                 value={newItem.amount}
                 onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-4">
               <Select onValueChange={(v) => setNewItem({ ...newItem, type: v })} defaultValue="expense">
-                <SelectTrigger>
+                <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
                   <SelectItem value="income">Income</SelectItem>
                   <SelectItem value="expense">Expense</SelectItem>
                 </SelectContent>
               </Select>
-              <Button type="submit" className="bg-[#e94560] hover:bg-[#d43d56]">
-                <Plus className="w-4 h-4" />
+              <Button type="submit" className="h-14 w-14 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none shrink-0">
+                <Plus className="w-5 h-5" />
               </Button>
             </div>
           </form>
-        </div>
+        </GlassCard>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="text-left p-4 text-sm font-bold text-gray-500 uppercase">Description</th>
-                <th className="text-left p-4 text-sm font-bold text-gray-500 uppercase">Type</th>
-                <th className="text-right p-4 text-sm font-bold text-gray-500 uppercase">Amount</th>
-                <th className="p-4"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-4 font-medium">{item.description}</td>
-                  <td className="p-4">
-                    <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase ${item.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {item.type}
-                    </span>
-                  </td>
-                  <td className={`p-4 text-right font-bold ${item.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {item.type === 'income' ? '+' : '-'}₦{item.amount.toLocaleString()}
-                  </td>
-                  <td className="p-4 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-500">
+        {/* Transactions Table */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center px-8 mb-6">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Recent Transactions</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">{items.length} Entries</span>
+          </div>
+          
+          {items.map((item, index) => (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              key={item.id}
+            >
+              <GlassCard className="p-8 border-white/5 group" hover={true}>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-6">
+                    <div className={`w-2 h-2 rounded-full ${item.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <div>
+                      <p className="text-lg font-light tracking-wide text-white mb-1">{item.description}</p>
+                      <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                        {new Date(item.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-8">
+                    <div className={`text-xl font-serif italic ${item.type === 'income' ? 'text-green-500' : 'text-white'}`}>
+                      {item.type === 'income' ? '+' : '-'} ₦{item.amount.toLocaleString()}
+                    </div>
+                    <button 
+                      onClick={() => deleteItem(item.id)}
+                      className="text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    >
                       <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {items.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="p-12 text-center text-gray-400 italic">No entries yet. Start tracking your budget!</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    </button>
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
+          ))}
+
+          {items.length === 0 && (
+            <div className="text-center py-32 border border-dashed border-white/10 rounded-[2rem]">
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">The ledger is currently empty.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
