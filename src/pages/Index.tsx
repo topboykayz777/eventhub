@@ -6,84 +6,74 @@ import Hero from '@/components/landing/Hero';
 import HowItWorks from '@/components/landing/HowItWorks';
 import PricingSection from '@/components/landing/PricingSection';
 import { motion } from 'framer-motion';
-import { Camera, Users, Calendar, Heart } from 'lucide-react';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-[#0a0a1a] selection:bg-[#e94560] selection:text-white">
+    <div className="min-h-screen bg-[#0f0f0f] selection:bg-[#D4AF37] selection:text-black">
       <Navbar />
       
       <main>
         <Hero />
         
-        {/* Vibrant Stats Section with Moving Background */}
-        <section className="relative py-24 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#e94560]/10 to-[#4ecca3]/10 animate-pulse" />
-          <div className="max-w-7xl mx-auto px-6 relative z-10">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+        {/* Refined Stats Section */}
+        <section className="py-32 border-y border-white/5">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-16">
               {[
-                { label: 'Events Hosted', value: '12,000+', icon: Calendar },
-                { label: 'Guests Invited', value: '500k+', icon: Users },
-                { label: 'Memories Made', value: '1M+', icon: Camera },
-                { label: 'Love Shared', value: '100%', icon: Heart }
+                { label: 'Events Curated', value: '12,000+' },
+                { label: 'Guests Welcomed', value: '500k+' },
+                { label: 'Moments Captured', value: '1M+' },
+                { label: 'Satisfaction', value: '100%' }
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="text-center group"
+                  className="text-center"
                 >
-                  <div className="inline-flex p-4 rounded-2xl bg-white/5 mb-4 group-hover:scale-110 transition-transform">
-                    <stat.icon className="text-[#e94560] w-8 h-8" />
-                  </div>
-                  <div className="text-4xl md:text-6xl font-black text-white mb-2 tracking-tighter">{stat.value}</div>
-                  <div className="text-[#4ecca3] uppercase tracking-widest text-xs font-black">{stat.label}</div>
+                  <div className="text-3xl md:text-4xl font-serif italic text-[#D4AF37] mb-3">{stat.value}</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-bold">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        <HowItWorks />
-
-        {/* Featured Imagery Section */}
-        <section className="py-32 px-6 bg-white overflow-hidden">
+        {/* Editorial Content Section */}
+        <section className="py-40 px-6 bg-[#0f0f0f]">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center gap-16">
+            <div className="flex flex-col md:flex-row items-center gap-24">
               <div className="md:w-1/2">
-                <h2 className="text-5xl md:text-7xl font-black text-[#1a1a2e] mb-8 leading-tight">
-                  CAPTURE EVERY <span className="text-[#e94560]">MOMENT</span>
+                <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-8 block">The Experience</span>
+                <h2 className="text-4xl md:text-6xl font-serif italic text-white mb-10 leading-tight">
+                  Elegance in <br /> Every Detail
                 </h2>
-                <p className="text-xl text-gray-500 mb-10 leading-relaxed">
-                  From the grand entrance to the last dance, Event Hub Nigeria helps you organize the chaos of a celebration into a beautiful digital experience.
+                <p className="text-lg text-gray-400 mb-12 leading-relaxed font-light tracking-wide">
+                  We believe that every celebration is a masterpiece. Our platform provides the canvas for you to design an experience that reflects your unique style and heritage.
                 </p>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100">
-                    <div className="text-3xl font-black text-[#1a1a2e] mb-2">Real-time</div>
-                    <div className="text-gray-500">RSVP updates as they happen.</div>
+                <div className="space-y-8">
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-px bg-[#D4AF37]" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">Bespoke RSVP Management</p>
                   </div>
-                  <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100">
-                    <div className="text-3xl font-black text-[#1a1a2e] mb-2">Seamless</div>
-                    <div className="text-gray-500">WhatsApp integration for sharing.</div>
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-px bg-[#D4AF37]" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">Curated Vendor Directory</p>
                   </div>
                 </div>
               </div>
               <div className="md:w-1/2 relative">
-                <motion.div 
-                  animate={{ rotate: [0, 5, 0] }}
-                  transition={{ duration: 10, repeat: Infinity }}
-                  className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white"
-                >
+                <div className="relative z-10 border border-white/10 p-4">
                   <img 
-                    src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
-                    alt="Wedding Celebration" 
-                    className="w-full h-[600px] object-cover"
+                    src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80" 
+                    alt="Elegant Event" 
+                    className="w-full h-[600px] object-cover grayscale hover:grayscale-0 transition-all duration-1000"
                   />
-                </motion.div>
-                <div className="absolute -top-10 -right-10 w-64 h-64 bg-[#e94560]/10 rounded-full blur-3xl -z-10" />
-                <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-[#4ecca3]/10 rounded-full blur-3xl -z-10" />
+                </div>
+                <div className="absolute -top-12 -right-12 w-48 h-48 border-t border-r border-[#D4AF37]/30" />
+                <div className="absolute -bottom-12 -left-12 w-48 h-48 border-b border-l border-[#D4AF37]/30" />
               </div>
             </div>
           </div>
@@ -91,67 +81,53 @@ const Index = () => {
 
         <PricingSection />
 
-        {/* Final CTA with Vibrant Background */}
-        <section className="py-40 px-6 text-center bg-[#0a0a1a] relative overflow-hidden">
-          <div className="absolute inset-0">
-            <img 
-              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80" 
-              className="w-full h-full object-cover opacity-20"
-              alt="Party Background"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1a] via-transparent to-[#0a0a1a]" />
-          </div>
-          
+        {/* Final CTA */}
+        <section className="py-40 px-6 text-center bg-[#0a0a0a] relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-8xl font-black text-white mb-10 leading-tight tracking-tighter"
-            >
-              DON'T JUST HOST. <br />
-              <span className="text-[#e94560]">DOMINATE.</span>
-            </motion.h2>
-            <p className="text-2xl text-gray-400 mb-16 font-medium">
-              Join the elite hosts using Nigeria's most powerful event platform.
+            <h2 className="text-4xl md:text-7xl font-serif italic text-white mb-12 leading-tight">
+              Begin Your <br /> <span className="text-[#D4AF37]">Legacy</span>
+            </h2>
+            <p className="text-lg text-gray-400 mb-16 font-light tracking-widest uppercase">
+              Join the elite hosts of Nigeria.
             </p>
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <a href="/create-event" className="inline-block bg-[#e94560] text-white px-16 py-8 rounded-[2rem] text-3xl font-black shadow-[0_0_60px_rgba(233,69,96,0.5)] hover:bg-[#d43d56] transition-all">
-                START YOUR OWAMBE
-              </a>
-            </motion.div>
+            <Link to="/create-event">
+              <Button className="bg-[#D4AF37] text-black px-16 py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase hover:bg-[#B8860B] transition-all duration-500">
+                Start Your Journey
+              </Button>
+            </Link>
           </div>
         </section>
       </main>
 
-      <footer className="bg-[#050510] text-white py-24 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-16">
+      <footer className="bg-[#0a0a0a] text-white py-32 px-8 border-t border-white/5">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-24">
           <div className="col-span-2">
-            <div className="text-3xl font-black mb-8 tracking-tighter">
-              EVENT HUB <span className="text-[#e94560]">NG</span>
+            <div className="text-xl font-light tracking-[0.4em] uppercase mb-10">
+              Event Hub <span className="text-[#D4AF37]">NG</span>
             </div>
-            <p className="text-gray-400 max-w-md text-lg leading-relaxed">
-              Elevating Nigerian celebrations through technology. We provide the tools you need to host unforgettable events with ease.
+            <p className="text-gray-500 max-w-md text-sm leading-relaxed font-light tracking-wide">
+              The definitive platform for luxury event management in Nigeria. Curating excellence since 2024.
             </p>
           </div>
           <div>
-            <h4 className="font-black mb-8 uppercase tracking-[0.2em] text-sm text-[#e94560]">Navigation</h4>
-            <ul className="space-y-4 text-gray-400 text-lg">
-              <li><a href="/create-event" className="hover:text-white transition-colors">Create Event</a></li>
-              <li><a href="/vendors" className="hover:text-white transition-colors">Vendor Directory</a></li>
-              <li><a href="/login" className="hover:text-white transition-colors">Host Login</a></li>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Navigation</h4>
+            <ul className="space-y-6 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <li><a href="/create-event" className="hover:text-white transition-colors">Create</a></li>
+              <li><a href="/vendors" className="hover:text-white transition-colors">Directory</a></li>
+              <li><a href="/login" className="hover:text-white transition-colors">Sign In</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-black mb-8 uppercase tracking-[0.2em] text-sm text-[#e94560]">Connect</h4>
-            <ul className="space-y-4 text-gray-400 text-lg">
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Social</h4>
+            <ul className="space-y-6 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
               <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">LinkedIn</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">WhatsApp</a></li>
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-24 pt-12 border-t border-white/5 text-center text-gray-600 font-medium">
-          © 2024 Event Hub Nigeria. Built for the culture.
+        <div className="max-w-7xl mx-auto mt-32 pt-12 border-t border-white/5 text-center text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em]">
+          © 2024 Event Hub Nigeria. All Rights Reserved.
         </div>
       </footer>
     </div>
