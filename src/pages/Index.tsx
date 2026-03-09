@@ -1,10 +1,12 @@
 "use client";
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import HowItWorks from '@/components/landing/HowItWorks';
 import PricingSection from '@/components/landing/PricingSection';
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
 const Index = () => {
@@ -112,9 +114,9 @@ const Index = () => {
           <div>
             <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Navigation</h4>
             <ul className="space-y-6 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
-              <li><a href="/create-event" className="hover:text-white transition-colors">Create</a></li>
-              <li><a href="/vendors" className="hover:text-white transition-colors">Directory</a></li>
-              <li><a href="/login" className="hover:text-white transition-colors">Sign In</a></li>
+              <li><Link to="/create-event" className="hover:text-white transition-colors">Create</Link></li>
+              <li><Link to="/vendors" className="hover:text-white transition-colors">Directory</Link></li>
+              <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>
           </div>
           <div>
