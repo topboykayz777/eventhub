@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
-import { Palette } from 'lucide-react';
+import { Palette, Sparkles, Crown, Star } from 'lucide-react';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -81,6 +81,12 @@ const CreateEvent = () => {
     }
   };
 
+  const themes = [
+    { id: 'modern', label: 'Modern', color: 'bg-[#0a0a1a]', text: 'text-white', accent: 'bg-[#e94560]' },
+    { id: 'traditional', label: 'Traditional', color: 'bg-[#fdfcf0]', text: 'text-[#5d4037]', accent: 'bg-[#b8860b]' },
+    { id: 'elegant', label: 'Elegant', color: 'bg-white', text: 'text-gray-900', accent: 'bg-black' }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -125,23 +131,35 @@ const CreateEvent = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <Label className="flex items-center gap-2">
                 <Palette className="w-4 h-4" /> Choose Page Theme
               </Label>
               <div className="grid grid-cols-3 gap-4">
-                {['modern', 'traditional', 'elegant'].map((t) => (
+                {themes.map((t) => (
                   <button
-                    key={t}
+                    key={t.id}
                     type="button"
-                    onClick={() => setFormData({ ...formData, theme: t })}
-                    className={`p-4 rounded-2xl border-2 transition-all capitalize font-bold ${
-                      formData.theme === t 
-                        ? 'border-[#e94560] bg-[#e94560]/5 text-[#e94560]' 
-                        : 'border-gray-100 hover:border-gray-200 text-gray-500'
+                    onClick={() => setFormData({ ...formData, theme: t.id })}
+                    className={`relative p-4 rounded-2xl border-2 transition-all text-left overflow-hidden h-32 ${
+                      formData.theme === t.id 
+                        ? 'border-[#e94560] ring-2 ring-[#e94560]/20' 
+                        : 'border-gray-100 hover:border-gray-200'
                     }`}
                   >
-                    {t}
+                    <div className={`absolute inset-0 ${t.color} opacity-10`} />
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                      <span className={`text-xs font-black uppercase tracking-widest ${t.text}`}>{t.label}</span>
+                      <div className="flex gap-1">
+                        <div className={`w-4 h-4 rounded-full ${t.accent}`} />
+                        <div className={`w-4 h-4 rounded-full ${t.color}`} />
+                      </div>
+                    </div>
+                    {formData.theme === t.id && (
+                      <div className="absolute top-2 right-2">
+                        <Sparkles className="w-4 h-4 text-[#e94560]" />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -176,7 +194,7 @@ const CreateEvent = () => {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-[#e94560] hover:bg-[#d43d56] text-white py-6 rounded-xl text-lg"
+              className="w-full bg-[#e94560] hover:bg-[#d43d56] text-white py-6 rounded-xl text-lg font-black"
             >
               {loading ? 'Creating...' : 'Proceed to Payment'}
             </Button>

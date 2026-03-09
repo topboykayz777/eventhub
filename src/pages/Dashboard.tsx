@@ -11,7 +11,8 @@ import { showSuccess, showError } from '@/utils/toast';
 import { 
   Copy, MessageCircle, Eye, Users, ExternalLink, Edit, 
   Download, User, Wallet, Store, CreditCard, Sparkles, 
-  Calendar, TrendingUp, Search, CheckCircle2, Circle, FileDown, Image as ImageIcon
+  Calendar, TrendingUp, Search, CheckCircle2, Circle, FileDown, Image as ImageIcon,
+  Send
 } from 'lucide-react';
 import DigitalInvite from '@/components/DigitalInvite';
 import GlassCard from '@/components/ui/GlassCard';
@@ -108,6 +109,13 @@ const Dashboard = () => {
       return acc;
     }, {});
     return Object.entries(groups).map(([date, count]) => ({ date, count }));
+  };
+
+  const sendWhatsAppBlast = (event: any) => {
+    const message = `Hello! Just a reminder about ${event.event_name}. You can view the details and RSVP here: ${window.location.origin}/event/${event.slug}`;
+    // In a real app, this would loop through guests or use a broadcast API.
+    // For now, we open the first guest or a general share.
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0a0a1a] text-white">Loading...</div>;
@@ -320,10 +328,17 @@ const Dashboard = () => {
                             <span className="font-black text-xs">Budget Suite</span>
                           </Button>
 
-                          <Button onClick={() => promoteEvent(event.id)} className="bg-[#D4AF37] text-black h-24 rounded-3xl flex flex-col gap-1 hover:opacity-90">
-                            <TrendingUp className="w-6 h-6" />
-                            <span className="font-black text-xs">Promote Event</span>
-                          </Button>
+                          {event.plan === 'Pro' ? (
+                            <Button onClick={() => sendWhatsAppBlast(event)} className="bg-[#25D366] text-white h-24 rounded-3xl flex flex-col gap-1 hover:opacity-90">
+                              <Send className="w-6 h-6" />
+                              <span className="font-black text-xs">WhatsApp Blast</span>
+                            </Button>
+                          ) : (
+                            <Button onClick={() => promoteEvent(event.id)} className="bg-[#D4AF37] text-black h-24 rounded-3xl flex flex-col gap-1 hover:opacity-90">
+                              <TrendingUp className="w-6 h-6" />
+                              <span className="font-black text-xs">Promote Event</span>
+                            </Button>
+                          )}
                         </div>
                       </TabsContent>
                     </Tabs>
