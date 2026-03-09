@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import HowItWorks from '@/components/landing/HowItWorks';
 import PricingSection from '@/components/landing/PricingSection';
+import FeaturedEvents from '@/components/landing/FeaturedEvents';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
@@ -16,6 +17,9 @@ const Index = () => {
       
       <main>
         <Hero />
+        
+        {/* Advertising Section: Featured Events */}
+        <FeaturedEvents />
         
         {/* Refined Stats Section */}
         <section className="py-32 border-y border-white/5">

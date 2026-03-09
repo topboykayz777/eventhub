@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { Copy, MessageCircle, Eye, Users, ExternalLink, Edit, Download, User, Wallet, Store, CreditCard, Sparkles } from 'lucide-react';
+import { Copy, MessageCircle, Eye, Users, ExternalLink, Edit, Download, User, Wallet, Store, CreditCard, Sparkles, Calendar, TrendingUp } from 'lucide-react';
 import DigitalInvite from '@/components/DigitalInvite';
 import GlassCard from '@/components/ui/GlassCard';
 import { motion } from 'framer-motion';
@@ -37,6 +37,19 @@ const Dashboard = () => {
     if (error) showError(error.message);
     else setEvents(data || []);
     setLoading(false);
+  };
+
+  const promoteEvent = async (eventId: string) => {
+    const { error } = await supabase
+      .from('events')
+      .update({ is_featured: true })
+      .eq('id', eventId);
+    
+    if (error) showError("Promotion failed. Ensure you have run the SQL migration.");
+    else {
+      showSuccess("Event promoted to the homepage spotlight!");
+      fetchEvents();
+    }
   };
 
   const copyLink = (slug: string) => {
@@ -81,7 +94,6 @@ const Dashboard = () => {
     <div className="min-h-screen bg-[#0a0a1a] text-white">
       <Navbar />
       
-      {/* Background Blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#e94560]/10 blur-[120px] animate-blob" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-[#4ecca3]/10 blur-[120px] animate-blob animation-delay-2000" />
@@ -147,9 +159,16 @@ const Dashboard = () => {
                       <div>
                         <div className="flex items-center gap-3 mb-2">
                           <h2 className="text-3xl md:text-4xl font-black tracking-tight">{event.event_name}</h2>
-                          <span className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-black ${event.is_paid ? 'bg-[#4ecca3]/20 text-[#4ecca3]' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                            {event.is_paid ? 'Active' : 'Pending'}
-                          </span>
+                          <div className="flex gap-2">
+                            <span className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-black ${event.is_paid ? 'bg-[#4ecca3]/20 text-[#4ecca3]' : 'bg-yellow-500/20 text-yellow-500'}`}>
+                              {event.is_paid ? 'Active' : 'Pending'}
+                            </span>
+                            {event.is_featured && (
+                              <span className="text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-black bg-[#D4AF37]/20 text-[#D4AF37] flex items-center gap-1">
+                                <Sparkles size={10} /> Featured
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <p className="text-gray-400 text-lg flex items-center gap-2">
                           <Calendar className="w-5 h-5 text-[#e94560]" />
@@ -227,6 +246,16 @@ const Dashboard = () => {
                             <span className="font-black text-lg">WhatsApp Blast</span>
                           </Button>
                           
+                          {!event.is_featured && (
+                            <Button 
+                              onClick={() => promoteEvent(event.id)}
+                              className="bg-[#D4AF37] hover:bg-[#B8860B] text-black py-12 rounded-3xl flex flex-col items-center gap-2 shadow-lg shadow-[#D4AF37]/10 group"
+                            >
+                              <TrendingUp className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                              <span className="font-black text-lg">Promote Event</span>
+                            </Button>
+                          )}
+
                           {(event.plan === 'Pro') && (
                             <>
                               <Button 
@@ -244,17 +273,6 @@ const Dashboard = () => {
                                 <span className="font-black text-lg">Vendor Directory</span>
                               </Button>
                             </>
-                          )}
-
-                          {(event.plan === 'Standard') && (
-                            <Button 
-                              onClick={() => navigate(`/budget/${event.id}`)}
-                              disabled
-                              className="bg-white/5 text-gray-500 py-12 rounded-3xl flex flex-col items-center gap-2 border border-white/5 cursor-not-allowed opacity-50"
-                            >
-                              <Wallet className="w-8 h-8" />
-                              <span className="font-black text-lg">Budget (Pro Only)</span>
-                            </Button>
                           )}
                         </div>
                       </TabsContent>

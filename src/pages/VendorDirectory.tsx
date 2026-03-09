@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GlassCard from '@/components/ui/GlassCard';
-import { Search, MapPin, Phone, Instagram, Star, ArrowRight, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Search, MapPin, Phone, Instagram, Star, ArrowRight, Bookmark, BookmarkCheck, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { showSuccess, showError } from '@/utils/toast';
 
@@ -78,9 +78,31 @@ const VendorDirectory = () => {
           </motion.h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
             A curated selection of Nigeria's most prestigious event professionals. 
-            Where excellence meets your celebration.
           </p>
         </div>
+
+        {/* Marketplace Advertising Slot */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-24 p-1 border border-[#D4AF37]/30 bg-gradient-to-r from-[#D4AF37]/5 to-transparent"
+        >
+          <div className="flex flex-col md:flex-row items-center justify-between p-8 gap-8">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 bg-white/5 flex items-center justify-center border border-white/10">
+                <ExternalLink className="text-[#D4AF37] w-8 h-8" />
+              </div>
+              <div>
+                <span className="text-[8px] font-black tracking-[0.3em] text-[#D4AF37] uppercase mb-2 block">Sponsored Spotlight</span>
+                <h4 className="text-xl font-serif italic text-white">Luxury Marketplace NG</h4>
+                <p className="text-xs text-gray-500 tracking-wide">Exclusive access to premium event rentals and decor.</p>
+              </div>
+            </div>
+            <Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-white transition-all">
+              Visit Marketplace
+            </Button>
+          </div>
+        </motion.div>
 
         {/* Search & Filter Section */}
         <div className="mb-24 space-y-12">
@@ -129,7 +151,6 @@ const VendorDirectory = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
                     
-                    {/* Shortlist Button */}
                     <button 
                       onClick={() => toggleShortlist(vendor.id)}
                       className="absolute top-6 left-6 z-20 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
@@ -181,36 +202,7 @@ const VendorDirectory = () => {
             </AnimatePresence>
           </div>
         )}
-
-        {/* Empty State */}
-        {!loading && filteredVendors.length === 0 && (
-          <div className="text-center py-40 border border-dashed border-white/10">
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">No vendors found in this category.</p>
-            <Button 
-              variant="outline" 
-              onClick={() => {setSearch(''); setActiveCategory('All');}}
-              className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-none px-12 py-6 text-[10px] font-bold tracking-[0.2em] uppercase"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
       </div>
-
-      {/* Final CTA */}
-      <section className="py-40 px-6 text-center bg-[#0a0a0a] border-t border-white/5">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-6xl font-serif italic text-white mb-10 leading-tight">
-            Are You an <br /> <span className="text-[#D4AF37]">Elite Vendor?</span>
-          </h2>
-          <p className="text-lg text-gray-400 mb-16 font-light tracking-widest uppercase">
-            Join Nigeria's most exclusive event network.
-          </p>
-          <Button className="bg-[#D4AF37] text-black px-16 py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase hover:bg-[#B8860B] transition-all duration-500">
-            Apply to Join
-          </Button>
-        </div>
-      </section>
     </div>
   );
 };
