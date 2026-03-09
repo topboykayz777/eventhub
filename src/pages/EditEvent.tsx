@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Palette, Sparkles } from 'lucide-react';
 
 const EditEvent = () => {
   const { id } = useParams();
@@ -21,6 +21,7 @@ const EditEvent = () => {
     eventDate: '',
     venue: '',
     message: '',
+    theme: 'modern',
     photo_url: '',
     gallery_urls: [] as string[]
   });
@@ -47,6 +48,7 @@ const EditEvent = () => {
       eventDate: new Date(data.event_date).toISOString().slice(0, 16),
       venue: data.venue,
       message: data.message || '',
+      theme: data.theme || 'modern',
       photo_url: data.photo_url || '',
       gallery_urls: data.gallery_urls || []
     });
@@ -99,6 +101,7 @@ const EditEvent = () => {
           event_date: new Date(formData.eventDate).toISOString(),
           venue: formData.venue,
           message: formData.message,
+          theme: formData.theme,
           photo_url: formData.photo_url,
           gallery_urls: formData.gallery_urls
         })
@@ -113,6 +116,12 @@ const EditEvent = () => {
       setSaving(false);
     }
   };
+
+  const themes = [
+    { id: 'modern', label: 'Modern', color: 'bg-[#0a0a1a]', text: 'text-white', accent: 'bg-[#e94560]' },
+    { id: 'traditional', label: 'Traditional', color: 'bg-[#fdfcf0]', text: 'text-[#5d4037]', accent: 'bg-[#b8860b]' },
+    { id: 'elegant', label: 'Elegant', color: 'bg-white', text: 'text-gray-900', accent: 'bg-black' }
+  ];
 
   if (loading) return <div className="text-center mt-20">Loading...</div>;
 
@@ -156,6 +165,40 @@ const EditEvent = () => {
                   value={formData.venue}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                 />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Label className="flex items-center gap-2">
+                <Palette className="w-4 h-4" /> Change Page Theme
+              </Label>
+              <div className="grid grid-cols-3 gap-4">
+                {themes.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, theme: t.id })}
+                    className={`relative p-4 rounded-2xl border-2 transition-all text-left overflow-hidden h-32 ${
+                      formData.theme === t.id 
+                        ? 'border-[#e94560] ring-2 ring-[#e94560]/20' 
+                        : 'border-gray-100 hover:border-gray-200'
+                    }`}
+                  >
+                    <div className={`absolute inset-0 ${t.color} opacity-10`} />
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                      <span className={`text-xs font-black uppercase tracking-widest ${t.text}`}>{t.label}</span>
+                      <div className="flex gap-1">
+                        <div className={`w-4 h-4 rounded-full ${t.accent}`} />
+                        <div className={`w-4 h-4 rounded-full ${t.color}`} />
+                      </div>
+                    </div>
+                    {formData.theme === t.id && (
+                      <div className="absolute top-2 right-2">
+                        <span className="text-[#e94560]"><Sparkles className="w-4 h-4" /></span>
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
