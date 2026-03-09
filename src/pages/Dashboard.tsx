@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { Copy, MessageCircle, Eye, Users, ExternalLink, Edit, Download, User } from 'lucide-react';
+import { Copy, MessageCircle, Eye, Users, ExternalLink, Edit, Download, User, Wallet, Store, CreditCard } from 'lucide-react';
+import DigitalInvite from '@/components/DigitalInvite';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -167,12 +168,14 @@ const Dashboard = () => {
                       <div className="flex justify-between items-center mb-4">
                         <TabsList className="bg-gray-100">
                           <TabsTrigger value="rsvps">Guest List</TabsTrigger>
-                          <TabsTrigger value="actions">Actions</TabsTrigger>
+                          <TabsTrigger value="tools">Tools</TabsTrigger>
+                          <TabsTrigger value="invite">Invite Card</TabsTrigger>
                         </TabsList>
                         <Button variant="ghost" size="sm" onClick={() => exportToCSV(event)} className="text-gray-500">
                           <Download className="w-4 h-4 mr-2" /> Export CSV
                         </Button>
                       </div>
+                      
                       <TabsContent value="rsvps">
                         <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
                           {event.rsvps.length > 0 ? (
@@ -187,16 +190,60 @@ const Dashboard = () => {
                           )}
                         </div>
                       </TabsContent>
-                      <TabsContent value="actions">
-                        <div className="space-y-3">
+
+                      <TabsContent value="tools">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Button 
                             onClick={() => sendWhatsAppBlast(event)}
-                            className="bg-[#25D366] hover:bg-[#128C7E] text-white w-full py-6 rounded-xl"
+                            className="bg-[#25D366] hover:bg-[#128C7E] text-white py-8 rounded-2xl flex flex-col items-center gap-1"
                           >
-                            <MessageCircle className="w-5 h-5 mr-2" /> Send WhatsApp Blast to Guests
+                            <MessageCircle className="w-6 h-6" />
+                            <span>WhatsApp Blast</span>
                           </Button>
-                          <p className="text-xs text-gray-400 text-center">This will open WhatsApp with a pre-filled message containing your guest list.</p>
+                          
+                          {(event.plan === 'Pro') && (
+                            <>
+                              <Button 
+                                onClick={() => navigate(`/budget/${event.id}`)}
+                                className="bg-[#1a1a2e] hover:bg-[#2a2a4e] text-white py-8 rounded-2xl flex flex-col items-center gap-1"
+                              >
+                                <Wallet className="w-6 h-6" />
+                                <span>Budget Tracker</span>
+                              </Button>
+                              <Button 
+                                onClick={() => navigate('/vendors')}
+                                className="bg-white border-2 border-[#1a1a2e] text-[#1a1a2e] hover:bg-gray-50 py-8 rounded-2xl flex flex-col items-center gap-1"
+                              >
+                                <Store className="w-6 h-6" />
+                                <span>Vendor Directory</span>
+                              </Button>
+                            </>
+                          )}
+
+                          {(event.plan === 'Standard') && (
+                            <Button 
+                              onClick={() => navigate(`/budget/${event.id}`)}
+                              disabled
+                              className="bg-gray-100 text-gray-400 py-8 rounded-2xl flex flex-col items-center gap-1 cursor-not-allowed"
+                            >
+                              <Wallet className="w-6 h-6" />
+                              <span>Budget (Pro Only)</span>
+                            </Button>
+                          )}
                         </div>
+                      </TabsContent>
+
+                      <TabsContent value="invite">
+                        {(event.plan === 'Standard' || event.plan === 'Pro') ? (
+                          <DigitalInvite event={event} />
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                            <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <h3 className="text-lg font-bold mb-2">Upgrade Required</h3>
+                            <p className="text-gray-500 mb-6">Digital Invite Cards are available on Standard and Pro plans.</p>
+                            <Button onClick={() => navigate(`/payment/${event.id}`)} className="bg-[#e94560]">Upgrade Plan</Button>
+                          </div>
+                        )}
                       </TabsContent>
                     </Tabs>
                   </div>

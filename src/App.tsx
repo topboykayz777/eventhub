@@ -12,6 +12,8 @@ import EventPage from "./pages/EventPage";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import EditEvent from "./pages/EditEvent";
+import BudgetTracker from "./pages/BudgetTracker";
+import VendorDirectory from "./pages/VendorDirectory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/event/:slug" element={<EventPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/budget/:id" element={<BudgetTracker />} />
+          <Route path="/vendors" element={<VendorDirectory />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
