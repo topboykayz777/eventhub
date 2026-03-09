@@ -6,12 +6,17 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, MapPin, Phone, Instagram, Star } from 'lucide-react';
+import GlassCard from '@/components/ui/GlassCard';
+import { Search, MapPin, Phone, Instagram, Star, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const categories = ["All", "Catering", "Decor", "Photography", "Music", "Venues"];
 
 const VendorDirectory = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
     fetchVendors();
@@ -27,82 +32,151 @@ const VendorDirectory = () => {
     setLoading(false);
   };
 
-  const filteredVendors = vendors.filter(v => 
-    v.name.toLowerCase().includes(search.toLowerCase()) ||
-    v.category.toLowerCase().includes(search.toLowerCase()) ||
-    v.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredVendors = vendors.filter(v => {
+    const matchesSearch = v.name.toLowerCase().includes(search.toLowerCase()) ||
+                         v.category.toLowerCase().includes(search.toLowerCase()) ||
+                         v.location.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = activeCategory === 'All' || v.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-12 px-6">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-black text-[#1a1a2e] mb-4">Vendor Directory</h1>
-          <p className="text-gray-500 max-w-2xl mx-auto">Find the best caterers, decorators, and photographers for your next Owambe.</p>
+      
+      <div className="max-w-7xl mx-auto py-24 px-6">
+        {/* Header Section */}
+        <div className="text-center mb-20">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-8 block"
+          >
+            The Elite Concierge
+          </motion.span>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-8xl font-serif italic text-white mb-10 leading-tight tracking-tight"
+          >
+            The <span className="text-[#D4AF37]">Directory</span>
+          </motion.h1>
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
+            A curated selection of Nigeria's most prestigious event professionals. 
+            Where excellence meets your celebration.
+          </p>
         </div>
 
-        <div className="relative max-w-2xl mx-auto mb-12">
-          <Search className="absolute left-4 top-4 text-gray-400" />
-          <Input 
-            className="pl-12 h-14 rounded-2xl shadow-lg border-none text-lg"
-            placeholder="Search by name, category, or location..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        {/* Search & Filter Section */}
+        <div className="mb-24 space-y-12">
+          <div className="relative max-w-3xl mx-auto">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-5 h-5" />
+            <Input 
+              className="pl-16 h-20 rounded-none bg-white/5 border-white/10 text-xl font-light tracking-wide focus:border-[#D4AF37]/50 transition-all"
+              placeholder="Search by name, category, or location..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-6">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`text-[10px] font-bold uppercase tracking-[0.3em] px-8 py-4 border transition-all duration-500 ${
+                  activeCategory === cat 
+                    ? 'bg-[#D4AF37] text-black border-[#D4AF37]' 
+                    : 'bg-transparent text-gray-500 border-white/10 hover:border-[#D4AF37]/30 hover:text-white'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Vendor Grid */}
         {loading ? (
-          <div className="text-center">Loading vendors...</div>
+          <div className="text-center py-20 text-gray-500 tracking-[0.3em] uppercase text-[10px] font-bold animate-pulse">
+            Curating Excellence...
+          </div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-8">
-            {filteredVendors.map((vendor) => (
-              <div key={vendor.id} className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
-                <div className="h-48 bg-gray-200 relative">
+          <div className="grid md:grid-cols-3 gap-12">
+            {filteredVendors.map((vendor, index) => (
+              <GlassCard key={vendor.id} delay={index * 0.1} className="group">
+                <div className="h-72 bg-gray-900 relative overflow-hidden">
                   <img 
-                    src={`https://source.unsplash.com/featured/?${vendor.category.toLowerCase()},event`} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    src={`https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&category=${vendor.category.toLowerCase()}`} 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
                     alt={vendor.name}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
                   {vendor.is_featured && (
-                    <Badge className="absolute top-4 right-4 bg-[#e94560] text-white border-none">
-                      <Star className="w-3 h-3 mr-1 fill-current" /> Featured
-                    </Badge>
+                    <div className="absolute top-6 right-6 bg-[#D4AF37] text-black px-4 py-1 text-[8px] font-black tracking-[0.2em] uppercase flex items-center gap-2">
+                      <Star className="w-3 h-3 fill-current" /> Elite Partner
+                    </div>
                   )}
                 </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-[#1a1a2e]">{vendor.name}</h3>
-                    <Badge variant="outline" className="text-[#e94560] border-[#e94560]/20 bg-[#e94560]/5">
+                <div className="p-10">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="text-2xl font-serif italic text-white mb-2">{vendor.name}</h3>
+                      <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
+                        <MapPin className="w-3 h-3 text-[#D4AF37]" /> {vendor.location}
+                      </div>
+                    </div>
+                    <span className="text-[8px] font-black tracking-[0.2em] uppercase text-[#D4AF37] border border-[#D4AF37]/30 px-3 py-1">
                       {vendor.category}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-500 text-sm mb-6">
-                    <MapPin className="w-4 h-4" /> {vendor.location}
+                    </span>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button 
-                      variant="outline" 
-                      className="rounded-xl border-gray-100 hover:bg-gray-50"
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <button 
+                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
                       onClick={() => window.open(`tel:${vendor.phone}`)}
                     >
-                      <Phone className="w-4 h-4 mr-2" /> Call
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="rounded-xl border-gray-100 hover:bg-gray-50"
-                      onClick={() => window.open(`https://instagram.com/${vendor.instagram.replace('@', '')}`)}
+                      <Phone className="w-3 h-3" /> Call
+                    </button>
+                    <button 
+                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
+                      onClick={() => window.open(`https://instagram.com/${vendor.instagram?.replace('@', '')}`)}
                     >
-                      <Instagram className="w-4 h-4 mr-2" /> Instagram
-                    </Button>
+                      <Instagram className="w-3 h-3" /> Instagram
+                    </button>
                   </div>
+
+                  <Button className="w-full bg-white/5 hover:bg-[#D4AF37] hover:text-black text-white border border-white/10 rounded-none py-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500">
+                    View Portfolio <ArrowRight className="w-3 h-3 ml-2" />
+                  </Button>
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         )}
+
+        {/* Empty State */}
+        {!loading && filteredVendors.length === 0 && (
+          <div className="text-center py-40 border border-dashed border-white/10">
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">No vendors found in this category.</p>
+          </div>
+        )}
       </div>
+
+      {/* Final CTA */}
+      <section className="py-40 px-6 text-center bg-[#0a0a0a] border-t border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl md:text-6xl font-serif italic text-white mb-10 leading-tight">
+            Are You an <br /> <span className="text-[#D4AF37]">Elite Vendor?</span>
+          </h2>
+          <p className="text-lg text-gray-400 mb-16 font-light tracking-widest uppercase">
+            Join Nigeria's most exclusive event network.
+          </p>
+          <Button className="bg-[#D4AF37] text-black px-16 py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase hover:bg-[#B8860B] transition-all duration-500">
+            Apply to Join
+          </Button>
+        </div>
+      </section>
     </div>
   );
 };

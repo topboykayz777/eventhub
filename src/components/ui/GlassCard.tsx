@@ -8,16 +8,20 @@ interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   delay?: number;
+  hover?: boolean;
 }
 
-const GlassCard = ({ children, className, delay = 0 }: GlassCardProps) => {
+const GlassCard = ({ children, className, delay = 0, hover = true }: GlassCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, delay }}
+      whileHover={hover ? { y: -5, transition: { duration: 0.3 } } : {}}
       className={cn(
-        "bg-[#1a1a1a]/40 backdrop-blur-md border border-white/5 rounded-none overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+        "bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] overflow-hidden transition-all duration-500",
+        hover && "hover:border-[#D4AF37]/30 hover:shadow-[0_20px_50px_rgba(212,175,55,0.1)]",
         className
       )}
     >
