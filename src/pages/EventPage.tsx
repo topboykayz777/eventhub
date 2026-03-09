@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Image as ImageIcon, Heart } from 'lucide-react';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -69,10 +69,41 @@ const EventPage = () => {
     </div>
   );
 
+  const theme = event.theme || 'modern';
+  const isTraditional = theme === 'traditional';
+  const isElegant = theme === 'elegant';
+
+  const themeConfig = {
+    modern: {
+      bg: "bg-[#1a1a2e]",
+      text: "text-white",
+      accent: "text-[#e94560]",
+      button: "bg-[#e94560] hover:bg-[#d43d56]",
+      card: "bg-white/5 border-white/10",
+      rsvpCard: "bg-white text-[#1a1a2e]"
+    },
+    traditional: {
+      bg: "bg-[#fdfcf0]",
+      text: "text-[#5d4037]",
+      accent: "text-[#b8860b]",
+      button: "bg-[#b8860b] hover:bg-[#9a700a]",
+      card: "bg-white border-[#b8860b]/20 shadow-sm",
+      rsvpCard: "bg-[#5d4037] text-white"
+    },
+    elegant: {
+      bg: "bg-white",
+      text: "text-gray-900",
+      accent: "text-black",
+      button: "bg-black hover:bg-gray-800",
+      card: "bg-gray-50 border-gray-100",
+      rsvpCard: "bg-white border-2 border-black text-black"
+    }
+  }[theme as 'modern' | 'traditional' | 'elegant'];
+
   const hasGallery = (event.plan === 'Standard' || event.plan === 'Pro') && event.gallery_urls?.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#1a1a2e] text-white">
+    <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} transition-colors duration-500`}>
       {/* Hero Section */}
       <div className="relative h-[70vh] w-full overflow-hidden">
         <img 
@@ -80,9 +111,11 @@ const EventPage = () => {
           className="w-full h-full object-cover opacity-60"
           alt={event.event_name}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] via-transparent to-transparent" />
+        <div className={`absolute inset-0 bg-gradient-to-t from-${themeConfig.bg.replace('bg-', '')} via-transparent to-transparent`} />
         <div className="absolute bottom-0 left-0 right-0 p-8 max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter uppercase italic">{event.event_name}</h1>
+          <h1 className={`text-5xl md:text-8xl font-black mb-8 tracking-tighter uppercase italic ${isTraditional ? 'font-serif' : ''}`}>
+            {event.event_name}
+          </h1>
           <Countdown targetDate={event.event_date} />
         </div>
       </div>
@@ -91,27 +124,27 @@ const EventPage = () => {
         <div className="grid md:grid-cols-5 gap-12">
           {/* Details Column */}
           <div className="md:col-span-3 space-y-12">
-            <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/10 backdrop-blur-sm">
+            <div className={`${themeConfig.card} p-10 rounded-[2.5rem] border backdrop-blur-sm`}>
               <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                <Calendar className="text-[#e94560] w-8 h-8" /> Event Details
+                <Calendar className={`${themeConfig.accent} w-8 h-8`} /> Event Details
               </h2>
               <div className="space-y-8">
                 <div className="flex items-start gap-5">
-                  <div className="bg-[#e94560]/20 p-3 rounded-2xl">
-                    <MapPin className="text-[#e94560]" />
+                  <div className={`${themeConfig.accent.replace('text-', 'bg-')}/20 p-3 rounded-2xl`}>
+                    <MapPin className={themeConfig.accent} />
                   </div>
                   <div>
                     <p className="font-bold text-xl mb-1">Where</p>
-                    <p className="text-gray-400 text-lg">{event.venue}</p>
+                    <p className="opacity-70 text-lg">{event.venue}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-5">
-                  <div className="bg-[#e94560]/20 p-3 rounded-2xl">
-                    <MessageSquare className="text-[#e94560]" />
+                  <div className={`${themeConfig.accent.replace('text-', 'bg-')}/20 p-3 rounded-2xl`}>
+                    <MessageSquare className={themeConfig.accent} />
                   </div>
                   <div>
                     <p className="font-bold text-xl mb-1">Host's Note</p>
-                    <p className="text-gray-400 text-lg italic leading-relaxed">"{event.message}"</p>
+                    <p className="opacity-70 text-lg italic leading-relaxed">"{event.message}"</p>
                   </div>
                 </div>
               </div>
@@ -121,14 +154,14 @@ const EventPage = () => {
             {hasGallery && (
               <div className="space-y-6">
                 <h2 className="text-3xl font-bold flex items-center gap-3">
-                  <ImageIcon className="text-[#e94560] w-8 h-8" /> Photo Gallery
+                  <ImageIcon className={`${themeConfig.accent} w-8 h-8`} /> Photo Gallery
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {event.gallery_urls.map((url: string, i: number) => (
                     <img 
                       key={i} 
                       src={url} 
-                      className="w-full aspect-square object-cover rounded-3xl hover:scale-[1.02] transition-transform cursor-pointer" 
+                      className="w-full aspect-square object-cover rounded-3xl hover:scale-[1.02] transition-transform cursor-pointer shadow-lg" 
                       alt={`Gallery ${i}`} 
                     />
                   ))}
@@ -146,33 +179,33 @@ const EventPage = () => {
 
           {/* RSVP Column */}
           <div className="md:col-span-2">
-            <div className="bg-white text-[#1a1a2e] p-10 rounded-[2.5rem] shadow-2xl sticky top-24">
+            <div className={`${themeConfig.rsvpCard} p-10 rounded-[2.5rem] shadow-2xl sticky top-24`}>
               <h2 className="text-3xl font-black mb-2">RSVP NOW</h2>
-              <p className="text-gray-500 mb-8">Let the host know you're coming!</p>
+              <p className="opacity-60 mb-8">Let the host know you're coming!</p>
               <form onSubmit={handleRSVP} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-bold uppercase tracking-wider text-gray-400">Your Full Name</Label>
+                  <Label htmlFor="name" className="text-sm font-bold uppercase tracking-wider opacity-50">Your Full Name</Label>
                   <Input 
                     id="name" 
                     required 
-                    className="bg-gray-50 border-none h-14 rounded-2xl text-lg"
+                    className="bg-black/5 border-none h-14 rounded-2xl text-lg"
                     placeholder="John Doe"
                     value={rsvpData.name}
                     onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-bold uppercase tracking-wider text-gray-400">WhatsApp Number</Label>
+                  <Label htmlFor="phone" className="text-sm font-bold uppercase tracking-wider opacity-50">WhatsApp Number</Label>
                   <Input 
                     id="phone" 
                     required 
-                    className="bg-gray-50 border-none h-14 rounded-2xl text-lg"
+                    className="bg-black/5 border-none h-14 rounded-2xl text-lg"
                     placeholder="08012345678"
                     value={rsvpData.phone}
                     onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
                   />
                 </div>
-                <Button type="submit" className="w-full bg-[#e94560] hover:bg-[#d43d56] text-white h-16 rounded-2xl text-xl font-bold shadow-xl shadow-[#e94560]/30">
+                <Button type="submit" className={`w-full ${themeConfig.button} text-white h-16 rounded-2xl text-xl font-bold shadow-xl`}>
                   CONFIRM ATTENDANCE
                 </Button>
               </form>
@@ -182,10 +215,10 @@ const EventPage = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-white/5 py-20 px-6 text-center mt-20 border-t border-white/5">
-        <p className="text-2xl mb-8 text-gray-300">Want a beautiful page for your own event?</p>
+      <div className="bg-black/5 py-20 px-6 text-center mt-20 border-t border-black/5">
+        <p className="text-2xl mb-8 opacity-70">Want a beautiful page for your own event?</p>
         <Link to="/">
-          <Button className="bg-[#e94560] hover:bg-[#d43d56] text-white px-12 py-8 rounded-full text-xl font-bold">
+          <Button className={`${themeConfig.button} text-white px-12 py-8 rounded-full text-xl font-bold`}>
             CREATE YOUR EVENT PAGE
           </Button>
         </Link>

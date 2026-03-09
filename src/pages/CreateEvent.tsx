@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
+import { Palette } from 'lucide-react';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const CreateEvent = () => {
     venue: '',
     message: '',
     plan: 'Basic',
+    theme: 'modern',
     photo: null as File | null
   });
 
@@ -64,6 +66,7 @@ const CreateEvent = () => {
         venue: formData.venue,
         message: formData.message,
         plan: formData.plan,
+        theme: formData.theme,
         slug,
         photo_url: photoUrl
       }).select().single();
@@ -119,6 +122,28 @@ const CreateEvent = () => {
                     <SelectItem value="Pro">Pro (₦20,000)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Palette className="w-4 h-4" /> Choose Page Theme
+              </Label>
+              <div className="grid grid-cols-3 gap-4">
+                {['modern', 'traditional', 'elegant'].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, theme: t })}
+                    className={`p-4 rounded-2xl border-2 transition-all capitalize font-bold ${
+                      formData.theme === t 
+                        ? 'border-[#e94560] bg-[#e94560]/5 text-[#e94560]' 
+                        : 'border-gray-100 hover:border-gray-200 text-gray-500'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
             </div>
 
