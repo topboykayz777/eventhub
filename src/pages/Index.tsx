@@ -1,99 +1,96 @@
 "use client";
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Share2, CreditCard, Users } from 'lucide-react';
+import Hero from '@/components/landing/Hero';
+import HowItWorks from '@/components/landing/HowItWorks';
+import PricingSection from '@/components/landing/PricingSection';
+import { motion } from 'framer-motion';
 
 const Index = () => {
-  const plans = [
-    { name: 'Basic', price: '10,000', features: ['Custom Event Page', 'RSVP Tracking', 'WhatsApp Share Button'] },
-    { name: 'Standard', price: '15,000', features: ['Everything in Basic', 'Photo Gallery', 'Countdown Timer', 'Email Notifications'] },
-    { name: 'Pro', price: '20,000', features: ['Everything in Standard', 'WhatsApp Blast to Guests', 'Priority Support', 'Custom Slug'] },
-  ];
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white selection:bg-[#e94560] selection:text-white">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="bg-[#1a1a2e] text-white py-20 px-6 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
-            Celebrate Your <span className="text-[#e94560]">Owambe</span> Digitally
-          </h1>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Create beautiful event pages, manage RSVPs, and share the joy with your loved ones on WhatsApp.
-          </p>
-          <Link to="/create-event">
-            <Button size="lg" className="bg-[#e94560] hover:bg-[#d43d56] text-white text-lg px-8 py-6 rounded-full shadow-xl transform transition hover:scale-105">
-              Create Your Event Page
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <main>
+        <Hero />
+        
+        <HowItWorks />
 
-      {/* Features */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-16 text-[#1a1a2e]">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-12">
-          <div className="text-center p-6">
-            <div className="bg-[#1a1a2e]/5 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Share2 className="text-[#e94560] w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-4">Create & Share</h3>
-            <p className="text-gray-600">Fill in your event details and get a unique link to share on WhatsApp.</p>
-          </div>
-          <div className="text-center p-6">
-            <div className="bg-[#1a1a2e]/5 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Users className="text-[#e94560] w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-4">Track RSVPs</h3>
-            <p className="text-gray-600">See exactly who is coming with our real-time guest list management.</p>
-          </div>
-          <div className="text-center p-6">
-            <div className="bg-[#1a1a2e]/5 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <CreditCard className="text-[#e94560] w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-4">Secure Payment</h3>
-            <p className="text-gray-600">Pay easily with Paystack and get your event page live instantly.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="bg-gray-50 py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-16 text-[#1a1a2e]">Simple Pricing</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {plans.map((plan) => (
-              <div key={plan.name} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <div className="text-4xl font-extrabold text-[#e94560] mb-6">
-                  ₦{plan.price}
-                </div>
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 text-gray-600">
-                      <CheckCircle className="text-green-500 w-5 h-5" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/create-event">
-                  <Button className="w-full bg-[#1a1a2e] hover:bg-[#2a2a4e] text-white py-6 rounded-xl">
-                    Choose {plan.name}
-                  </Button>
-                </Link>
-              </div>
+        {/* Social Proof / Stats Section */}
+        <section className="bg-[#1a1a2e] py-20 px-6">
+          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { label: 'Events Created', value: '5,000+' },
+              { label: 'RSVPs Tracked', value: '100k+' },
+              { label: 'Happy Hosts', value: '4.9/5' },
+              { label: 'WhatsApp Shares', value: '250k+' }
+            ].map((stat, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div className="text-3xl md:text-5xl font-black text-[#e94560] mb-2">{stat.value}</div>
+                <div className="text-gray-400 uppercase tracking-widest text-xs font-bold">{stat.label}</div>
+              </motion.div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <footer className="bg-[#1a1a2e] text-white py-12 px-6 text-center">
-        <p className="text-gray-400">© 2024 Event Hub Nigeria. All rights reserved.</p>
+        <PricingSection />
+
+        {/* Final CTA */}
+        <section className="py-32 px-6 text-center bg-white relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#e94560]/5 rounded-full blur-[100px] pointer-events-none" />
+          <div className="max-w-3xl mx-auto relative z-10">
+            <h2 className="text-4xl md:text-7xl font-black text-[#1a1a2e] mb-8 leading-tight">
+              READY TO DIGITIZE YOUR <span className="text-[#e94560]">OWAMBE?</span>
+            </h2>
+            <p className="text-xl text-gray-500 mb-12">
+              Join thousands of Nigerians making their events more organized and memorable.
+            </p>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <a href="/create-event" className="inline-block bg-[#e94560] text-white px-12 py-6 rounded-2xl text-2xl font-black shadow-2xl shadow-[#e94560]/30">
+                CREATE YOUR EVENT NOW
+              </a>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-[#1a1a2e] text-white py-20 px-6 border-t border-white/5">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+          <div className="col-span-2">
+            <div className="text-2xl font-black mb-6">
+              Event Hub <span className="text-[#e94560]">Nigeria</span>
+            </div>
+            <p className="text-gray-400 max-w-sm leading-relaxed">
+              The ultimate digital companion for Nigerian celebrations. From weddings to birthdays, we make your event management seamless.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-bold mb-6 uppercase tracking-widest text-sm text-[#e94560]">Quick Links</h4>
+            <ul className="space-y-4 text-gray-400">
+              <li><a href="/create-event" className="hover:text-white transition-colors">Create Event</a></li>
+              <li><a href="/vendors" className="hover:text-white transition-colors">Vendor Directory</a></li>
+              <li><a href="/login" className="hover:text-white transition-colors">Host Login</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold mb-6 uppercase tracking-widest text-sm text-[#e94560]">Support</h4>
+            <ul className="space-y-4 text-gray-400">
+              <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-gray-500 text-sm">
+          © 2024 Event Hub Nigeria. Built for the culture.
+        </div>
       </footer>
     </div>
   );
