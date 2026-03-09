@@ -2,15 +2,17 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share2 } from 'lucide-react';
+import { Download, Share2, QrCode } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface DigitalInviteProps {
   event: any;
+  rsvpId?: string;
 }
 
-const DigitalInvite = ({ event }: DigitalInviteProps) => {
+const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
@@ -19,7 +21,7 @@ const DigitalInvite = ({ event }: DigitalInviteProps) => {
     try {
       const canvas = await html2canvas(cardRef.current, {
         useCORS: true,
-        scale: 2, // Higher quality
+        scale: 2,
         backgroundColor: '#1a1a2e'
       });
       
@@ -63,21 +65,33 @@ const DigitalInvite = ({ event }: DigitalInviteProps) => {
         )}
 
         <div className="z-10">
-          <p className={`font-bold tracking-[0.3em] uppercase text-sm mb-4 ${currentTheme === 'modern' ? 'text-[#e94560]' : 'text-gray-500'}`}>You are Invited</p>
+          <p className={`font-bold tracking-[0.3em] uppercase text-sm mb-4 ${currentTheme === 'modern' ? 'text-[#e94560]' : 'text-gray-500'}`}>
+            {rsvpId ? 'Your Entry Pass' : 'You are Invited'}
+          </p>
           <h2 className={`text-3xl font-black uppercase italic leading-tight mb-2`}>{event.event_name}</h2>
           <div className={`w-12 h-1 mx-auto mb-6 ${accentColors[currentTheme]}`} />
         </div>
 
         <div className="z-10 space-y-4">
-          <div>
-            <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">Date & Time</p>
-            <p className="font-bold text-lg">
-              {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-            <p className={`font-bold ${currentTheme === 'modern' ? 'text-[#e94560]' : ''}`}>
-              {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          </div>
+          {rsvpId ? (
+            <div className="bg-white p-4 rounded-2xl inline-block mx-auto shadow-lg">
+              <QRCodeSVG 
+                value={rsvpId} 
+                size={120}
+                fgColor={currentTheme === 'traditional' ? '#5d4037' : '#000000'}
+              />
+            </div>
+          ) : (
+            <div>
+              <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">Date & Time</p>
+              <p className="font-bold text-lg">
+                {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+              <p className={`font-bold ${currentTheme === 'modern' ? 'text-[#e94560]' : ''}`}>
+                {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          )}
           
           <div>
             <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">Venue</p>
@@ -92,10 +106,10 @@ const DigitalInvite = ({ event }: DigitalInviteProps) => {
 
       <div className="flex gap-3 justify-center">
         <Button onClick={handleDownload} className="bg-[#e94560] hover:bg-[#d43d56] rounded-xl">
-          <Download className="w-4 h-4 mr-2" /> Download Card
+          <Download className="w-4 h-4 mr-2" /> {rsvpId ? 'Save Pass' : 'Download Card'}
         </Button>
         <Button variant="outline" className="rounded-xl border-gray-200 hover:bg-gray-50">
-          <Share2 className="w-4 h-4 mr-2" /> Share Card
+          <Share2 className="w-4 h-4 mr-2" /> Share
         </Button>
       </div>
     </div>

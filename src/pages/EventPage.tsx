@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Image as ImageIcon, Heart, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Image as ImageIcon, Heart, Sparkles, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
+import DigitalInvite from '@/components/DigitalInvite';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -18,6 +19,7 @@ const EventPage = () => {
   const [loading, setLoading] = useState(true);
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -46,11 +48,11 @@ const EventPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const { error } = await supabase.from('rsvps').insert({
+    const { data, error } = await supabase.from('rsvps').insert({
       event_id: event.id,
       guest_name: rsvpData.name,
       guest_phone: rsvpData.phone
-    });
+    }).select().single();
 
     if (error) {
       showError('Failed to submit RSVP');
@@ -62,7 +64,7 @@ const EventPage = () => {
         colors: ['#e94560', '#4ecca3', '#ffffff']
       });
       showSuccess('RSVP submitted! See you there.');
-      setRsvpData({ name: '', phone: '' });
+      setSubmittedRsvp(data);
     }
     setIsSubmitting(false);
   };
@@ -125,8 +127,6 @@ const EventPage = () => {
     }
   }[theme as 'modern' | 'traditional' | 'elegant'];
 
-  const hasGallery = (event.plan === 'Standard' || event.plan === 'Pro') && event.gallery_urls?.length > 0;
-
   return (
     <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} ${themeConfig.font} transition-colors duration-700`}>
       {/* Hero Section */}
@@ -141,14 +141,6 @@ const EventPage = () => {
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${themeConfig.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
-        {/* Floating Elements for Modern Theme */}
-        {theme === 'modern' && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-[20%] left-[10%] w-64 h-64 bg-[#e94560]/20 rounded-full blur-[100px] animate-blob" />
-            <div className="absolute bottom-[20%] right-[10%] w-64 h-64 bg-[#4ecca3]/20 rounded-full blur-[100px] animate-blob animation-delay-2000" />
-          </div>
-        )}
-
         <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 max-w-6xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -200,34 +192,6 @@ const EventPage = () => {
               </div>
             </motion.div>
 
-            {/* Gallery Section */}
-            {hasGallery && (
-              <div className="space-y-8">
-                <h2 className="text-4xl font-black flex items-center gap-4">
-                  <ImageIcon className={`${themeConfig.accent} w-10 h-10`} /> PHOTO GALLERY
-                </h2>
-                <div className="grid grid-cols-2 gap-6">
-                  {event.gallery_urls.map((url: string, i: number) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="relative group overflow-hidden rounded-[2.5rem] shadow-2xl"
-                    >
-                      <img 
-                        src={url} 
-                        className="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-110" 
-                        alt={`Gallery ${i}`} 
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -243,74 +207,80 @@ const EventPage = () => {
 
           {/* RSVP Column */}
           <div className="md:col-span-2">
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8 }}
-              className={`${themeConfig.rsvpCard} p-12 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <Sparkles className={`${theme === 'modern' ? 'text-[#e94560]' : 'text-current'} w-6 h-6`} />
-                <h2 className="text-4xl font-black tracking-tighter">RSVP NOW</h2>
-              </div>
-              <p className="opacity-60 mb-10 text-lg font-medium">Confirm your attendance to help the host plan better!</p>
-              
-              <form onSubmit={handleRSVP} className="space-y-8">
-                <div className="space-y-3">
-                  <Label htmlFor="name" className="text-xs font-black uppercase tracking-[0.2em] opacity-50">Full Name</Label>
-                  <Input 
-                    id="name" 
-                    required 
-                    className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-16 rounded-2xl text-xl px-6 font-bold`}
-                    placeholder="e.g. Tunde Afolayan"
-                    value={rsvpData.name}
-                    onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label htmlFor="phone" className="text-xs font-black uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
-                  <Input 
-                    id="phone" 
-                    required 
-                    className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-16 rounded-2xl text-xl px-6 font-bold`}
-                    placeholder="08012345678"
-                    value={rsvpData.phone}
-                    onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className={`w-full ${themeConfig.button} text-white h-20 rounded-2xl text-2xl font-black shadow-2xl transition-all hover:scale-105 active:scale-95`}
+            <AnimatePresence mode="wait">
+              {submittedRsvp ? (
+                <motion.div 
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`${themeConfig.rsvpCard} p-12 rounded-[3rem] shadow-2xl text-center`}
                 >
-                  {isSubmitting ? 'SUBMITTING...' : 'CONFIRM ATTENDANCE'}
-                </Button>
-              </form>
-
-              <div className="mt-10 pt-8 border-t border-current/10 text-center">
-                <p className="text-sm opacity-50 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                  <Heart className="w-4 h-4 fill-current" /> Built with Event Hub Nigeria
-                </p>
-              </div>
-            </motion.div>
+                  <div className="bg-green-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="text-green-500 w-10 h-10" />
+                  </div>
+                  <h2 className="text-3xl font-black mb-4">YOU'RE ON THE LIST!</h2>
+                  <p className="opacity-60 mb-8">Screenshot your entry pass below to show at the door.</p>
+                  
+                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
+                  
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setSubmittedRsvp(null)}
+                    className="mt-8 text-xs font-bold uppercase tracking-widest opacity-50 hover:opacity-100"
+                  >
+                    RSVP for another guest
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="form"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`${themeConfig.rsvpCard} p-12 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <Sparkles className={`${theme === 'modern' ? 'text-[#e94560]' : 'text-current'} w-6 h-6`} />
+                    <h2 className="text-4xl font-black tracking-tighter">RSVP NOW</h2>
+                  </div>
+                  <p className="opacity-60 mb-10 text-lg font-medium">Confirm your attendance to help the host plan better!</p>
+                  
+                  <form onSubmit={handleRSVP} className="space-y-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="name" className="text-xs font-black uppercase tracking-[0.2em] opacity-50">Full Name</Label>
+                      <Input 
+                        id="name" 
+                        required 
+                        className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-16 rounded-2xl text-xl px-6 font-bold`}
+                        placeholder="e.g. Tunde Afolayan"
+                        value={rsvpData.name}
+                        onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="phone" className="text-xs font-black uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
+                      <Input 
+                        id="phone" 
+                        required 
+                        className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-16 rounded-2xl text-xl px-6 font-bold`}
+                        placeholder="08012345678"
+                        value={rsvpData.phone}
+                        onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className={`w-full ${themeConfig.button} text-white h-20 rounded-2xl text-2xl font-black shadow-2xl transition-all hover:scale-105 active:scale-95`}
+                    >
+                      {isSubmitting ? 'SUBMITTING...' : 'CONFIRM ATTENDANCE'}
+                    </Button>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
-
-      {/* Footer CTA */}
-      <section className="py-32 px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/5 -z-10" />
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-3xl md:text-5xl font-black mb-10 leading-tight">WANT A STUNNING PAGE FOR YOUR OWN EVENT?</h3>
-          <Link to="/">
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button className={`${themeConfig.button} text-white px-16 py-10 rounded-full text-2xl font-black shadow-2xl`}>
-                CREATE YOUR EVENT PAGE
-              </Button>
-            </motion.div>
-          </Link>
-        </div>
-      </section>
     </div>
   );
 };
