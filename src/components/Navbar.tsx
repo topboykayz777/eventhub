@@ -1,15 +1,16 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu } from 'lucide-react';
+import { LogOut, User, Menu, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -21,52 +22,151 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setIsMenuOpen(false);
     navigate('/');
   };
 
-  return (
-    <motion.nav 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-[#0f0f0f]/90 backdrop-blur-md text-white py-6 px-8 sticky top-0 z-50 border-b border-white/5"
-    >
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 border border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
-            <span className="text-[#D4AF37] font-serif text-xl -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
-          </div>
-          <span className="text-lg font-light tracking-[0.3em] uppercase">Event Hub <span className="text-[#D4AF37]">NG</span></span>
-        </Link>
+  const navLinks = [
+    { name: 'The Directory', path: '/vendors' },
+    ...(session ? [{ name: 'Dashboard', path: '/dashboard' }] : []),
+  ];
 
-        <div className="hidden md:flex items-center gap-12">
-          <Link to="/vendors" className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors">The Directory</Link>
-          {session ? (
-            <div className="flex items-center gap-6">
-              <Link to="/dashboard" className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors">Dashboard</Link>
+  return (
+    <>
+      <motion.nav 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-[#0f0f0f]/90 backdrop-blur-md text-white py-6 px-8 sticky top-0 z-50 border-b border-white/5"
+      >
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 border border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
+              <span className="text-[#D4AF37] font-serif text-xl -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
+            </div>
+            <span className="text-lg font-light tracking-[0.3em] uppercase">Event Hub <span className="text-[#D4AF37]">NG</span></span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-12">
+            {navLinks.map((link) => (
+              <Link 
+                key={link.path} 
+                to={link.path} 
+                className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors"
+              >
+                {link.name}
+              </Link>
+            ))}
+            
+            {session ? (
               <button 
                 onClick={handleLogout}
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
               >
                 Logout
               </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-8">
-              <Link to="/login" className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors">Sign In</Link>
-              <Link to="/signup">
-                <Button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 py-6 text-[10px] font-bold tracking-[0.2em] uppercase">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="flex items-center gap-8">
+                <Link to="/login" className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors">Sign In</Link>
+                <Link to="/signup">
+                  <Button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 py-6 text-[10px] font-bold tracking-[0.2em] uppercase">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
 
-        <Button variant="ghost" className="md:hidden text-white">
-          <Menu size={20} />
-        </Button>
-      </div>
-    </motion.nav>
+          {/* Mobile Menu Toggle */}
+          <Button 
+            variant="ghost" 
+            className="md:hidden text-white hover:bg-white/5"
+            onClick={() => setIsMenuOpen(true)}
+          >
+            <Menu size={24} />
+          </Button>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[60] bg-[#0f0f0f] flex flex-col p-8 md:hidden"
+          >
+            <div className="flex justify-between items-center mb-16">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border border-[#D4AF37] flex items-center justify-center rotate-45">
+                  <span className="text-[#D4AF37] font-serif text-sm -rotate-45">E</span>
+                </div>
+                <span className="text-sm font-light tracking-[0.2em] uppercase">Event Hub <span className="text-[#D4AF37]">NG</span></span>
+              </div>
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/5"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <X size={24} />
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-10">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.path} 
+                  to={link.path} 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-2xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              
+              {session ? (
+                <>
+                  <Link 
+                    to="/profile" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-2xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
+                  >
+                    Profile
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="text-2xl font-serif italic text-[#D4AF37] text-left"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col gap-8 pt-8 border-t border-white/5">
+                  <Link 
+                    to="/login" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-xl font-bold uppercase tracking-[0.2em] text-white"
+                  >
+                    Sign In
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-sm font-bold tracking-[0.2em] uppercase">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-auto text-center">
+              <p className="text-[10px] text-gray-600 uppercase tracking-[0.3em]">© 2024 Event Hub Nigeria</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
