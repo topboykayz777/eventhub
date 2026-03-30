@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Image as ImageIcon, Heart, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -79,17 +79,17 @@ const EventPage = () => {
       <motion.div 
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="w-16 h-16 border-4 border-[#e94560] border-t-transparent rounded-full mb-4"
+        className="w-12 h-12 border-4 border-[#e94560] border-t-transparent rounded-full mb-4"
       />
-      <p className="text-xl font-black tracking-widest animate-pulse">LOADING EVENT...</p>
+      <p className="text-sm font-black tracking-widest animate-pulse">LOADING EVENT...</p>
     </div>
   );
 
   if (!event) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a1a] text-white p-6 text-center">
-      <div className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
-        <h1 className="text-4xl font-black mb-4 text-[#e94560]">EVENT NOT FOUND</h1>
-        <p className="text-gray-400 mb-8 text-lg">This event page might be inactive, pending payment, or the link is incorrect.</p>
+      <div className="bg-white/5 p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-white/10 max-w-md">
+        <h1 className="text-3xl md:text-4xl font-black mb-4 text-[#e94560]">EVENT NOT FOUND</h1>
+        <p className="text-gray-400 mb-8 text-base md:text-lg">This event page might be inactive, pending payment, or the link is incorrect.</p>
         <Link to="/"><Button className="bg-[#e94560] rounded-2xl px-12 py-6 text-lg font-black">GO HOME</Button></Link>
       </div>
     </div>
@@ -128,9 +128,9 @@ const EventPage = () => {
   }[theme as 'modern' | 'traditional' | 'elegant'];
 
   return (
-    <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} ${themeConfig.font} transition-colors duration-700`}>
+    <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} ${themeConfig.font} transition-colors duration-700 overflow-x-hidden`}>
       {/* Hero Section */}
-      <div className="relative h-[85vh] w-full overflow-hidden">
+      <div className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.2, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.6 }}
@@ -141,13 +141,13 @@ const EventPage = () => {
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${themeConfig.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
-        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 max-w-6xl mx-auto text-center">
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <h1 className={`text-6xl md:text-[10rem] font-black mb-12 tracking-tighter uppercase italic leading-[0.8] ${theme === 'traditional' ? 'font-serif' : ''}`}>
+            <h1 className={`text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-black mb-8 md:mb-12 tracking-tighter uppercase italic leading-[0.9] ${theme === 'traditional' ? 'font-serif' : ''}`}>
               {event.event_name}
             </h1>
             <div className="max-w-3xl mx-auto">
@@ -157,36 +157,36 @@ const EventPage = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-24">
-        <div className="grid md:grid-cols-5 gap-16">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24">
+        <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           {/* Details Column */}
-          <div className="md:col-span-3 space-y-16">
+          <div className="md:col-span-3 space-y-12 md:space-y-16">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className={`${themeConfig.card} p-12 rounded-[3rem] border`}
+              className={`${themeConfig.card} p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border`}
             >
-              <h2 className="text-4xl font-black mb-12 flex items-center gap-4">
-                <Calendar className={`${themeConfig.accent} w-10 h-10`} /> EVENT DETAILS
+              <h2 className="text-2xl md:text-4xl font-black mb-8 md:mb-12 flex items-center gap-4">
+                <Calendar className={`${themeConfig.accent} w-8 h-8 md:w-10 md:h-10`} /> EVENT DETAILS
               </h2>
-              <div className="space-y-12">
-                <div className="flex items-start gap-6 group">
-                  <div className={`${themeConfig.accent.replace('text-', 'bg-')}/10 p-4 rounded-2xl group-hover:scale-110 transition-transform`}>
-                    <MapPin className={`${themeConfig.accent} w-6 h-6`} />
+              <div className="space-y-8 md:space-y-12">
+                <div className="flex items-start gap-4 md:gap-6 group">
+                  <div className={`${themeConfig.accent.replace('text-', 'bg-')}/10 p-3 md:p-4 rounded-2xl group-hover:scale-110 transition-transform`}>
+                    <MapPin className={`${themeConfig.accent} w-5 h-5 md:w-6 md:h-6`} />
                   </div>
                   <div>
-                    <p className="font-black text-2xl mb-2 uppercase tracking-tight">Location</p>
-                    <p className="opacity-70 text-xl leading-relaxed">{event.venue}</p>
+                    <p className="font-black text-xl md:text-2xl mb-1 md:mb-2 uppercase tracking-tight">Location</p>
+                    <p className="opacity-70 text-lg md:text-xl leading-relaxed">{event.venue}</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-6 group">
-                  <div className={`${themeConfig.accent.replace('text-', 'bg-')}/10 p-4 rounded-2xl group-hover:scale-110 transition-transform`}>
-                    <MessageSquare className={`${themeConfig.accent} w-6 h-6`} />
+                <div className="flex items-start gap-4 md:gap-6 group">
+                  <div className={`${themeConfig.accent.replace('text-', 'bg-')}/10 p-3 md:p-4 rounded-2xl group-hover:scale-110 transition-transform`}>
+                    <MessageSquare className={`${themeConfig.accent} w-5 h-5 md:w-6 md:h-6`} />
                   </div>
                   <div>
-                    <p className="font-black text-2xl mb-2 uppercase tracking-tight">Host's Message</p>
-                    <p className="opacity-70 text-xl italic leading-relaxed">"{event.message}"</p>
+                    <p className="font-black text-xl md:text-2xl mb-1 md:mb-2 uppercase tracking-tight">Host's Message</p>
+                    <p className="opacity-70 text-lg md:text-xl italic leading-relaxed">"{event.message}"</p>
                   </div>
                 </div>
               </div>
@@ -198,9 +198,9 @@ const EventPage = () => {
             >
               <Button 
                 onClick={shareOnWhatsApp}
-                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-12 rounded-[2.5rem] text-3xl font-black flex items-center justify-center gap-4 shadow-2xl shadow-[#25D366]/20"
+                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-8 md:py-12 rounded-[2rem] md:rounded-[2.5rem] text-xl md:text-3xl font-black flex items-center justify-center gap-4 shadow-2xl shadow-[#25D366]/20"
               >
-                <Share2 className="w-10 h-10" /> SHARE ON WHATSAPP
+                <Share2 className="w-6 h-6 md:w-10 md:h-10" /> SHARE ON WHATSAPP
               </Button>
             </motion.div>
           </div>
@@ -213,20 +213,20 @@ const EventPage = () => {
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`${themeConfig.rsvpCard} p-12 rounded-[3rem] shadow-2xl text-center`}
+                  className={`${themeConfig.rsvpCard} p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-2xl text-center`}
                 >
-                  <div className="bg-green-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle2 className="text-green-500 w-10 h-10" />
+                  <div className="bg-green-500/10 w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="text-green-500 w-8 h-8 md:w-10 md:h-10" />
                   </div>
-                  <h2 className="text-3xl font-black mb-4">YOU'RE ON THE LIST!</h2>
-                  <p className="opacity-60 mb-8">Screenshot your entry pass below to show at the door.</p>
+                  <h2 className="text-2xl md:text-3xl font-black mb-4">YOU'RE ON THE LIST!</h2>
+                  <p className="opacity-60 mb-8 text-sm md:text-base">Screenshot your entry pass below to show at the door.</p>
                   
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
                   
                   <Button 
                     variant="ghost" 
                     onClick={() => setSubmittedRsvp(null)}
-                    className="mt-8 text-xs font-bold uppercase tracking-widest opacity-50 hover:opacity-100"
+                    className="mt-8 text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100"
                   >
                     RSVP for another guest
                   </Button>
@@ -236,32 +236,32 @@ const EventPage = () => {
                   key="form"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`${themeConfig.rsvpCard} p-12 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}
+                  className={`${themeConfig.rsvpCard} p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <Sparkles className={`${theme === 'modern' ? 'text-[#e94560]' : 'text-current'} w-6 h-6`} />
-                    <h2 className="text-4xl font-black tracking-tighter">RSVP NOW</h2>
+                    <Sparkles className={`${theme === 'modern' ? 'text-[#e94560]' : 'text-current'} w-5 h-5 md:w-6 md:h-6`} />
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tighter">RSVP NOW</h2>
                   </div>
-                  <p className="opacity-60 mb-10 text-lg font-medium">Confirm your attendance to help the host plan better!</p>
+                  <p className="opacity-60 mb-8 md:mb-10 text-base md:text-lg font-medium">Confirm your attendance to help the host plan better!</p>
                   
-                  <form onSubmit={handleRSVP} className="space-y-8">
-                    <div className="space-y-3">
-                      <Label htmlFor="name" className="text-xs font-black uppercase tracking-[0.2em] opacity-50">Full Name</Label>
+                  <form onSubmit={handleRSVP} className="space-y-6 md:space-y-8">
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">Full Name</Label>
                       <Input 
                         id="name" 
                         required 
-                        className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-16 rounded-2xl text-xl px-6 font-bold`}
+                        className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-14 md:h-16 rounded-2xl text-lg md:text-xl px-6 font-bold`}
                         placeholder="e.g. Tunde Afolayan"
                         value={rsvpData.name}
                         onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
                       />
                     </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="phone" className="text-xs font-black uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
                       <Input 
                         id="phone" 
                         required 
-                        className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-16 rounded-2xl text-xl px-6 font-bold`}
+                        className={`${theme === 'modern' ? 'bg-black/5' : 'bg-white/10'} border-none h-14 md:h-16 rounded-2xl text-lg md:text-xl px-6 font-bold`}
                         placeholder="08012345678"
                         value={rsvpData.phone}
                         onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
@@ -270,7 +270,7 @@ const EventPage = () => {
                     <Button 
                       type="submit" 
                       disabled={isSubmitting}
-                      className={`w-full ${themeConfig.button} text-white h-20 rounded-2xl text-2xl font-black shadow-2xl transition-all hover:scale-105 active:scale-95`}
+                      className={`w-full ${themeConfig.button} text-white h-16 md:h-20 rounded-2xl text-xl md:text-2xl font-black shadow-2xl transition-all hover:scale-105 active:scale-95`}
                     >
                       {isSubmitting ? 'SUBMITTING...' : 'CONFIRM ATTENDANCE'}
                     </Button>

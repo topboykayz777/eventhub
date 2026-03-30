@@ -35,6 +35,21 @@
   .animate-slow-zoom {
     animation: slow-zoom 20s linear infinite alternate;
   }
+
+  /* Custom scrollbar for a cleaner look */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.4);
+  }
 }
 
 @keyframes reveal {
@@ -48,6 +63,11 @@
 }
 
 body {
-  @apply bg-[#0f0f0f] text-white antialiased;
+  @apply bg-[#0f0f0f] text-white antialiased overflow-x-hidden;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+}
+
+/* Ensure all images are responsive by default */
+img {
+  @apply max-w-full h-auto;
 }
