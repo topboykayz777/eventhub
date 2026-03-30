@@ -8,6 +8,33 @@ import { useQuery } from '@tanstack/react-query';
 import { Calendar, MapPin, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const DEFAULT_FEATURED = [
+  {
+    id: 'f1',
+    event_name: 'The Grand Lagos Gala',
+    slug: 'lagos-gala-2024',
+    venue: 'Eko Hotel & Suites',
+    event_date: '2024-12-15',
+    photo_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'f2',
+    event_name: 'Afolayan Wedding',
+    slug: 'afolayan-wedding',
+    venue: 'The Monarch Event Center',
+    event_date: '2024-11-20',
+    photo_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'f3',
+    event_name: 'Heritage Night',
+    slug: 'heritage-night',
+    venue: 'Transcorp Hilton, Abuja',
+    event_date: '2024-10-05',
+    photo_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80'
+  }
+];
+
 const FeaturedEvents = () => {
   const { data: featuredEvents, isLoading } = useQuery({
     queryKey: ['featured-events'],
@@ -17,11 +44,11 @@ const FeaturedEvents = () => {
         .select('*')
         .eq('is_featured', true)
         .limit(3);
-      return data || [];
+      return data && data.length > 0 ? data : DEFAULT_FEATURED;
     }
   });
 
-  if (isLoading || !featuredEvents?.length) return null;
+  if (isLoading) return null;
 
   return (
     <section className="py-32 px-6 bg-[#0a0a0a]">
@@ -39,7 +66,7 @@ const FeaturedEvents = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-12">
-          {featuredEvents.map((event, i) => (
+          {(featuredEvents || DEFAULT_FEATURED).map((event, i) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 20 }}
@@ -50,7 +77,7 @@ const FeaturedEvents = () => {
               <Link to={`/event/${event.slug}`}>
                 <div className="aspect-[4/5] overflow-hidden border border-white/10 relative">
                   <img 
-                    src={event.photo_url || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80'} 
+                    src={event.photo_url} 
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
                     alt={event.event_name}
                   />
