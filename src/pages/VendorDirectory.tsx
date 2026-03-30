@@ -12,6 +12,69 @@ import { showSuccess, showError } from '@/utils/toast';
 
 const categories = ["All", "Catering", "Decor", "Photography", "Music", "Venues"];
 
+const DEFAULT_VENDORS = [
+  {
+    id: 'v1',
+    name: 'The Gourmet Atelier',
+    category: 'Catering',
+    location: 'Victoria Island, Lagos',
+    photo_url: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80',
+    phone: '08012345678',
+    instagram: '@gourmet_atelier',
+    is_featured: true
+  },
+  {
+    id: 'v2',
+    name: 'Royal Blooms Decor',
+    category: 'Decor',
+    location: 'Maitama, Abuja',
+    photo_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80',
+    phone: '08023456789',
+    instagram: '@royalblooms',
+    is_featured: true
+  },
+  {
+    id: 'v3',
+    name: 'Lumina Studios',
+    category: 'Photography',
+    location: 'Lekki Phase 1, Lagos',
+    photo_url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80',
+    phone: '08034567890',
+    instagram: '@lumina_studios',
+    is_featured: true
+  },
+  {
+    id: 'v4',
+    name: 'The Grand Ballroom',
+    category: 'Venues',
+    location: 'Ikeja, Lagos',
+    photo_url: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80',
+    phone: '08045678901',
+    instagram: '@grandballroom_ng',
+    is_featured: false
+  },
+  {
+    id: 'v5',
+    name: 'Vibe Masters DJ',
+    category: 'Music',
+    location: 'Port Harcourt',
+    photo_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80',
+    phone: '08056789012',
+    instagram: '@vibemasters_dj',
+    is_featured: false
+  },
+  {
+    id: 'v6',
+    name: 'Silk & Satin Events',
+    category: 'Decor',
+    location: 'Enugu',
+    photo_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80',
+    phone: '08067890123',
+    instagram: '@silksatin_events',
+    is_featured: false
+  }
+];
+
 const VendorDirectory = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +94,10 @@ const VendorDirectory = () => {
 
     if (error) {
       console.error("Error fetching vendors:", error);
+      setVendors(DEFAULT_VENDORS);
     } else {
-      setVendors(data || []);
+      // Use default vendors if database is empty
+      setVendors(data && data.length > 0 ? data : DEFAULT_VENDORS);
     }
     setLoading(false);
   };
@@ -60,7 +125,6 @@ const VendorDirectory = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
-        {/* Header Section */}
         <div className="text-center mb-12 md:mb-20">
           <motion.span 
             initial={{ opacity: 0 }}
@@ -81,7 +145,6 @@ const VendorDirectory = () => {
           </p>
         </div>
 
-        {/* Marketplace Advertising Slot */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -104,7 +167,6 @@ const VendorDirectory = () => {
           </div>
         </motion.div>
 
-        {/* Search & Filter Section */}
         <div className="mb-16 md:mb-24 space-y-8 md:space-y-12">
           <div className="relative max-w-3xl mx-auto px-2 md:px-0">
             <Search className="absolute left-6 md:left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-5 h-5" />
@@ -133,7 +195,6 @@ const VendorDirectory = () => {
           </div>
         </div>
 
-        {/* Vendor Grid */}
         {loading ? (
           <div className="text-center py-20 text-gray-500 tracking-[0.3em] uppercase text-[10px] font-bold animate-pulse">
             Curating Excellence...

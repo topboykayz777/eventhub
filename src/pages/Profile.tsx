@@ -35,19 +35,46 @@ const Profile = () => {
       return;
     }
 
-    const { data, error } = await supabase
+    // Use maybeSingle to avoid error if profile is missing
+    let { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) showError(error.message);
-    else setProfile({
-      full_name: data.full_name || '',
-      email: data.email || '',
-      phone: data.phone || '',
-      profile_image_url: data.profile_image_url || ''
-    });
+    if (error) {
+      showError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    // If profile doesn't exist, create it on the fly
+    if (!data) {
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({ 
+          id: user.id, 
+          email: user.email,
+          full_name: user.user_metadata?.full_name || ''
+        })
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error("Profile creation failed:", insertError);
+      } else {
+        data = newProfile;
+      }
+    }
+
+    if (data) {
+      setProfile({
+        full_name: data.full_name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        profile_image_url: data.profile_image_url || ''
+      });
+    }
     setLoading(false);
   };
 
@@ -72,7 +99,6 @@ const Profile = () => {
       
       const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
       
-      // Update profile table immediately
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ profile_image_url: publicUrl })
@@ -139,7 +165,6 @@ const Profile = () => {
         </div>
 
         <div className="grid md:grid-cols-12 gap-12">
-          {/* Sidebar / Avatar */}
           <div className="md:col-span-4">
             <GlassCard className="p-10 text-center border-white/5">
               <div className="relative w-32 h-32 mx-auto mb-8">
@@ -180,7 +205,6 @@ const Profile = () => {
             </GlassCard>
           </div>
 
-          {/* Main Form */}
           <div className="md:col-span-8">
             <GlassCard className="p-12 border-white/5">
               <form onSubmit={handleSave} className="space-y-10">
