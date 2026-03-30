@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Phone, Mail, Shield, Camera, ArrowLeft } from 'lucide-react';
+import { User, Phone, Mail, Shield, Camera, ArrowLeft, Upload, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState({
     full_name: '',
     email: '',
@@ -48,6 +49,44 @@ const Profile = () => {
       profile_image_url: data.profile_image_url || ''
     });
     setLoading(false);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    
+    const file = e.target.files[0];
+    setUploading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('event-photos')
+        .upload(fileName, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
+      
+      // Update profile table immediately
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_image_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile(prev => ({ ...prev, profile_image_url: publicUrl }));
+      showSuccess('Portrait updated.');
+    } catch (error: any) {
+      showError('Upload failed: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -113,9 +152,21 @@ const Profile = () => {
                     </div>
                   )}
                 </div>
-                <button className="absolute bottom-0 right-0 bg-[#D4AF37] p-2 rounded-full text-black hover:scale-110 transition-transform">
-                  <Camera size={16} />
-                </button>
+                <Label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-[#D4AF37] p-3 rounded-full text-black hover:scale-110 transition-transform cursor-pointer shadow-xl">
+                  {uploading ? (
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Camera size={16} />
+                  )}
+                  <input 
+                    id="avatar-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                  />
+                </Label>
               </div>
               <h3 className="text-xl font-serif italic mb-2">{profile.full_name || 'Elite Host'}</h3>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-8">Member since 2026</p>
