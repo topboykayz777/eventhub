@@ -87,19 +87,22 @@ const VendorDirectory = () => {
   }, []);
 
   const fetchVendors = async () => {
-    const { data, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .order('is_featured', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('*')
+        .order('is_featured', { ascending: false });
 
-    if (error) {
-      console.error("Error fetching vendors:", error);
-      setVendors(DEFAULT_VENDORS);
-    } else {
-      // Use default vendors if database is empty
+      if (error) throw error;
+      
+      // If database is empty, use our high-quality defaults
       setVendors(data && data.length > 0 ? data : DEFAULT_VENDORS);
+    } catch (err) {
+      console.error("Error fetching vendors:", err);
+      setVendors(DEFAULT_VENDORS);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const toggleShortlist = (vendorId: string) => {
@@ -144,28 +147,6 @@ const VendorDirectory = () => {
             A curated selection of Nigeria's most prestigious event professionals, from master caterers to world-class venues.
           </p>
         </div>
-
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-16 md:mb-24 p-1 border border-[#D4AF37]/30 bg-gradient-to-r from-[#D4AF37]/5 to-transparent mx-2 md:mx-0"
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 gap-6 md:gap-8">
-            <div className="flex items-center gap-4 md:gap-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
-                <ExternalLink className="text-[#D4AF37] w-6 h-6 md:w-8 md:h-8" />
-              </div>
-              <div>
-                <span className="text-[8px] font-black tracking-[0.2em] md:tracking-[0.3em] text-[#D4AF37] uppercase mb-1 md:mb-2 block">Sponsored Spotlight</span>
-                <h4 className="text-lg md:text-xl font-serif italic text-white">Luxury Marketplace NG</h4>
-                <p className="text-[10px] md:text-xs text-gray-500 tracking-wide">Exclusive access to premium event rentals and decor.</p>
-              </div>
-            </div>
-            <Button className="w-full md:w-auto bg-[#D4AF37] text-black rounded-none px-8 md:px-10 py-5 md:py-6 text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-white transition-all">
-              Visit Marketplace
-            </Button>
-          </div>
-        </motion.div>
 
         <div className="mb-16 md:mb-24 space-y-8 md:space-y-12">
           <div className="relative max-w-3xl mx-auto px-2 md:px-0">
