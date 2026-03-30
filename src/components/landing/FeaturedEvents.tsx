@@ -12,25 +12,25 @@ const DEFAULT_FEATURED = [
   {
     id: 'f1',
     event_name: 'The Grand Lagos Gala',
-    slug: 'lagos-gala-2026',
+    slug: 'lagos-gala-2025',
     venue: 'Eko Hotel & Suites',
-    event_date: '2026-12-15',
+    event_date: '2025-12-15',
     photo_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80'
   },
   {
     id: 'f2',
     event_name: 'Afolayan Wedding',
-    slug: 'afolayan-wedding',
+    slug: 'afolayan-wedding-2026',
     venue: 'The Monarch Event Center',
-    event_date: '2026-11-20',
+    event_date: '2026-01-20',
     photo_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'
   },
   {
     id: 'f3',
     event_name: 'Heritage Night',
-    slug: 'heritage-night',
+    slug: 'heritage-night-2026',
     venue: 'Transcorp Hilton, Abuja',
-    event_date: '2026-10-05',
+    event_date: '2026-03-10',
     photo_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80'
   }
 ];
