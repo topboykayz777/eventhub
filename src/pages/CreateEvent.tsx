@@ -10,13 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
-import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check } from 'lucide-react';
+import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     eventName: '',
     eventDate: '',
@@ -24,17 +25,42 @@ const CreateEvent = () => {
     message: '',
     plan: 'Basic',
     theme: 'modern',
-    photo: null as File | null
+    photo_url: ''
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, photo: e.target.files[0] });
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    
+    const file = e.target.files[0];
+    setUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      
+      // Upload to 'event-photos' bucket
+      const { error: uploadError } = await supabase.storage
+        .from('event-photos')
+        .upload(fileName, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
+      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      showSuccess('Portrait uploaded successfully.');
+    } catch (error: any) {
+      showError('Upload failed: ' + error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.photo_url) {
+      showError('Please upload a cover portrait.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -46,20 +72,7 @@ const CreateEvent = () => {
 
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
       const lastName = profile?.full_name?.split(' ').pop()?.toLowerCase() || 'event';
-      const slug = `${formData.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}`;
-
-      let photoUrl = '';
-      if (formData.photo) {
-        const fileExt = formData.photo.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('event-photos')
-          .upload(fileName, formData.photo);
-        
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
-        photoUrl = publicUrl;
-      }
+      const slug = `${formData.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}-${Math.floor(Math.random() * 1000)}`;
 
       const { data: event, error } = await supabase.from('events').insert({
         host_id: user.id,
@@ -70,11 +83,12 @@ const CreateEvent = () => {
         plan: formData.plan,
         theme: formData.theme,
         slug,
-        photo_url: photoUrl
+        photo_url: formData.photo_url
       }).select().single();
 
       if (error) throw error;
 
+      showSuccess('Event created! Proceeding to activation.');
       navigate(`/payment/${event.id}`);
     } catch (error: any) {
       showError(error.message);
@@ -93,12 +107,6 @@ const CreateEvent = () => {
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
       
-      {/* Background Decorative Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#e94560]/5 blur-[120px]" />
-      </div>
-
       <div className="max-w-5xl mx-auto py-24 px-6 relative z-10">
         <div className="text-center mb-20">
           <motion.span 
@@ -115,13 +123,9 @@ const CreateEvent = () => {
           >
             Design Your <span className="text-[#D4AF37]">Masterpiece</span>
           </motion.h1>
-          <p className="text-gray-400 max-w-xl mx-auto font-light tracking-wide">
-            Every detail matters. Fill in the details below to create an unforgettable digital experience for your guests.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-12">
-          {/* Section 1: Identity */}
           <GlassCard className="p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
@@ -132,9 +136,8 @@ const CreateEvent = () => {
             
             <div className="grid md:grid-cols-2 gap-10">
               <div className="space-y-3">
-                <Label htmlFor="eventName" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Event Title</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Event Title</Label>
                 <Input 
-                  id="eventName" 
                   required 
                   placeholder="e.g. The Balogun Wedding"
                   className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
@@ -143,10 +146,10 @@ const CreateEvent = () => {
                 />
               </div>
               <div className="space-y-3">
-                <Label htmlFor="plan" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</Label>
                 <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="Basic">
                   <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-none text-lg font-light">
-                    <SelectValue placeholder="Select a plan" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
                     <SelectItem value="Basic">Basic (₦10,000)</SelectItem>
@@ -158,20 +161,18 @@ const CreateEvent = () => {
             </div>
           </GlassCard>
 
-          {/* Section 2: Logistics */}
           <GlassCard className="p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
                 <Calendar className="text-[#D4AF37] w-5 h-5" />
               </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Logistics & Venue</h2>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Logistics</h2>
             </div>
             
             <div className="grid md:grid-cols-2 gap-10">
               <div className="space-y-3">
-                <Label htmlFor="eventDate" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
                 <Input 
-                  id="eventDate" 
                   type="datetime-local" 
                   required 
                   className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
@@ -180,109 +181,72 @@ const CreateEvent = () => {
                 />
               </div>
               <div className="space-y-3">
-                <Label htmlFor="venue" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Address</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-5 h-5" />
-                  <Input 
-                    id="venue" 
-                    required 
-                    placeholder="Eko Hotel & Suites, VI, Lagos"
-                    className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                    value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Section 3: Aesthetic */}
-          <GlassCard className="p-12 border-white/5">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <Palette className="text-[#D4AF37] w-5 h-5" />
-              </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Visual Aesthetic</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              {themes.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, theme: t.id })}
-                  className={`relative p-8 border transition-all duration-500 text-left group ${
-                    formData.theme === t.id 
-                      ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
-                      : 'border-white/5 hover:border-white/20 bg-white/5'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-8">
-                    <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${formData.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-500'}`}>
-                      {t.label}
-                    </span>
-                    {formData.theme === t.id && <Check className="text-[#D4AF37] w-4 h-4" />}
-                  </div>
-                  <div className="flex gap-2">
-                    <div className={`w-8 h-8 ${t.accent} border border-white/10`} />
-                    <div className={`w-8 h-8 ${t.color} border border-white/10`} />
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="photo" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait</Label>
-              <div className="relative group">
-                <div className="h-40 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-4 group-hover:border-[#D4AF37]/30 transition-colors">
-                  <ImageIcon className="text-gray-600 w-8 h-8" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                    {formData.photo ? formData.photo.name : 'Upload High-Resolution Image'}
-                  </span>
-                </div>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Address</Label>
                 <Input 
-                  id="photo" 
-                  type="file" 
-                  accept="image/*" 
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={handleFileChange} 
+                  required 
+                  placeholder="Eko Hotel & Suites, VI, Lagos"
+                  className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                 />
               </div>
             </div>
           </GlassCard>
 
-          {/* Section 4: Message */}
           <GlassCard className="p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <Sparkles className="text-[#D4AF37] w-5 h-5" />
+                <ImageIcon className="text-[#D4AF37] w-5 h-5" />
               </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Host's Message</h2>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Cover Portrait</h2>
             </div>
             
-            <div className="space-y-3">
-              <Label htmlFor="message" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Personal Note to Guests</Label>
-              <Textarea 
-                id="message" 
-                placeholder="Share a few words about your celebration..."
-                className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light leading-relaxed"
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              />
+            <div className="space-y-6">
+              {formData.photo_url ? (
+                <div className="relative aspect-video w-full overflow-hidden border border-white/10">
+                  <img src={formData.photo_url} className="w-full h-full object-cover" alt="Preview" />
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({ ...formData, photo_url: '' })}
+                    className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white hover:bg-red-500 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Label htmlFor="photo-upload" className="cursor-pointer">
+                    <div className="h-64 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-4 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
+                      {uploading ? (
+                        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="text-gray-600 w-10 h-10" />
+                          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Upload High-Resolution Portrait</span>
+                        </>
+                      )}
+                    </div>
+                  </Label>
+                  <Input 
+                    id="photo-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden"
+                    onChange={handleFileChange} 
+                    disabled={uploading}
+                  />
+                </div>
+              )}
             </div>
           </GlassCard>
 
           <div className="pt-12">
             <Button 
               type="submit" 
-              disabled={loading}
-              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 group"
+              disabled={loading || uploading}
+              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
             >
-              {loading ? 'Processing...' : (
-                <span className="flex items-center justify-center gap-4">
-                  Finalize & Proceed to Payment <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-                </span>
-              )}
+              {loading ? 'Processing...' : 'Finalize & Proceed'}
             </Button>
           </div>
         </form>

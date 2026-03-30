@@ -17,11 +17,8 @@ const Index = () => {
       
       <main>
         <Hero />
-        
-        {/* Advertising Section: Featured Events */}
         <FeaturedEvents />
         
-        {/* Refined Stats Section */}
         <section className="py-32 border-y border-white/5">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-16">
@@ -47,7 +44,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Editorial Content Section */}
         <section className="py-40 px-6 bg-[#0f0f0f]">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-center gap-24">
@@ -87,7 +83,6 @@ const Index = () => {
 
         <PricingSection />
 
-        {/* Final CTA */}
         <section className="py-40 px-6 text-center bg-[#0a0a0a] relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
             <h2 className="text-4xl md:text-7xl font-serif italic text-white mb-12 leading-tight">
@@ -112,7 +107,7 @@ const Index = () => {
               Event Hub <span className="text-[#D4AF37]">NG</span>
             </div>
             <p className="text-gray-500 max-w-md text-sm leading-relaxed font-light tracking-wide">
-              The definitive platform for luxury event management in Nigeria. Curating excellence since 2024.
+              The definitive platform for luxury event management in Nigeria. Curating excellence since 2026.
             </p>
           </div>
           <div>
@@ -133,7 +128,7 @@ const Index = () => {
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-32 pt-12 border-t border-white/5 text-center text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em]">
-          © 2024 Event Hub Nigeria. All Rights Reserved.
+          © 2026 Event Hub Nigeria. All Rights Reserved.
         </div>
       </footer>
     </div>

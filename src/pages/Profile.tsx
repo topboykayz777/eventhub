@@ -7,15 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Phone, Mail } from 'lucide-react';
+import { User, Phone, Mail, Shield, Camera, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import GlassCard from '@/components/ui/GlassCard';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState({
     full_name: '',
     email: '',
-    phone: ''
+    phone: '',
+    profile_image_url: ''
   });
 
   useEffect(() => {
@@ -24,7 +29,10 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     const { data, error } = await supabase
       .from('profiles')
@@ -36,7 +44,8 @@ const Profile = () => {
     else setProfile({
       full_name: data.full_name || '',
       email: data.email || '',
-      phone: data.phone || ''
+      phone: data.phone || '',
+      profile_image_url: data.profile_image_url || ''
     });
     setLoading(false);
   };
@@ -57,69 +66,122 @@ const Profile = () => {
       .eq('id', user.id);
 
     if (error) showError(error.message);
-    else showSuccess('Profile updated successfully!');
+    else showSuccess('Your profile has been updated.');
     setSaving(false);
   };
 
-  if (loading) return <div className="text-center mt-20">Loading...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
+      <div className="w-12 h-12 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
-      <div className="max-w-2xl mx-auto py-12 px-6">
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="bg-[#e94560]/10 p-4 rounded-2xl">
-              <User className="text-[#e94560] w-8 h-8" />
-            </div>
-            <h1 className="text-3xl font-bold text-[#1a1a2e]">Your Profile</h1>
+      
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
+      </div>
+
+      <div className="max-w-4xl mx-auto py-24 px-6 relative z-10">
+        <div className="flex items-center justify-between mb-16">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')} 
+            className="text-gray-400 hover:text-[#D4AF37] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+          </Button>
+          <div className="text-right">
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">Account Settings</span>
+            <h1 className="text-4xl font-serif italic">The Profile</h1>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-12 gap-12">
+          {/* Sidebar / Avatar */}
+          <div className="md:col-span-4">
+            <GlassCard className="p-10 text-center border-white/5">
+              <div className="relative w-32 h-32 mx-auto mb-8">
+                <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#D4AF37]/30 bg-white/5">
+                  {profile.profile_image_url ? (
+                    <img src={profile.profile_image_url} className="w-full h-full object-cover" alt="Avatar" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-12 h-12 text-gray-600" />
+                    </div>
+                  )}
+                </div>
+                <button className="absolute bottom-0 right-0 bg-[#D4AF37] p-2 rounded-full text-black hover:scale-110 transition-transform">
+                  <Camera size={16} />
+                </button>
+              </div>
+              <h3 className="text-xl font-serif italic mb-2">{profile.full_name || 'Elite Host'}</h3>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-8">Member since 2026</p>
+              
+              <div className="pt-8 border-t border-white/5 space-y-4">
+                <div className="flex items-center gap-3 text-left">
+                  <Shield className="w-4 h-4 text-[#D4AF37]" />
+                  <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-400">Verified Account</span>
+                </div>
+              </div>
+            </GlassCard>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address (Read-only)</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <Input id="email" value={profile.email} disabled className="pl-10 bg-gray-50" />
-              </div>
-            </div>
+          {/* Main Form */}
+          <div className="md:col-span-8">
+            <GlassCard className="p-12 border-white/5">
+              <form onSubmit={handleSave} className="space-y-10">
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Identity</Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                    <Input 
+                      required 
+                      className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                      value={profile.full_name}
+                      onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                      placeholder="Full Name"
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <Input 
-                  id="name" 
-                  required 
-                  value={profile.full_name}
-                  onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Contact Details</Label>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 w-4 h-4" />
+                      <Input 
+                        disabled 
+                        className="h-16 pl-14 bg-white/5 border-white/10 rounded-none opacity-50 cursor-not-allowed"
+                        value={profile.email}
+                      />
+                    </div>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                      <Input 
+                        className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                        value={profile.phone}
+                        onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                        placeholder="WhatsApp Number"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">WhatsApp Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <Input 
-                  id="phone" 
-                  placeholder="08012345678"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <Button 
-              type="submit" 
-              disabled={saving}
-              className="w-full bg-[#1a1a2e] hover:bg-[#2a2a4e] text-white py-6 rounded-xl text-lg"
-            >
-              {saving ? 'Saving...' : 'Update Profile'}
-            </Button>
-          </form>
+                <div className="pt-8">
+                  <Button 
+                    type="submit" 
+                    disabled={saving}
+                    className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+                  >
+                    {saving ? 'Updating...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </form>
+            </GlassCard>
+          </div>
         </div>
       </div>
     </div>
