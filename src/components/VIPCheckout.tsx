@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { usePaystackPayment } from 'react-paystack';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,42 +13,7 @@ const VIPCheckout = () => {
   const [email, setEmail] = useState('');
   const [isPaid, setIsPaid] = useState(false);
   const [reference, setReference] = useState('');
-
-  const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-
-  const config = {
-    reference: (new Date()).getTime().toString(),
-    email: email,
-    amount: 5000 * 100, // ₦5,000 in kobo
-    publicKey: paystackKey || 'pk_test_your_key',
-  };
-
-  const initializePayment = usePaystackPayment(config);
-
-  const onSuccess = async (response: any) => {
-    try {
-      // The response from Paystack contains the reference
-      const ref = response.reference || config.reference;
-      
-      const { error } = await supabase.from('tickets').insert({
-        user_email: email,
-        reference: ref
-      });
-
-      if (error) throw error;
-
-      setReference(ref);
-      setIsPaid(true);
-      showSuccess("VIP Ticket Secured.");
-    } catch (err: any) {
-      console.error("Database error:", err);
-      showError("Payment successful, but failed to save ticket. Please contact support.");
-    }
-  };
-
-  const onClose = () => {
-    showError("Transaction cancelled.");
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,15 +23,49 @@ const VIPCheckout = () => {
       return;
     }
 
+    // Vite requires VITE_ prefix for client-side env vars
+    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+
     if (!paystackKey || paystackKey === 'pk_test_your_key') {
-      console.error("Paystack Public Key is missing or invalid in environment variables.");
-      showError("Payment system is not configured correctly.");
+      console.error("Paystack Public Key is missing. Ensure it starts with VITE_ in your secrets.");
+      showError("Payment system configuration error.");
       return;
     }
 
-    // In react-paystack v6, callbacks must be passed as an object
+    setLoading(true);
+
+    // Using the global PaystackPop from the script tag in index.html
     // @ts-ignore
-    initializePayment({ onSuccess, onClose });
+    const handler = PaystackPop.setup({
+      key: paystackKey,
+      email: email,
+      amount: 5000 * 100, // ₦5,000 in kobo
+      currency: 'NGN',
+      callback: async (response: any) => {
+        const ref = response.reference;
+        
+        const { error } = await supabase.from('tickets').insert({
+          user_email: email,
+          reference: ref
+        });
+
+        if (error) {
+          console.error("Supabase error:", error);
+          showError("Payment verified, but failed to save ticket.");
+        } else {
+          setReference(ref);
+          setIsPaid(true);
+          showSuccess("VIP Ticket Secured.");
+        }
+        setLoading(false);
+      },
+      onClose: () => {
+        showError("Transaction cancelled.");
+        setLoading(false);
+      }
+    });
+
+    handler.openIframe();
   };
 
   if (isPaid) {
@@ -118,9 +116,10 @@ const VIPCheckout = () => {
 
           <Button 
             type="submit"
+            disabled={loading}
             className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-xl text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500 shadow-xl shadow-[#D4AF37]/10"
           >
-            Buy VIP Ticket <ArrowRight className="ml-2 w-4 h-4" />
+            {loading ? 'Initializing...' : 'Buy VIP Ticket'} <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </form>
 
