@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Users, CreditCard, Sparkles } from 'lucide-react';
+import { Share2, Users, Sparkles } from 'lucide-react';
 
 const steps = [
   {
@@ -46,7 +46,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {steps.map((step, index) => (
             <motion.div
               key={index}

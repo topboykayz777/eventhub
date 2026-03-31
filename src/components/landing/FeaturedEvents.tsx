@@ -53,19 +53,19 @@ const FeaturedEvents = () => {
   return (
     <section className="py-32 px-6 bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-16">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
           <div>
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Spotlight</span>
             <h2 className="text-4xl md:text-6xl font-serif italic text-white">Featured <span className="text-[#D4AF37]">Celebrations</span></h2>
           </div>
-          <Link to="/signup" className="hidden md:block">
-            <Button variant="link" className="text-[#D4AF37] text-[10px] font-bold tracking-[0.2em] uppercase">
+          <Link to="/signup" className="w-full md:w-auto">
+            <Button variant="link" className="text-[#D4AF37] text-[10px] font-bold tracking-[0.2em] uppercase p-0">
               Promote Your Event <ArrowRight className="ml-2 w-3 h-3" />
             </Button>
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {(featuredEvents || DEFAULT_FEATURED).map((event, i) => (
             <motion.div
               key={event.id}

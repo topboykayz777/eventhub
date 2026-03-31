@@ -63,11 +63,16 @@
 }
 
 body {
-  @apply bg-[#0f0f0f] text-white antialiased overflow-x-hidden;
+  @apply bg-[#0f0f0f] text-white antialiased overflow-x-hidden max-w-full;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
 }
 
 /* Ensure all images are responsive by default */
 img {
   @apply max-w-full h-auto;
+}
+
+/* Prevent horizontal scroll on root */
+#root {
+  @apply overflow-x-hidden max-w-full;
 }

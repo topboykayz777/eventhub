@@ -40,7 +40,7 @@ const PricingSection = () => {
           <p className="text-xl text-gray-500">Choose the perfect plan for your celebration.</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -51,7 +51,7 @@ const PricingSection = () => {
               className={`bg-white p-10 rounded-[2.5rem] border-2 relative ${plan.color}`}
             >
               {plan.popular && (
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#e94560] text-white px-6 py-2 rounded-full text-sm font-black flex items-center gap-2">
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#e94560] text-white px-6 py-2 rounded-full text-sm font-black flex items-center gap-2 whitespace-nowrap">
                   <Star size={14} fill="currentColor" /> MOST POPULAR
                 </div>
               )}
@@ -66,7 +66,7 @@ const PricingSection = () => {
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3 text-gray-600">
                     <CheckCircle className="text-green-500 w-5 h-5 mt-0.5 shrink-0" />
-                    <span className="font-medium">{feature}</span>
+                    <span className="font-medium text-sm md:text-base">{feature}</span>
                   </li>
                 ))}
               </ul>
