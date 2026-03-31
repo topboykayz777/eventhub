@@ -62,9 +62,12 @@
   100% { transform: scale(1.1); }
 }
 
-body {
+/* iPhone 13 & Mobile Lock */
+html, body {
   @apply bg-[#0f0f0f] text-white antialiased overflow-x-hidden max-w-full;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  width: 100%;
+  position: relative;
 }
 
 /* Ensure all images are responsive by default */
@@ -74,5 +77,11 @@ img {
 
 /* Prevent horizontal scroll on root */
 #root {
-  @apply overflow-x-hidden max-w-full;
+  @apply overflow-x-hidden max-w-full w-full;
+  position: relative;
+}
+
+/* Fix for potential overflow from absolute elements */
+* {
+  @apply box-border;
 }

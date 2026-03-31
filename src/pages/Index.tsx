@@ -4,9 +4,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
-import HowItWorks from '@/components/landing/HowItWorks';
-import PricingSection from '@/components/landing/PricingSection';
 import FeaturedEvents from '@/components/landing/FeaturedEvents';
+import PricingSection from '@/components/landing/PricingSection';
+import VIPCheckout from '@/components/VIPCheckout';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
@@ -31,13 +31,13 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] selection:bg-[#D4AF37] selection:text-black">
+    <div className="min-h-screen bg-[#0f0f0f] selection:bg-[#D4AF37] selection:text-black overflow-x-hidden max-w-full">
       <script type="application/ld+json">
         {JSON.stringify(schemaData)}
       </script>
       <Navbar />
       
-      <main>
+      <main className="overflow-x-hidden max-w-full">
         <Hero />
         <FeaturedEvents />
         
@@ -63,6 +63,18 @@ const Index = () => {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* VIP Ticket Section */}
+        <section className="py-40 px-6 bg-[#0a0a0a]">
+          <div className="max-w-xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Limited Availability</span>
+              <h2 className="text-4xl md:text-6xl font-serif italic text-white mb-6">The VIP <span className="text-[#D4AF37]">Pass</span></h2>
+              <p className="text-gray-500 font-light tracking-wide">Secure your entry to the season's most anticipated events.</p>
+            </div>
+            <VIPCheckout />
           </div>
         </section>
 
