@@ -11,8 +11,30 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
 const Index = () => {
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "EventHub Nigeria",
+    "operatingSystem": "Web",
+    "applicationCategory": "BusinessApplication",
+    "offers": {
+      "@type": "AggregateOffer",
+      "lowPrice": "10000",
+      "highPrice": "20000",
+      "priceCurrency": "NGN"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "Nigeria"
+    },
+    "description": "Luxury event management platform for weddings, galas, and high-society events in Nigeria."
+  };
+
   return (
     <div className="min-h-screen bg-[#0f0f0f] selection:bg-[#D4AF37] selection:text-black">
+      <script type="application/ld+json">
+        {JSON.stringify(schemaData)}
+      </script>
       <Navbar />
       
       <main>

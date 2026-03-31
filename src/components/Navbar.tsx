@@ -161,7 +161,7 @@ const Navbar = () => {
             </div>
 
             <div className="mt-auto text-center">
-              <p className="text-[10px] text-gray-600 uppercase tracking-[0.3em]">© 2024 Event Hub Nigeria</p>
+              <p className="text-[10px] text-gray-600 uppercase tracking-[0.3em]">© 2026 Event Hub Nigeria</p>
             </div>
           </motion.div>
         )}
