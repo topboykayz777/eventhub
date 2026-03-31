@@ -15,7 +15,7 @@ const VIPCheckout = () => {
   const [reference, setReference] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const payWithPaystack = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email) {
@@ -23,49 +23,49 @@ const VIPCheckout = () => {
       return;
     }
 
-    // Vite requires VITE_ prefix for client-side env vars
-    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-
-    if (!paystackKey || paystackKey === 'pk_test_your_key') {
-      console.error("Paystack Public Key is missing. Ensure it starts with VITE_ in your secrets.");
-      showError("Payment system configuration error.");
-      return;
-    }
+    // Key Check: Use env var or the provided test key fallback
+    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
 
     setLoading(true);
 
-    // Using the global PaystackPop from the script tag in index.html
-    // @ts-ignore
-    const handler = PaystackPop.setup({
-      key: paystackKey,
-      email: email,
-      amount: 5000 * 100, // ₦5,000 in kobo
-      currency: 'NGN',
-      callback: async (response: any) => {
-        const ref = response.reference;
-        
-        const { error } = await supabase.from('tickets').insert({
-          user_email: email,
-          reference: ref
-        });
+    try {
+      // @ts-ignore - PaystackPop is loaded via script tag in index.html
+      const handler = window.PaystackPop.setup({
+        key: paystackKey,
+        email: email,
+        amount: 5000 * 100, // ₦5,000 in kobo
+        currency: 'NGN',
+        callback: async (response: any) => {
+          const ref = response.reference;
+          
+          // Save to Supabase
+          const { error } = await supabase.from('tickets').insert({
+            user_email: email,
+            reference: ref
+          });
 
-        if (error) {
-          console.error("Supabase error:", error);
-          showError("Payment verified, but failed to save ticket.");
-        } else {
-          setReference(ref);
-          setIsPaid(true);
-          showSuccess("VIP Ticket Secured.");
+          if (error) {
+            console.error("Supabase error:", error);
+            showError("Payment verified, but failed to save ticket.");
+          } else {
+            setReference(ref);
+            setIsPaid(true);
+            showSuccess("VIP Ticket Secured.");
+          }
+          setLoading(false);
+        },
+        onClose: () => {
+          showError("Transaction cancelled.");
+          setLoading(false);
         }
-        setLoading(false);
-      },
-      onClose: () => {
-        showError("Transaction cancelled.");
-        setLoading(false);
-      }
-    });
+      });
 
-    handler.openIframe();
+      handler.openIframe();
+    } catch (err) {
+      console.error("Paystack initialization failed:", err);
+      showError("Could not load payment window. Please refresh.");
+      setLoading(false);
+    }
   };
 
   if (isPaid) {
@@ -101,7 +101,7 @@ const VIPCheckout = () => {
           </div>
         </div>
 
-        <form onSubmit={handleCheckout} className="space-y-6">
+        <form onSubmit={payWithPaystack} className="space-y-6">
           <div className="space-y-2">
             <Label className="text-[8px] font-bold uppercase tracking-widest text-gray-500 ml-2">Delivery Email</Label>
             <Input 

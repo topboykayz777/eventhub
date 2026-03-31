@@ -64,9 +64,10 @@
 
 /* iPhone 13 & Mobile Lock */
 html, body {
-  @apply bg-[#0f0f0f] text-white antialiased overflow-x-hidden max-w-full;
+  @apply bg-[#0f0f0f] text-white antialiased;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
+  overflow-x: hidden;
   position: relative;
 }
 
