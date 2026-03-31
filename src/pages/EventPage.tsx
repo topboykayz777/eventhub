@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -191,6 +191,31 @@ const EventPage = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Photo Gallery Section */}
+            {event.gallery_urls && event.gallery_urls.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className={`${themeConfig.card} p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border`}
+              >
+                <h2 className="text-2xl md:text-4xl font-black mb-8 md:mb-12 flex items-center gap-4">
+                  <ImageIcon className={`${themeConfig.accent} w-8 h-8 md:w-10 md:h-10`} /> PHOTO GALLERY
+                </h2>
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  {event.gallery_urls.map((url: string, i: number) => (
+                    <motion.div 
+                      key={i}
+                      whileHover={{ scale: 1.05 }}
+                      className="aspect-square overflow-hidden rounded-2xl md:rounded-3xl border border-white/10"
+                    >
+                      <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             <motion.div
               whileHover={{ scale: 1.02 }}

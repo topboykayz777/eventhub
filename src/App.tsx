@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import EditEvent from "./pages/EditEvent";
 import BudgetTracker from "./pages/BudgetTracker";
 import VendorDirectory from "./pages/VendorDirectory";
+import VendorProfile from "./pages/VendorProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/budget/:id" element={<BudgetTracker />} />
           <Route path="/vendors" element={<VendorDirectory />} />
+          <Route path="/vendor/:id" element={<VendorProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GlassCard from '@/components/ui/GlassCard';
-import { Search, MapPin, Phone, Instagram, Star, ArrowRight, Bookmark, BookmarkCheck, ExternalLink } from 'lucide-react';
+import { Search, MapPin, Phone, Instagram, Star, ArrowRight, Bookmark, BookmarkCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { showSuccess, showError } from '@/utils/toast';
+import { showSuccess } from '@/utils/toast';
 
 const categories = ["All", "Catering", "Decor", "Photography", "Music", "Venues"];
 
@@ -94,11 +95,8 @@ const VendorDirectory = () => {
         .order('is_featured', { ascending: false });
 
       if (error) throw error;
-      
-      // If database is empty, use our high-quality defaults
       setVendors(data && data.length > 0 ? data : DEFAULT_VENDORS);
     } catch (err) {
-      console.error("Error fetching vendors:", err);
       setVendors(DEFAULT_VENDORS);
     } finally {
       setLoading(false);
@@ -236,9 +234,11 @@ const VendorDirectory = () => {
                         </button>
                       </div>
 
-                      <Button className="w-full bg-white/5 hover:bg-[#D4AF37] hover:text-black text-white border border-white/10 rounded-none py-5 md:py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase transition-all duration-500">
-                        View Portfolio <ArrowRight className="w-3 h-3 ml-2" />
-                      </Button>
+                      <Link to={`/vendor/${vendor.id}`}>
+                        <Button className="w-full bg-white/5 hover:bg-[#D4AF37] hover:text-black text-white border border-white/10 rounded-none py-5 md:py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase transition-all duration-500">
+                          View Portfolio <ArrowRight className="w-3 h-3 ml-2" />
+                        </Button>
+                      </Link>
                     </div>
                   </GlassCard>
                 ))

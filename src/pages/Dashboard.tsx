@@ -27,6 +27,27 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchEvents();
+
+    // Enable Realtime Subscription for RSVPs
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'rsvps'
+        },
+        (payload) => {
+          console.log('Realtime update received:', payload);
+          fetchEvents(); // Refetch to update UI instantly
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchEvents = async () => {
@@ -56,7 +77,7 @@ const Dashboard = () => {
     if (error) showError("Update failed");
     else {
       showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
-      fetchEvents();
+      // fetchEvents() is handled by realtime subscription
     }
   };
 
@@ -91,7 +112,7 @@ const Dashboard = () => {
       showError("Check-in failed");
     } else {
       showSuccess(`Welcome, ${rsvp.guest_name}!`);
-      fetchEvents();
+      // fetchEvents() is handled by realtime subscription
     }
   };
 
