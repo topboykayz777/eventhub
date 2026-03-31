@@ -15,29 +15,35 @@ const VIPCheckout = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [reference, setReference] = useState('');
 
+  const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+
   const config = {
     reference: (new Date()).getTime().toString(),
     email: email,
     amount: 5000 * 100, // ₦5,000 in kobo
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_your_key',
+    publicKey: paystackKey || 'pk_test_your_key',
   };
 
   const initializePayment = usePaystackPayment(config);
 
-  const onSuccess = async (reference: any) => {
+  const onSuccess = async (response: any) => {
     try {
+      // The response from Paystack contains the reference
+      const ref = response.reference || config.reference;
+      
       const { error } = await supabase.from('tickets').insert({
         user_email: email,
-        reference: reference.reference
+        reference: ref
       });
 
       if (error) throw error;
 
-      setReference(reference.reference);
+      setReference(ref);
       setIsPaid(true);
       showSuccess("VIP Ticket Secured.");
     } catch (err: any) {
-      showError("Failed to save ticket: " + err.message);
+      console.error("Database error:", err);
+      showError("Payment successful, but failed to save ticket. Please contact support.");
     }
   };
 
@@ -47,12 +53,21 @@ const VIPCheckout = () => {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!email) {
       showError("Please enter your email.");
       return;
     }
+
+    if (!paystackKey || paystackKey === 'pk_test_your_key') {
+      console.error("Paystack Public Key is missing or invalid in environment variables.");
+      showError("Payment system is not configured correctly.");
+      return;
+    }
+
+    // In react-paystack v6, callbacks must be passed as an object
     // @ts-ignore
-    initializePayment(onSuccess, onClose);
+    initializePayment({ onSuccess, onClose });
   };
 
   if (isPaid) {
