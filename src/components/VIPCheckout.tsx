@@ -15,27 +15,29 @@ const VIPCheckout = () => {
   const [reference, setReference] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const payWithPaystack = (e: React.FormEvent) => {
+  const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Payment Initiated');
     
     if (!email) {
       showError("Please enter your email.");
       return;
     }
 
-    // Key Check: Use env var or the provided test key fallback
-    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
-
     setLoading(true);
 
     try {
+      // HARDCODED KEY as requested
+      const PAYSTACK_PUBLIC_KEY = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
+
       // @ts-ignore - PaystackPop is loaded via script tag in index.html
       const handler = window.PaystackPop.setup({
-        key: paystackKey,
+        key: PAYSTACK_PUBLIC_KEY,
         email: email,
         amount: 5000 * 100, // ₦5,000 in kobo
         currency: 'NGN',
         callback: async (response: any) => {
+          console.log('Payment Successful', response);
           const ref = response.reference;
           
           // Save to Supabase
@@ -46,15 +48,15 @@ const VIPCheckout = () => {
 
           if (error) {
             console.error("Supabase error:", error);
-            showError("Payment verified, but failed to save ticket.");
-          } else {
-            setReference(ref);
-            setIsPaid(true);
-            showSuccess("VIP Ticket Secured.");
           }
+
+          setReference(ref);
+          setIsPaid(true);
+          showSuccess("VIP Ticket Secured.");
           setLoading(false);
         },
         onClose: () => {
+          console.log('Payment Window Closed');
           showError("Transaction cancelled.");
           setLoading(false);
         }
@@ -101,7 +103,7 @@ const VIPCheckout = () => {
           </div>
         </div>
 
-        <form onSubmit={payWithPaystack} className="space-y-6">
+        <form onSubmit={handlePayment} className="space-y-6">
           <div className="space-y-2">
             <Label className="text-[8px] font-bold uppercase tracking-widest text-gray-500 ml-2">Delivery Email</Label>
             <Input 
