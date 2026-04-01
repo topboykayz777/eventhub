@@ -39,7 +39,6 @@ const Dashboard = () => {
           table: 'rsvps'
         },
         (payload) => {
-          console.log('Realtime update received:', payload);
           fetchEvents(); // Refetch to update UI instantly
         }
       )
@@ -85,7 +84,7 @@ const Dashboard = () => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     
     if (!uuidRegex.test(scannedText)) {
-      showError("This is an invitation link, not a guest ticket.");
+      showError("Invalid QR: This is not a guest ticket.");
       return;
     }
 
@@ -100,7 +99,7 @@ const Dashboard = () => {
       return;
     }
 
-    if (rsvp.events.id !== activeEventId) {
+    if (rsvp.event_id !== activeEventId) {
       showError("This guest belongs to a different event");
       return;
     }

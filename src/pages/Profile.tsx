@@ -35,7 +35,6 @@ const Profile = () => {
       return;
     }
 
-    // Use maybeSingle to avoid error if profile is missing
     let { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -48,7 +47,6 @@ const Profile = () => {
       return;
     }
 
-    // If profile doesn't exist, create it on the fly
     if (!data) {
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
@@ -60,11 +58,7 @@ const Profile = () => {
         .select()
         .single();
       
-      if (insertError) {
-        console.error("Profile creation failed:", insertError);
-      } else {
-        data = newProfile;
-      }
+      if (!insertError) data = newProfile;
     }
 
     if (data) {
@@ -149,22 +143,22 @@ const Profile = () => {
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
       </div>
 
-      <div className="max-w-4xl mx-auto py-24 px-6 relative z-10">
-        <div className="flex items-center justify-between mb-16">
+      <div className="max-w-5xl mx-auto py-12 md:py-24 px-4 md:px-6 relative z-10">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-16 md:mb-24">
           <Button 
             variant="ghost" 
             onClick={() => navigate('/dashboard')} 
-            className="text-gray-400 hover:text-[#D4AF37] transition-colors"
+            className="text-gray-400 hover:text-[#D4AF37] transition-colors p-0"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
-          <div className="text-right">
+          <div className="text-left md:text-right">
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">Account Settings</span>
-            <h1 className="text-4xl font-serif italic">The Profile</h1>
+            <h1 className="text-4xl md:text-5xl font-serif italic">The Profile</h1>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-12 gap-12">
+        <div className="grid md:grid-cols-12 gap-12 md:gap-16">
           <div className="md:col-span-4">
             <GlassCard className="p-10 text-center border-white/5">
               <div className="relative w-32 h-32 mx-auto mb-8">
@@ -207,14 +201,14 @@ const Profile = () => {
 
           <div className="md:col-span-8">
             <GlassCard className="p-12 border-white/5">
-              <form onSubmit={handleSave} className="space-y-10">
-                <div className="space-y-4">
+              <form onSubmit={handleSave} className="space-y-12">
+                <div className="space-y-6">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Identity</Label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                    <User className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
                     <Input 
                       required 
-                      className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                      className="h-20 pl-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
                       value={profile.full_name}
                       onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                       placeholder="Full Name"
@@ -222,21 +216,21 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Contact Details</Label>
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-8">
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 w-4 h-4" />
+                      <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-600 w-4 h-4" />
                       <Input 
                         disabled 
-                        className="h-16 pl-14 bg-white/5 border-white/10 rounded-none opacity-50 cursor-not-allowed"
+                        className="h-20 pl-16 bg-white/5 border-white/10 rounded-none opacity-50 cursor-not-allowed"
                         value={profile.email}
                       />
                     </div>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                      <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
                       <Input 
-                        className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                        className="h-20 pl-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
                         value={profile.phone}
                         onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                         placeholder="WhatsApp Number"
@@ -245,7 +239,7 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div className="pt-8">
+                <div className="pt-12">
                   <Button 
                     type="submit" 
                     disabled={saving}

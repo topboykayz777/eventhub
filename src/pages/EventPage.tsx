@@ -22,6 +22,7 @@ const EventPage = () => {
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
   const [livePhotos, setLivePhotos] = useState<any[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
     fetchEvent();
@@ -30,32 +31,29 @@ const EventPage = () => {
   const fetchEvent = async () => {
     if (!slug) return;
 
-    // Robust case-insensitive slug lookup to prevent broken links
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Robust case-insensitive slug lookup
     const { data, error } = await supabase
       .from('events')
       .select('*, profiles(full_name)')
       .ilike('slug', slug)
       .maybeSingle();
 
-    if (error) {
-      console.error("[EventPage] Fetch error:", error);
-      setLoading(false);
-      return;
-    }
-
-    if (!data) {
+    if (error || !data) {
       setLoading(false);
       return;
     }
 
     setEvent(data);
-    fetchLivePhotos(data.id);
-    setLoading(false);
-
-    // Only increment view count for active events
+    setIsHost(user?.id === data.host_id);
+    
     if (data.is_paid) {
+      fetchLivePhotos(data.id);
       await supabase.rpc('increment_view_count', { event_id: data.id });
     }
+    
+    setLoading(false);
   };
 
   const fetchLivePhotos = async (eventId: string) => {
@@ -109,6 +107,11 @@ const EventPage = () => {
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!event.is_paid) {
+      showError("This event is currently pending activation by the host.");
+      return;
+    }
+
     setIsSubmitting(true);
     
     const { data, error } = await supabase.from('rsvps').insert({
@@ -140,11 +143,13 @@ const EventPage = () => {
     </div>
   );
 
-  if (!event) return (
+  // Strict Payment Gate: Only host can see unpaid event
+  if (!event || (!event.is_paid && !isHost)) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
       <div className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
-        <h1 className="text-3xl font-serif italic mb-4 text-[#e94560]">Invitation Expired</h1>
-        <p className="text-gray-500 mb-8 text-sm leading-relaxed">The link you followed may be incorrect or the event has concluded.</p>
+        <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
+        <h1 className="text-3xl font-serif italic mb-4 text-[#D4AF37]">Pending Activation</h1>
+        <p className="text-gray-500 mb-8 text-sm leading-relaxed">This masterpiece is currently being refined by the host. Please check back shortly.</p>
         <Link to="/"><Button className="bg-[#D4AF37] text-black rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Go Home</Button></Link>
       </div>
     </div>
@@ -196,11 +201,14 @@ const EventPage = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20">
-        {!event.is_paid && (
+        {!event.is_paid && isHost && (
           <div className="mb-16 p-8 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-center rounded-[2rem]">
             <Sparkles className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
             <h3 className="text-xl font-serif italic mb-2">Preview Mode</h3>
-            <p className="text-sm opacity-70">This page is currently pending activation. RSVPs are enabled for guests.</p>
+            <p className="text-sm opacity-70">This page is currently pending activation. Guests will see a "Pending" screen until you complete payment.</p>
+            <Link to={`/payment/${event.id}`} className="mt-6 inline-block">
+              <Button className="bg-[#D4AF37] text-black rounded-none px-8 py-4 text-[8px] font-black uppercase tracking-widest">Activate Now</Button>
+            </Link>
           </div>
         )}
 
