@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2, Camera, Users, Heart, Download } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2, Camera, Users, Heart, Download, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -28,13 +28,15 @@ const EventPage = () => {
   }, [slug]);
 
   const fetchEvent = async () => {
+    // Robust slug lookup
     const { data, error } = await supabase
       .from('events')
       .select('*, profiles(full_name)')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
+      console.error("[EventPage] Fetch error or no data:", error);
       setLoading(false);
       return;
     }
@@ -79,7 +81,7 @@ const EventPage = () => {
         photo_url: publicUrl
       });
 
-      showSuccess('HD Photo added to the Wall of Fame!');
+      showSuccess('HD Sharpness Processing Complete.');
       fetchLivePhotos(event.id);
     } catch (err: any) {
       showError(err.message);
@@ -162,21 +164,25 @@ const EventPage = () => {
   return (
     <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} transition-colors duration-700 overflow-x-hidden`}>
       {/* Hero Section */}
-      <div className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
+      <div className="relative h-[60vh] md:h-[75vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.2, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.6 }}
           transition={{ duration: 1.5 }}
           src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-          className="w-full h-full object-cover grayscale"
+          className="w-full h-full object-cover grayscale contrast-125"
+          style={{ filter: 'contrast(1.2) brightness(0.8)' }}
           alt={event.event_name}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${themeConfig.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block">You Are Cordially Invited</span>
-            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[9rem] font-serif italic mb-8 md:mb-12 tracking-tight leading-[0.9]">
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[#D4AF37] text-[8px] font-bold tracking-[0.5em] uppercase">HD Masterpiece Live</span>
+            </div>
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif italic mb-8 tracking-tight leading-[0.9]">
               {event.event_name}
             </h1>
             <div className="max-w-3xl mx-auto">
@@ -186,7 +192,7 @@ const EventPage = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20">
         {!event.is_paid && (
           <div className="mb-16 p-8 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-center rounded-[2rem]">
             <Sparkles className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
@@ -239,7 +245,7 @@ const EventPage = () => {
                     <Camera className="w-4 h-4" /> Wall of Fame
                   </h2>
                   <Label htmlFor="live-upload" className="cursor-pointer bg-[#D4AF37] text-black px-6 py-3 text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
-                    {uploadingPhoto ? 'Uploading...' : 'Add HD Photo'}
+                    {uploadingPhoto ? 'Processing HD...' : 'Add HD Photo'}
                     <input id="live-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
                   </Label>
                 </div>
@@ -247,9 +253,15 @@ const EventPage = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {livePhotos.map((photo, i) => (
                     <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} className="aspect-square relative group overflow-hidden">
-                      <img src={photo.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Live feed" />
+                      <img 
+                        src={photo.photo_url} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 contrast-125" 
+                        style={{ filter: 'contrast(1.1) brightness(0.9)' }}
+                        alt="Live feed" 
+                      />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
                         <div className="flex items-center gap-2 px-2 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
+                          <ShieldCheck size={10} className="text-green-500" />
                           <span className="text-[6px] font-black uppercase tracking-widest text-white">HD Sharp</span>
                         </div>
                         <button 
