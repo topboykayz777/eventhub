@@ -143,6 +143,9 @@ const EventPage = () => {
     elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black hover:bg-gray-800", card: "bg-gray-50 border-gray-100 shadow-lg", rsvpCard: "bg-white border-4 border-black text-black" }
   }[theme as 'modern' | 'traditional' | 'elegant'];
 
+  const hasGallery = event.plan === 'Standard' || event.plan === 'Pro';
+  const hasDigitalInvite = event.plan === 'Standard' || event.plan === 'Pro';
+
   return (
     <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} transition-colors duration-700 overflow-x-hidden`}>
       {/* Hero Section */}
@@ -207,34 +210,36 @@ const EventPage = () => {
               </div>
             </motion.div>
 
-            {/* Wall of Fame (Live Feed) */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
-              <div className="flex justify-between items-center mb-12">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4">
-                  <Camera className="w-4 h-4" /> Wall of Fame
-                </h2>
-                <Label htmlFor="live-upload" className="cursor-pointer bg-[#D4AF37] text-black px-6 py-3 text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
-                  {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
-                  <input id="live-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
-                </Label>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {livePhotos.map((photo, i) => (
-                  <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} className="aspect-square relative group overflow-hidden">
-                    <img src={photo.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Live feed" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Heart className="text-white fill-white w-6 h-6" />
+            {/* Wall of Fame (Live Feed) - Only for Standard/Pro */}
+            {hasGallery && (
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
+                <div className="flex justify-between items-center mb-12">
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4">
+                    <Camera className="w-4 h-4" /> Wall of Fame
+                  </h2>
+                  <Label htmlFor="live-upload" className="cursor-pointer bg-[#D4AF37] text-black px-6 py-3 text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
+                    {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                    <input id="live-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  </Label>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {livePhotos.map((photo, i) => (
+                    <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} className="aspect-square relative group overflow-hidden">
+                      <img src={photo.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Live feed" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Heart className="text-white fill-white w-6 h-6" />
+                      </div>
+                    </motion.div>
+                  ))}
+                  {livePhotos.length === 0 && (
+                    <div className="col-span-full py-20 text-center border border-dashed border-white/10">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500">Be the first to capture a moment.</p>
                     </div>
-                  </motion.div>
-                ))}
-                {livePhotos.length === 0 && (
-                  <div className="col-span-full py-20 text-center border border-dashed border-white/10">
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500">Be the first to capture a moment.</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* RSVP Column */}
@@ -249,7 +254,7 @@ const EventPage = () => {
                     <h2 className="text-2xl font-serif italic mb-2">You're on the list</h2>
                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
-                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
+                  {hasDigitalInvite && <DigitalInvite event={event} rsvpId={submittedRsvp.id} />}
                 </motion.div>
               ) : (
                 <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${themeConfig.rsvpCard} p-10 md:p-16 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
