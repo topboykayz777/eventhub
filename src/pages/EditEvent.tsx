@@ -101,7 +101,60 @@ const EditEvent = () => {
 
     try {
       const { error } = await supabase
-        .<dyad-write path="src/pages/EditEvent.tsx" description="Redesigning the Edit Event page with a luxury 'Elite' aesthetic and premium feature support.">
+        .from('events')
+        .update({
+          event_name: formData.eventName,
+          event_date: new Date(formData.eventDate).toISOString(),
+          venue: formData.venue,
+          message: formData.message,
+          theme: formData.theme,
+          photo_url: formData.photo_url,
+          gallery_urls: formData.gallery_urls
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      showSuccess('Masterpiece refined successfully.');
+      navigate('/dashboard');
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const themes = [
+    { id: 'modern', label: 'Modern Noir', color: 'bg-[#0a0a1a]', text: 'text-white', accent: 'bg-[#e94560]' },
+    { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#fdfcf0]', text: 'text-[#5d4037]', accent: 'bg-[#b8860b]' },
+    { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', text: 'text-gray-900', accent: 'bg-black' }
+  ];
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
+      <div className="w-10 h-10 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
+      <Navbar />
+      
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
+      </div>
+
+      <div className="max-w-5xl mx-auto py-24 px-6 relative z-10">
+        <div className="flex justify-between items-center mb-16">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')} 
+            className="text-gray-400 hover:text-[#D4AF37] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+          </Button>
+          <div className="text-right">
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">The Edit Suite</span>
+            <h1 className="<dyad-write path="src/pages/EditEvent.tsx" description="Fixing syntax error and completing the luxury redesign of the Edit Event page.">
 "use client";
 
 import React, { useEffect, useState } from 'react';
