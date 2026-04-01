@@ -28,7 +28,6 @@ const Dashboard = () => {
   useEffect(() => {
     fetchEvents();
 
-    // Enable Realtime Subscription for RSVPs
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -38,8 +37,8 @@ const Dashboard = () => {
           schema: 'public',
           table: 'rsvps'
         },
-        (payload) => {
-          fetchEvents(); // Refetch to update UI instantly
+        () => {
+          fetchEvents();
         }
       )
       .subscribe();
@@ -80,7 +79,6 @@ const Dashboard = () => {
   };
 
   const handleQRScan = async (scannedText: string) => {
-    // Check if the scanned text is a valid UUID (RSVP ID)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     
     if (!uuidRegex.test(scannedText)) {
@@ -151,8 +149,12 @@ const Dashboard = () => {
 
   const sendWhatsAppBlast = (event: any) => {
     const url = `${window.location.origin}/event/${event.slug}`;
-    const message = `Hello! Just a reminder about ${event.event_name}. You can view the details and RSVP here: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    const message = `✨ You are cordially invited to ${event.event_name} ✨\n\nPlease view the official invitation and RSVP here: ${url}\n\nWe look forward to celebrating with you!`;
+    
+    // Use a direct link to ensure it bypasses popup blockers better
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    showSuccess('WhatsApp sharing initiated.');
   };
 
   if (loading) return (

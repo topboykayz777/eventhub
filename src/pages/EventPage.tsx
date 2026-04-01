@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2, Camera, Users, Heart, Download, ShieldCheck } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Camera, Download, ShieldCheck, RefreshCw, Users } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -30,30 +30,39 @@ const EventPage = () => {
 
   const fetchEvent = async () => {
     if (!slug) return;
+    setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
 
-    // Robust case-insensitive slug lookup
-    const { data, error } = await supabase
-      .from('events')
-      .select('*, profiles(full_name)')
-      .ilike('slug', slug)
-      .maybeSingle();
+      // We fetch the event. If RLS blocks it for a guest, data will be null.
+      const { data, error } = await supabase
+        .from('events')
+        .select('*, profiles(full_name)')
+        .ilike('slug', slug)
+        .maybeSingle();
 
-    if (error || !data) {
+      if (error) {
+        console.error("[EventPage] Fetch error:", error);
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setEvent(data);
+        setIsHost(user?.id === data.host_id);
+        
+        if (data.is_paid) {
+          fetchLivePhotos(data.id);
+          // Increment view count silently
+          supabase.rpc('increment_view_count', { event_id: data.id }).then(() => {});
+        }
+      }
+    } catch (err) {
+      console.error("[EventPage] Unexpected error:", err);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setEvent(data);
-    setIsHost(user?.id === data.host_id);
-    
-    if (data.is_paid) {
-      fetchLivePhotos(data.id);
-      await supabase.rpc('increment_view_count', { event_id: data.id });
-    }
-    
-    setLoading(false);
   };
 
   const fetchLivePhotos = async (eventId: string) => {
@@ -107,8 +116,8 @@ const EventPage = () => {
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!event.is_paid) {
-      showError("This event is currently pending activation by the host.");
+    if (!event?.is_paid) {
+      showError("This event is currently pending activation.");
       return;
     }
 
@@ -143,15 +152,33 @@ const EventPage = () => {
     </div>
   );
 
-  // Strict Payment Gate: Only host can see unpaid event
+  // If event is null (blocked by RLS) or not paid and user isn't host
   if (!event || (!event.is_paid && !isHost)) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
-      <div className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md"
+      >
         <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
         <h1 className="text-3xl font-serif italic mb-4 text-[#D4AF37]">Pending Activation</h1>
-        <p className="text-gray-500 mb-8 text-sm leading-relaxed">This masterpiece is currently being refined by the host. Please check back shortly.</p>
-        <Link to="/"><Button className="bg-[#D4AF37] text-black rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Go Home</Button></Link>
-      </div>
+        <p className="text-gray-500 mb-10 text-sm leading-relaxed">
+          This masterpiece is currently being refined by the host. If you believe the event is live, please refresh.
+        </p>
+        <div className="flex flex-col gap-4">
+          <Button 
+            onClick={() => fetchEvent()}
+            className="bg-[#D4AF37] text-black rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-[#B8860B]"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" /> Refresh Status
+          </Button>
+          <Link to="/">
+            <Button variant="ghost" className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+              Return Home
+            </Button>
+          </Link>
+        </div>
+      </motion.div>
     </div>
   );
 
@@ -214,7 +241,6 @@ const EventPage = () => {
 
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           <div className="md:col-span-3 space-y-12 md:space-y-16">
-            {/* The Digital IV - Featured prominently for guests */}
             {hasDigitalInvite && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 text-center">The Official Invitation</h2>
@@ -248,7 +274,6 @@ const EventPage = () => {
               </div>
             </motion.div>
 
-            {/* Wall of Fame (Live Feed) - Only for Standard/Pro */}
             {hasGallery && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
                 <div className="flex justify-between items-center mb-12">
@@ -294,7 +319,6 @@ const EventPage = () => {
             )}
           </div>
 
-          {/* RSVP Column */}
           <div className="md:col-span-2">
             <AnimatePresence mode="wait">
               {submittedRsvp ? (
