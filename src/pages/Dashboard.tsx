@@ -77,19 +77,26 @@ const Dashboard = () => {
     if (error) showError("Update failed");
     else {
       showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
-      // fetchEvents() is handled by realtime subscription
     }
   };
 
-  const handleQRScan = async (rsvpId: string) => {
+  const handleQRScan = async (scannedText: string) => {
+    // Check if the scanned text is a valid UUID (RSVP ID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    if (!uuidRegex.test(scannedText)) {
+      showError("This is an invitation link, not a guest ticket.");
+      return;
+    }
+
     const { data: rsvp, error: fetchError } = await supabase
       .from('rsvps')
       .select('*, events(id)')
-      .eq('id', rsvpId)
+      .eq('id', scannedText)
       .single();
 
     if (fetchError || !rsvp) {
-      showError("Invalid QR Code");
+      showError("Invalid Guest Ticket");
       return;
     }
 
@@ -106,13 +113,12 @@ const Dashboard = () => {
     const { error: updateError } = await supabase
       .from('rsvps')
       .update({ checked_in: true })
-      .eq('id', rsvpId);
+      .eq('id', scannedText);
 
     if (updateError) {
       showError("Check-in failed");
     } else {
       showSuccess(`Welcome, ${rsvp.guest_name}!`);
-      // fetchEvents() is handled by realtime subscription
     }
   };
 
@@ -145,7 +151,8 @@ const Dashboard = () => {
   };
 
   const sendWhatsAppBlast = (event: any) => {
-    const message = `Hello! Just a reminder about ${event.event_name}. You can view the details and RSVP here: ${window.location.origin}/event/${event.slug}`;
+    const url = `${window.location.origin}/event/${event.slug}`;
+    const message = `Hello! Just a reminder about ${event.event_name}. You can view the details and RSVP here: ${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 

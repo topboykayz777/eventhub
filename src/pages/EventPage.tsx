@@ -30,7 +30,7 @@ const EventPage = () => {
   const fetchEvent = async () => {
     if (!slug) return;
 
-    // Robust case-insensitive slug lookup
+    // Robust case-insensitive slug lookup to prevent broken links
     const { data, error } = await supabase
       .from('events')
       .select('*, profiles(full_name)')
@@ -52,6 +52,7 @@ const EventPage = () => {
     fetchLivePhotos(data.id);
     setLoading(false);
 
+    // Only increment view count for active events
     if (data.is_paid) {
       await supabase.rpc('increment_view_count', { event_id: data.id });
     }
@@ -108,11 +109,6 @@ const EventPage = () => {
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!event.is_paid) {
-      showError("This event is currently pending activation by the host.");
-      return;
-    }
-
     setIsSubmitting(true);
     
     const { data, error } = await supabase.from('rsvps').insert({
@@ -204,7 +200,7 @@ const EventPage = () => {
           <div className="mb-16 p-8 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-center rounded-[2rem]">
             <Sparkles className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
             <h3 className="text-xl font-serif italic mb-2">Preview Mode</h3>
-            <p className="text-sm opacity-70">This page is currently pending activation. RSVPs are disabled for guests.</p>
+            <p className="text-sm opacity-70">This page is currently pending activation. RSVPs are enabled for guests.</p>
           </div>
         )}
 
@@ -326,7 +322,7 @@ const EventPage = () => {
                         <Input type="number" min="1" max="10" required className="bg-transparent border-none h-12 text-lg font-light" value={rsvpData.guestCount} onChange={(e) => setRsvpData({ ...rsvpData, guestCount: parseInt(e.target.value) })} />
                       </div>
                     </div>
-                    <Button type="submit" disabled={isSubmitting || !event.is_paid} className={`w-full ${themeConfig.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
+                    <Button type="submit" disabled={isSubmitting} className={`w-full ${themeConfig.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
                       {isSubmitting ? 'Processing...' : 'Confirm Attendance'}
                     </Button>
                   </form>
