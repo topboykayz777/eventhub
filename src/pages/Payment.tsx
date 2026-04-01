@@ -14,6 +14,7 @@ const Payment = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
     const fetchEventAndUser = async () => {
@@ -30,42 +31,56 @@ const Payment = () => {
       setLoading(false);
     };
     fetchEventAndUser();
+
+    // Load Paystack Script
+    if (window.hasOwnProperty('PaystackPop')) {
+      setScriptLoaded(true);
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://js.paystack.co/v1/inline.js';
+      script.async = true;
+      script.onload = () => setScriptLoaded(true);
+      document.body.appendChild(script);
+    }
   }, [id, navigate]);
 
   const handlePayment = () => {
-    const amount = event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000;
-    
-    // Use environment variable for Paystack Public Key
-    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_your_public_key';
-
-    if (paystackKey === 'pk_test_your_public_key') {
-      console.warn("Paystack Public Key is not set. Using test key.");
+    if (!scriptLoaded) {
+      showError("Payment system is initializing...");
+      return;
     }
 
-    // @ts-ignore
-    const handler = PaystackPop.setup({
-      key: paystackKey,
-      email: userEmail || 'customer@example.com',
-      amount: amount * 100,
-      currency: 'NGN',
-      callback: async (response: any) => {
-        const { error } = await supabase
-          .from('events')
-          .update({ is_paid: true })
-          .eq('id', id);
-        
-        if (error) {
-          showError('Payment verification failed');
-        } else {
-          showSuccess('Payment successful! Your event is now live.');
-          navigate('/dashboard');
+    const amount = event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000;
+    const paystackKey = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
+
+    try {
+      // @ts-ignore
+      const handler = PaystackPop.setup({
+        key: paystackKey,
+        email: userEmail || 'customer@eventhub.ng',
+        amount: amount * 100,
+        currency: 'NGN',
+        callback: async (response: any) => {
+          const { error } = await supabase
+            .from('events')
+            .update({ is_paid: true })
+            .eq('id', id);
+          
+          if (error) {
+            showError('Payment verification failed');
+          } else {
+            showSuccess('Payment successful! Your event is now live.');
+            navigate('/dashboard');
+          }
+        },
+        onClose: () => {
+          showError('Payment cancelled');
         }
-      },
-      onClose: () => {
-        showError('Payment cancelled');
-      }
-    });
-    handler.openIframe();
+      });
+      handler.openIframe();
+    } catch (err) {
+      showError("Could not initialize payment.");
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0a0a1a] text-white">Loading Payment Details...</div>;

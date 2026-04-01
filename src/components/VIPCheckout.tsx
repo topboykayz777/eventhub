@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,45 +14,57 @@ const VIPCheckout = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [reference, setReference] = useState('');
   const [loading, setLoading] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadScript = () => {
+      if (window.hasOwnProperty('PaystackPop')) {
+        setScriptLoaded(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://js.paystack.co/v1/inline.js';
+      script.async = true;
+      script.onload = () => setScriptLoaded(true);
+      document.body.appendChild(script);
+    };
+    loadScript();
+  }, []);
 
   const payNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log('Payment Initiated');
+    
+    if (!scriptLoaded) {
+      showError("Payment system is still initializing. Please wait a moment.");
+      return;
+    }
 
-    // 1. Window Check
-    // @ts-ignore
-    if (!window.PaystackPop) {
-      alert('Paystack is still loading... Please wait a moment and try again.');
+    if (!email || !email.includes('@')) {
+      showError("Please enter a valid email address.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // 2. Hardcoded Credentials for Universal Fix
       const PAYSTACK_PUBLIC_KEY = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
-      const TEST_EMAIL = 'test@eventhub.ng';
-
-      // 3. Direct Implementation
+      
       // @ts-ignore
-      const handler = window.PaystackPop.setup({
+      const handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
-        email: email || TEST_EMAIL, // Use input or fallback to test email
+        email: email,
         amount: 5000 * 100, // ₦5,000 in kobo
         currency: 'NGN',
         callback: async (response: any) => {
-          console.log('Payment Successful', response);
           const ref = response.reference;
           
           // Save to Supabase
           const { error } = await supabase.from('tickets').insert({
-            user_email: email || TEST_EMAIL,
+            user_email: email,
             reference: ref
           });
 
-          if (error) {
-            console.error("Supabase error:", error);
-          }
+          if (error) console.error("Database error:", error);
 
           setReference(ref);
           setIsPaid(true);
@@ -60,7 +72,6 @@ const VIPCheckout = () => {
           setLoading(false);
         },
         onClose: () => {
-          console.log('Payment Window Closed');
           showError("Transaction cancelled.");
           setLoading(false);
         }
@@ -68,14 +79,14 @@ const VIPCheckout = () => {
 
       handler.openIframe();
     } catch (err) {
-      console.error("Paystack initialization failed:", err);
-      showError("Could not load payment window. Please refresh.");
+      console.error("Paystack error:", err);
+      showError("Could not open payment window.");
       setLoading(false);
     }
   };
 
   if (isPaid) {
-    return <TicketQR reference={reference} email={email || 'test@eventhub.ng'} />;
+    return <TicketQR reference={reference} email={email} />;
   }
 
   return (
@@ -126,7 +137,7 @@ const VIPCheckout = () => {
             disabled={loading}
             className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-xl text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500 shadow-xl shadow-[#D4AF37]/10"
           >
-            {loading ? 'Opening Secure Checkout...' : 'Buy VIP Ticket'} <ArrowRight className="ml-2 w-4 h-4" />
+            {loading ? 'Processing...' : 'Buy VIP Ticket'} <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
 
