@@ -103,6 +103,9 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   const config = themeConfigs[theme] || themeConfigs.modern;
   const Icon = config.icon;
 
+  // The QR code value: either the RSVP ID for check-in, or the event link for invitation
+  const qrValue = rsvpId || `${window.location.origin}/event/${event.slug}`;
+
   return (
     <div className="space-y-8 w-full max-w-sm mx-auto">
       <motion.div 
@@ -111,7 +114,7 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
         ref={cardRef}
         className={`relative aspect-[4/6] w-full rounded-[3rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.glow}`}
       >
-        {/* Background Image Layer */}
+        {/* Background Image Layer - Now visible but subtle */}
         <div className="absolute inset-0 z-0">
           <img 
             src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
@@ -137,42 +140,32 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
 
           {/* QR Section - The Centerpiece */}
           <div className="flex-grow flex flex-col justify-center items-center">
-            {rsvpId ? (
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2.5rem] blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
-                <div className="relative bg-white p-6 rounded-[2rem] shadow-2xl border-8 border-black/5">
-                  <QRCodeSVG value={rsvpId} size={140} level="H" />
-                </div>
-                <p className={`mt-6 text-[8px] font-bold uppercase tracking-[0.3em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Scan at the Concierge
-                </p>
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2.5rem] blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+              <div className="relative bg-white p-6 rounded-[2rem] shadow-2xl border-8 border-black/5">
+                <QRCodeSVG value={qrValue} size={140} level="H" />
               </div>
-            ) : (
-              <div className="space-y-6 py-8 border-y border-white/10 w-full">
-                <div>
-                  <p className={`text-[7px] font-bold uppercase tracking-[0.4em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'} mb-2`}>The Date</p>
-                  <p className={`text-lg font-serif italic ${theme === 'elegant' ? 'text-black' : 'text-white'}`}>
-                    {new Date(event.event_date).toLocaleDateString('en-NG', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  </p>
-                </div>
-                <div>
-                  <p className={`text-[7px] font-bold uppercase tracking-[0.4em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'} mb-2`}>The Venue</p>
-                  <p className={`text-[11px] font-medium leading-relaxed px-4 ${theme === 'elegant' ? 'text-gray-600' : 'text-gray-300'}`}>{event.venue}</p>
-                </div>
-              </div>
-            )}
+              <p className={`mt-6 text-[8px] font-bold uppercase tracking-[0.3em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
+                {rsvpId ? 'Scan at the Concierge' : 'Scan to RSVP'}
+              </p>
+            </div>
           </div>
 
-          {/* Footer */}
+          {/* Footer Details */}
           <div className="mt-6 pt-6 border-t border-white/10">
-            <div className="flex justify-center items-center gap-3 mb-3">
+            <div className="space-y-2 mb-4">
+              <p className={`text-[7px] font-bold uppercase tracking-[0.4em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
+                {new Date(event.event_date).toLocaleDateString('en-NG', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+              <p className={`text-[9px] font-medium truncate px-4 ${theme === 'elegant' ? 'text-gray-600' : 'text-gray-300'}`}>
+                {event.venue}
+              </p>
+            </div>
+            <div className="flex justify-center items-center gap-3">
               <div className={`h-px w-6 ${theme === 'elegant' ? 'bg-black/10' : 'bg-white/10'}`} />
               <Landmark size={12} className="text-gray-500" />
               <div className={`h-px w-6 ${theme === 'elegant' ? 'bg-black/10' : 'bg-white/10'}`} />
             </div>
-            <p className="text-[7px] font-black uppercase tracking-[0.5em] text-gray-500">
-              Event Hub Nigeria • Elite Series
-            </p>
           </div>
         </div>
       </motion.div>
