@@ -5,42 +5,59 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '@/components/ui/GlassCard';
-import { MapPin, Phone, Instagram, Star, ArrowLeft, ExternalLink, ShieldCheck, Award } from 'lucide-react';
+import { MapPin, Phone, Instagram, Star, ArrowLeft, ExternalLink, ShieldCheck, Award, Send, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { showSuccess, showError } from '@/utils/toast';
 
 const VendorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [vendor, setVendor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userEvents, setUserEvents] = useState<any[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>('');
+  const [sendingInquiry, setSendingInquiry] = useState(false);
 
   useEffect(() => {
-    const fetchVendor = async () => {
-      const { data, error } = await supabase
-        .from('vendors')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        // Fallback to mock data if not in DB
-        const mockVendors = [
-          { id: 'v1', name: 'The Gourmet Atelier', category: 'Catering', location: 'Victoria Island, Lagos', photo_url: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80', phone: '08012345678', instagram: '@gourmet_atelier', is_featured: true },
-          { id: 'v2', name: 'Royal Blooms Decor', category: 'Decor', location: 'Maitama, Abuja', photo_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80', phone: '08023456789', instagram: '@royalblooms', is_featured: true },
-          { id: 'v3', name: 'Lumina Studios', category: 'Photography', location: 'Lekki Phase 1, Lagos', photo_url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80', phone: '08034567890', instagram: '@lumina_studios', is_featured: true }
-        ];
-        const found = mockVendors.find(v => v.id === id);
-        if (found) setVendor(found);
-      } else {
-        setVendor(data);
-      }
-      setLoading(false);
-    };
-    fetchVendor();
+    fetchVendorAndEvents();
   }, [id]);
 
-  if (loading) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center text-white">Loading Portfolio...</div>;
+  const fetchVendorAndEvents = async () => {
+    const { data: vendorData } = await supabase.from('vendors').select('*').eq('id', id).single();
+    setVendor(vendorData);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: events } = await supabase.from('events').select('id, event_name').eq('host_id', user.id);
+      setUserEvents(events || []);
+    }
+    setLoading(false);
+  };
+
+  const handleInquiry = async () => {
+    if (!selectedEvent) {
+      showError("Please select an event to link this inquiry.");
+      return;
+    }
+
+    setSendingInquiry(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase.from('vendor_inquiries').insert({
+      vendor_id: id,
+      host_id: user?.id,
+      event_id: selectedEvent,
+      message: `Inquiry for ${vendor.name} regarding my event.`
+    });
+
+    if (error) showError(error.message);
+    else showSuccess(`Inquiry sent to ${vendor.name}. They will contact you shortly.`);
+    setSendingInquiry(false);
+  };
+
+  if (loading) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>;
   if (!vendor) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center text-white">Vendor not found.</div>;
 
   return (
@@ -76,71 +93,40 @@ const VendorProfile = () => {
               <p className="text-xl md:text-2xl font-light leading-relaxed text-gray-300">
                 {vendor.name} is a premier {vendor.category.toLowerCase()} service based in {vendor.location}. 
                 With a reputation for excellence and an eye for detail, they have curated some of Nigeria's 
-                most prestigious celebrations. Their approach combines traditional heritage with modern 
-                sophistication, ensuring every event is a masterpiece.
+                most prestigious celebrations.
               </p>
-            </section>
-
-            <section>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8">Portfolio Highlights</h2>
-              <div className="grid grid-cols-2 gap-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="aspect-square bg-white/5 border border-white/10 overflow-hidden group">
-                    <img 
-                      src={`https://images.unsplash.com/photo-${1500000000000 + i}?auto=format&fit=crop&q=80`} 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                      alt="Work sample"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = vendor.photo_url;
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
             </section>
           </div>
 
           <div className="md:col-span-4">
             <GlassCard className="p-10 sticky top-32 border-white/5">
-              <h3 className="text-xl font-serif italic mb-8">Contact Details</h3>
-              <div className="space-y-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                    <MapPin className="text-[#D4AF37] w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Location</p>
-                    <p className="text-sm font-medium">{vendor.location}</p>
-                  </div>
+              <h3 className="text-xl font-serif italic mb-8">Book Consultation</h3>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[8px] font-bold uppercase tracking-widest text-gray-500">Select Your Event</label>
+                  <Select onValueChange={setSelectedEvent}>
+                    <SelectTrigger className="bg-white/5 border-white/10 rounded-none h-14">
+                      <SelectValue placeholder="Choose an event" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                      {userEvents.map(e => (
+                        <SelectItem key={e.id} value={e.id}>{e.event_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                    <Phone className="text-[#D4AF37] w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">WhatsApp</p>
-                    <p className="text-sm font-medium">{vendor.phone}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                    <Instagram className="text-[#D4AF37] w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Instagram</p>
-                    <p className="text-sm font-medium">{vendor.instagram}</p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="mt-12 pt-12 border-t border-white/5 space-y-4">
-                <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-[10px] font-bold tracking-[0.3em] uppercase">
-                  Book Consultation
+                <Button 
+                  onClick={handleInquiry}
+                  disabled={sendingInquiry || userEvents.length === 0}
+                  className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-[10px] font-bold tracking-[0.3em] uppercase"
+                >
+                  {sendingInquiry ? <Loader2 className="animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Send Inquiry</>}
                 </Button>
-                <div className="flex items-center justify-center gap-2 text-gray-500">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span className="text-[8px] font-bold uppercase tracking-widest">Verified Professional</span>
-                </div>
+                
+                {userEvents.length === 0 && (
+                  <p className="text-[8px] text-center text-gray-500 uppercase tracking-widest">You must create an event first.</p>
+                )}
               </div>
             </GlassCard>
           </div>

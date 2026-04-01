@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2, Camera, Users, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -17,35 +17,76 @@ const EventPage = () => {
   const { slug } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [rsvpData, setRsvpData] = useState({ name: '', phone: '' });
+  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', guestCount: 1 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
+  const [livePhotos, setLivePhotos] = useState<any[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      // We fetch the event by slug. We don't strictly filter by is_paid here 
-      // so we can show a better "Pending Activation" message if needed.
-      const { data, error } = await supabase
-        .from('events')
-        .select('*, profiles(full_name)')
-        .eq('slug', slug)
-        .single();
-
-      if (error || !data) {
-        setLoading(false);
-        return;
-      }
-
-      setEvent(data);
-      setLoading(false);
-
-      // Increment view count if paid
-      if (data.is_paid) {
-        await supabase.rpc('increment_view_count', { event_id: data.id });
-      }
-    };
     fetchEvent();
   }, [slug]);
+
+  const fetchEvent = async () => {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*, profiles(full_name)')
+      .eq('slug', slug)
+      .single();
+
+    if (error || !data) {
+      setLoading(false);
+      return;
+    }
+
+    setEvent(data);
+    fetchLivePhotos(data.id);
+    setLoading(false);
+
+    if (data.is_paid) {
+      await supabase.rpc('increment_view_count', { event_id: data.id });
+    }
+  };
+
+  const fetchLivePhotos = async (eventId: string) => {
+    const { data } = await supabase
+      .from('event_photos')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false });
+    setLivePhotos(data || []);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !event) return;
+    setUploadingPhoto(true);
+
+    try {
+      const file = e.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${event.id}-${Math.random()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('event-photos')
+        .upload(fileName, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
+      
+      await supabase.from('event_photos').insert({
+        event_id: event.id,
+        photo_url: publicUrl
+      });
+
+      showSuccess('Photo added to the Wall of Fame!');
+      fetchLivePhotos(event.id);
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +100,8 @@ const EventPage = () => {
     const { data, error } = await supabase.from('rsvps').insert({
       event_id: event.id,
       guest_name: rsvpData.name,
-      guest_phone: rsvpData.phone
+      guest_phone: rsvpData.phone,
+      guest_count: rsvpData.guestCount
     }).select().single();
 
     if (error) {
@@ -77,31 +119,12 @@ const EventPage = () => {
     setIsSubmitting(false);
   };
 
-  const shareOnWhatsApp = () => {
-    const text = `You're invited to ${event.event_name}! Check out the details and RSVP here: ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
-
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
       <p className="text-[10px] font-bold tracking-[0.5em] uppercase animate-pulse">Accessing Invitation...</p>
     </div>
   );
-
-  // If event exists but isn't paid, show a "Pending" screen instead of "Not Found"
-  if (event && !event.is_paid) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
-        <div className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
-          <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
-          <h1 className="text-3xl font-serif italic mb-4">Awaiting Activation</h1>
-          <p className="text-gray-500 mb-8 text-sm leading-relaxed">This event page is currently being refined by the host. Please check back shortly.</p>
-          <Link to="/"><Button variant="outline" className="border-white/10 text-[10px] font-bold uppercase tracking-widest px-12 py-6">Return Home</Button></Link>
-        </div>
-      </div>
-    );
-  }
 
   if (!event) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
@@ -115,37 +138,13 @@ const EventPage = () => {
 
   const theme = event.theme || 'modern';
   const themeConfig = {
-    modern: {
-      bg: "bg-[#0a0a1a]",
-      text: "text-white",
-      accent: "text-[#e94560]",
-      button: "bg-[#e94560] hover:bg-[#d43d56]",
-      card: "bg-white/5 border-white/10 backdrop-blur-xl",
-      rsvpCard: "bg-white text-[#0a0a1a]",
-      font: "font-sans"
-    },
-    traditional: {
-      bg: "bg-[#2d1b0d]",
-      text: "text-[#fdfcf0]",
-      accent: "text-[#D4AF37]",
-      button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black",
-      card: "bg-white/5 border-[#D4AF37]/20 shadow-xl",
-      rsvpCard: "bg-[#D4AF37] text-black",
-      font: "font-serif"
-    },
-    elegant: {
-      bg: "bg-white",
-      text: "text-gray-900",
-      accent: "text-black",
-      button: "bg-black hover:bg-gray-800",
-      card: "bg-gray-50 border-gray-100 shadow-lg",
-      rsvpCard: "bg-white border-4 border-black text-black",
-      font: "font-sans"
-    }
+    modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#e94560]", button: "bg-[#e94560] hover:bg-[#d43d56]", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-[#0a0a1a]" },
+    traditional: { bg: "bg-[#2d1b0d]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 shadow-xl", rsvpCard: "bg-[#D4AF37] text-black" },
+    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black hover:bg-gray-800", card: "bg-gray-50 border-gray-100 shadow-lg", rsvpCard: "bg-white border-4 border-black text-black" }
   }[theme as 'modern' | 'traditional' | 'elegant'];
 
   return (
-    <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} ${themeConfig.font} transition-colors duration-700 overflow-x-hidden`}>
+    <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} transition-colors duration-700 overflow-x-hidden`}>
       {/* Hero Section */}
       <div className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
         <motion.img 
@@ -159,13 +158,9 @@ const EventPage = () => {
         <div className={`absolute inset-0 bg-gradient-to-t from-${themeConfig.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block">You Are Cordially Invited</span>
-            <h1 className={`text-4xl sm:text-6xl md:text-8xl lg:text-[9rem] font-serif italic mb-8 md:mb-12 tracking-tight leading-[0.9]`}>
+            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[9rem] font-serif italic mb-8 md:mb-12 tracking-tight leading-[0.9]">
               {event.event_name}
             </h1>
             <div className="max-w-3xl mx-auto">
@@ -176,15 +171,17 @@ const EventPage = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24">
+        {!event.is_paid && (
+          <div className="mb-16 p-8 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-center rounded-[2rem]">
+            <Sparkles className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+            <h3 className="text-xl font-serif italic mb-2">Preview Mode</h3>
+            <p className="text-sm opacity-70">This page is currently pending activation. RSVPs are disabled for guests.</p>
+          </div>
+        )}
+
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
-          {/* Details Column */}
           <div className="md:col-span-3 space-y-12 md:space-y-16">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
                 <Calendar className="w-4 h-4" /> The Particulars
               </h2>
@@ -210,41 +207,33 @@ const EventPage = () => {
               </div>
             </motion.div>
 
-            {/* Photo Gallery Section */}
-            {event.gallery_urls && event.gallery_urls.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}
-              >
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
-                  <ImageIcon className="w-4 h-4" /> The Gallery
+            {/* Wall of Fame (Live Feed) */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
+              <div className="flex justify-between items-center mb-12">
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4">
+                  <Camera className="w-4 h-4" /> Wall of Fame
                 </h2>
-                <div className="grid grid-cols-2 gap-6">
-                  {event.gallery_urls.map((url: string, i: number) => (
-                    <motion.div 
-                      key={i}
-                      whileHover={{ scale: 1.05 }}
-                      className="aspect-square overflow-hidden border border-white/10"
-                    >
-                      <img src={url} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt={`Gallery ${i}`} />
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button 
-                onClick={shareOnWhatsApp}
-                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase flex items-center justify-center gap-4 shadow-2xl shadow-[#25D366]/10"
-              >
-                <Share2 className="w-4 h-4" /> Share on WhatsApp
-              </Button>
+                <Label htmlFor="live-upload" className="cursor-pointer bg-[#D4AF37] text-black px-6 py-3 text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
+                  {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                  <input id="live-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                </Label>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {livePhotos.map((photo, i) => (
+                  <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} className="aspect-square relative group overflow-hidden">
+                    <img src={photo.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Live feed" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Heart className="text-white fill-white w-6 h-6" />
+                    </div>
+                  </motion.div>
+                ))}
+                {livePhotos.length === 0 && (
+                  <div className="col-span-full py-20 text-center border border-dashed border-white/10">
+                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500">Be the first to capture a moment.</p>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
 
@@ -252,12 +241,7 @@ const EventPage = () => {
           <div className="md:col-span-2">
             <AnimatePresence mode="wait">
               {submittedRsvp ? (
-                <motion.div 
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="sticky top-32"
-                >
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32">
                   <div className="text-center mb-12">
                     <div className="bg-green-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle2 className="text-green-500 w-8 h-8" />
@@ -265,58 +249,31 @@ const EventPage = () => {
                     <h2 className="text-2xl font-serif italic mb-2">You're on the list</h2>
                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
-                  
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
-                  
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => setSubmittedRsvp(null)}
-                    className="w-full mt-8 text-[8px] font-bold uppercase tracking-widest opacity-30 hover:opacity-100"
-                  >
-                    RSVP for another guest
-                  </Button>
                 </motion.div>
               ) : (
-                <motion.div 
-                  key="form"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={`${themeConfig.rsvpCard} p-10 md:p-16 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}
-                >
+                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${themeConfig.rsvpCard} p-10 md:p-16 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
                   <div className="flex items-center gap-3 mb-8">
                     <Sparkles className="text-[#D4AF37] w-5 h-5" />
                     <h2 className="text-3xl font-serif italic tracking-tight">The Registry</h2>
                   </div>
-                  <p className="opacity-60 mb-10 text-sm leading-relaxed">Confirm your attendance to secure your place at this exclusive gathering.</p>
-                  
                   <form onSubmit={handleRSVP} className="space-y-8">
                     <div className="space-y-3">
-                      <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
-                      <Input 
-                        id="name" 
-                        required 
-                        className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light"
-                        placeholder="e.g. Tunde Afolayan"
-                        value={rsvpData.name}
-                        onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
-                      />
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
+                      <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="phone" className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
-                      <Input 
-                        id="phone" 
-                        required 
-                        className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light"
-                        placeholder="08012345678"
-                        value={rsvpData.phone}
-                        onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })}
-                      />
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
+                      <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
                     </div>
-                    <Button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className={`w-full ${themeConfig.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}
-                    >
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Number of Guests</Label>
+                      <div className="flex items-center gap-4 bg-black/5 p-2">
+                        <Users className="ml-4 text-gray-400 w-5 h-5" />
+                        <Input type="number" min="1" max="10" required className="bg-transparent border-none h-12 text-lg font-light" value={rsvpData.guestCount} onChange={(e) => setRsvpData({ ...rsvpData, guestCount: parseInt(e.target.value) })} />
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={isSubmitting || !event.is_paid} className={`w-full ${themeConfig.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
                       {isSubmitting ? 'Processing...' : 'Confirm Attendance'}
                     </Button>
                   </form>
