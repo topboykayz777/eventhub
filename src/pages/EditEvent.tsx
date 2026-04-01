@@ -154,7 +154,15 @@ const EditEvent = () => {
           </Button>
           <div className="text-right">
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">The Edit Suite</span>
-            <h1 className="<dyad-write path="src/pages/EditEvent.tsx" description="Fixing syntax error and completing the luxury redesign of the Edit Event page.">
+            <h1 className="text-4xl font-serif italic">Refine Your Masterpiece</h1>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-12">
+          <GlassCard className="p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Type className="text-[#D4AF37] w-5 h<dyad-write path="src/pages/EditEvent.tsx" description="Completing the luxury redesign of the Edit Event page with full functionality.">
 "use client";
 
 import React, { useEffect, useState } from 'react';
