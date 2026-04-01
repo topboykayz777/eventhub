@@ -40,22 +40,21 @@ const VIPCheckout = () => {
         email: email,
         amount: 5000 * 100, // ₦5,000 in kobo
         currency: 'NGN',
-        callback: async (response: any) => {
+        callback: function(response: any) {
           const ref = response.reference;
           
-          const { error } = await supabase.from('tickets').insert({
+          supabase.from('tickets').insert({
             user_email: email,
             reference: ref
+          }).then(({ error }) => {
+            if (error) console.error("[VIPCheckout] Database error:", error);
+            setReference(ref);
+            setIsPaid(true);
+            showSuccess("VIP Ticket Secured.");
+            setLoading(false);
           });
-
-          if (error) console.error("[VIPCheckout] Database error:", error);
-
-          setReference(ref);
-          setIsPaid(true);
-          showSuccess("VIP Ticket Secured.");
-          setLoading(false);
         },
-        onClose: () => {
+        onClose: function() {
           showError("Transaction cancelled.");
           setLoading(false);
         }

@@ -40,7 +40,6 @@ const Payment = () => {
     
     if (!paystack) {
       showError("Payment system is still loading. Please refresh or wait 5 seconds.");
-      console.error("[Payment] PaystackPop not found on window object");
       return;
     }
 
@@ -58,22 +57,25 @@ const Payment = () => {
           event_id: id,
           plan: event.plan
         },
-        callback: async (response: any) => {
+        // Using a standard function instead of async to satisfy Paystack's validation
+        callback: function(response: any) {
           console.log("[Payment] Success:", response);
-          const { error } = await supabase
+          // We handle the async part inside the standard function
+          supabase
             .from('events')
             .update({ is_paid: true })
-            .eq('id', id);
-          
-          if (error) {
-            showError('Payment verification failed. Please contact support.');
-          } else {
-            showSuccess('Payment successful! Your event is now live.');
-            navigate('/dashboard');
-          }
-          setIsProcessing(false);
+            .eq('id', id)
+            .then(({ error }) => {
+              if (error) {
+                showError('Payment verification failed. Please contact support.');
+              } else {
+                showSuccess('Payment successful! Your event is now live.');
+                navigate('/dashboard');
+              }
+              setIsProcessing(false);
+            });
         },
-        onClose: () => {
+        onClose: function() {
           showError('Payment window closed');
           setIsProcessing(false);
         }
@@ -82,7 +84,7 @@ const Payment = () => {
       handler.openIframe();
     } catch (err) {
       console.error("[Payment] Initialization Error:", err);
-      showError("Could not open payment window. Please check your internet connection.");
+      showError("Could not open payment window.");
       setIsProcessing(false);
     }
   };
