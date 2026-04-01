@@ -28,7 +28,7 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
       link.href = canvas.toDataURL("image/png");
       link.download = `${event.event_name}_Elite_Pass.png`;
       link.click();
-      showSuccess('Elite Pass secured to gallery.');
+      showSuccess('HD Elite Pass secured to gallery.');
     } catch (err) {
       showError('Failed to generate pass.');
     }
@@ -49,61 +49,17 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   const theme = event.theme?.toLowerCase() || 'modern';
   
   const themeConfigs: Record<string, any> = {
-    modern: { // Midnight Noir
-      bg: "bg-black/40",
-      accent: "text-[#D4AF37]",
-      border: "border-[#D4AF37]/30",
-      icon: Sparkles,
-      glow: "shadow-[#D4AF37]/10"
-    },
-    traditional: { // Royal Emerald
-      bg: "bg-[#064e3b]/40",
-      accent: "text-[#D4AF37]",
-      border: "border-[#D4AF37]/40",
-      icon: Crown,
-      glow: "shadow-[#D4AF37]/10"
-    },
-    elegant: { // Diamond Ivory
-      bg: "bg-white/40",
-      accent: "text-black",
-      border: "border-black/20",
-      icon: Gem,
-      glow: "shadow-black/5"
-    },
-    sahara: { // Sahara Gold
-      bg: "bg-[#78350f]/40",
-      accent: "text-[#fbbf24]",
-      border: "border-[#fbbf24]/30",
-      icon: Star,
-      glow: "shadow-[#fbbf24]/10"
-    },
-    blush: { // Blush Quartz
-      bg: "bg-[#be185d]/40",
-      accent: "text-[#fbcfe8]",
-      border: "border-[#fbcfe8]/30",
-      icon: Heart,
-      glow: "shadow-[#fbcfe8]/10"
-    },
-    amethyst: { // Amethyst Velvet
-      bg: "bg-[#581c87]/40",
-      accent: "text-[#D4AF37]",
-      border: "border-[#D4AF37]/30",
-      icon: Crown,
-      glow: "shadow-[#D4AF37]/10"
-    },
-    azure: { // Azure Silk
-      bg: "bg-[#1e3a8a]/40",
-      accent: "text-[#93c5fd]",
-      border: "border-[#93c5fd]/30",
-      icon: Sparkles,
-      glow: "shadow-[#93c5fd]/10"
-    }
+    modern: { bg: "bg-black/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Sparkles, glow: "shadow-[#D4AF37]/10" },
+    traditional: { bg: "bg-[#064e3b]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/40", icon: Crown, glow: "shadow-[#D4AF37]/10" },
+    elegant: { bg: "bg-white/60", accent: "text-black", border: "border-black/20", icon: Gem, glow: "shadow-black/5" },
+    sahara: { bg: "bg-[#78350f]/60", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/30", icon: Star, glow: "shadow-[#fbbf24]/10" },
+    blush: { bg: "bg-[#be185d]/60", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/30", icon: Heart, glow: "shadow-[#fbcfe8]/10" },
+    amethyst: { bg: "bg-[#581c87]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Crown, glow: "shadow-[#D4AF37]/10" },
+    azure: { bg: "bg-[#1e3a8a]/60", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/30", icon: Sparkles, glow: "shadow-[#93c5fd]/10" }
   };
 
   const config = themeConfigs[theme] || themeConfigs.modern;
   const Icon = config.icon;
-
-  // The QR code value: either the RSVP ID for check-in, or the event link for invitation
   const qrValue = rsvpId || `${window.location.origin}/event/${event.slug}`;
 
   return (
@@ -114,18 +70,25 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
         ref={cardRef}
         className={`relative aspect-[4/6] w-full rounded-[3rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.glow}`}
       >
-        {/* Background Image Layer - Now visible but subtle */}
+        {/* Background Image Layer - Visible but subtle */}
         <div className="absolute inset-0 z-0">
           <img 
             src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-            className="w-full h-full object-cover grayscale opacity-40"
+            className="w-full h-full object-cover grayscale opacity-50"
             alt="Background"
           />
-          <div className={`absolute inset-0 ${config.bg} backdrop-blur-xl`} />
+          <div className={`absolute inset-0 ${config.bg} backdrop-blur-2xl`} />
         </div>
         
         <div className="relative z-10 h-full flex flex-col p-10 text-center">
-          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[6px] font-black uppercase tracking-widest text-white">HD Sharp</span>
+            </div>
+            <ShieldCheck size={14} className={config.accent} />
+          </div>
+
           <div className="mb-6">
             <div className={`inline-flex p-4 rounded-2xl bg-white/5 backdrop-blur-md mb-6 ${config.accent}`}>
               <Icon size={28} />
@@ -138,7 +101,6 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
             </h2>
           </div>
 
-          {/* QR Section - The Centerpiece */}
           <div className="flex-grow flex flex-col justify-center items-center">
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2.5rem] blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
@@ -151,7 +113,6 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
             </div>
           </div>
 
-          {/* Footer Details */}
           <div className="mt-6 pt-6 border-t border-white/10">
             <div className="space-y-2 mb-4">
               <p className={`text-[7px] font-bold uppercase tracking-[0.4em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
@@ -175,14 +136,14 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
           onClick={handleDownload} 
           className="flex-1 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-[10px] font-bold uppercase tracking-widest transition-all hover:scale-105"
         >
-          <Download className="w-4 h-4 mr-2" /> {rsvpId ? 'Save Pass' : 'Download Card'}
+          <Download className="w-4 h-4 mr-2" /> {rsvpId ? 'Save Pass' : 'Download HD IV'}
         </Button>
         <Button 
           onClick={handleShare}
           variant="outline" 
           className="flex-1 rounded-none border-white/10 bg-white/5 text-white py-8 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10"
         >
-          <Share2 className="w-4 h-4 mr-2" /> Share Invite
+          <Share2 className="w-4 h-4 mr-2" /> Share Link
         </Button>
       </div>
     </div>

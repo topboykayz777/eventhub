@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2, Camera, Users, Heart } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Share2, Sparkles, CheckCircle2, Image as ImageIcon, Loader2, Camera, Users, Heart, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -79,13 +79,22 @@ const EventPage = () => {
         photo_url: publicUrl
       });
 
-      showSuccess('Photo added to the Wall of Fame!');
+      showSuccess('HD Photo added to the Wall of Fame!');
       fetchLivePhotos(event.id);
     } catch (err: any) {
       showError(err.message);
     } finally {
       setUploadingPhoto(false);
     }
+  };
+
+  const downloadImage = (url: string, name: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name}_HD.png`;
+    link.target = "_blank";
+    link.click();
+    showSuccess('HD Asset downloading...');
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
@@ -140,8 +149,12 @@ const EventPage = () => {
   const themeConfig = {
     modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#e94560]", button: "bg-[#e94560] hover:bg-[#d43d56]", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-[#0a0a1a]" },
     traditional: { bg: "bg-[#2d1b0d]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 shadow-xl", rsvpCard: "bg-[#D4AF37] text-black" },
-    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black hover:bg-gray-800", card: "bg-gray-50 border-gray-100 shadow-lg", rsvpCard: "bg-white border-4 border-black text-black" }
-  }[theme as 'modern' | 'traditional' | 'elegant'];
+    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black hover:bg-gray-800", card: "bg-gray-50 border-gray-100 shadow-lg", rsvpCard: "bg-white border-4 border-black text-black" },
+    sahara: { bg: "bg-[#78350f]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", button: "bg-[#fbbf24] hover:bg-[#d97706] text-black", card: "bg-white/5 border-[#fbbf24]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbbf24] text-black" },
+    blush: { bg: "bg-[#be185d]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", button: "bg-[#fbcfe8] hover:bg-[#f9a8d4] text-black", card: "bg-white/5 border-[#fbcfe8]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbcfe8] text-black" },
+    amethyst: { bg: "bg-[#581c87]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
+    azure: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", button: "bg-[#93c5fd] hover:bg-[#60a5fa] text-black", card: "bg-white/5 border-[#93c5fd]/20 backdrop-blur-xl", rsvpCard: "bg-[#93c5fd] text-black" }
+  }[theme as string] || { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#e94560]", button: "bg-[#e94560] hover:bg-[#d43d56]", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-[#0a0a1a]" };
 
   const hasGallery = event.plan === 'Standard' || event.plan === 'Pro';
   const hasDigitalInvite = event.plan === 'Standard' || event.plan === 'Pro';
@@ -184,6 +197,14 @@ const EventPage = () => {
 
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           <div className="md:col-span-3 space-y-12 md:space-y-16">
+            {/* The Digital IV - Featured prominently for guests */}
+            {hasDigitalInvite && (
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 text-center">The Official Invitation</h2>
+                <DigitalInvite event={event} />
+              </motion.div>
+            )}
+
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
                 <Calendar className="w-4 h-4" /> The Particulars
@@ -218,7 +239,7 @@ const EventPage = () => {
                     <Camera className="w-4 h-4" /> Wall of Fame
                   </h2>
                   <Label htmlFor="live-upload" className="cursor-pointer bg-[#D4AF37] text-black px-6 py-3 text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
-                    {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                    {uploadingPhoto ? 'Uploading...' : 'Add HD Photo'}
                     <input id="live-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
                   </Label>
                 </div>
@@ -227,8 +248,16 @@ const EventPage = () => {
                   {livePhotos.map((photo, i) => (
                     <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} className="aspect-square relative group overflow-hidden">
                       <img src={photo.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Live feed" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Heart className="text-white fill-white w-6 h-6" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
+                        <div className="flex items-center gap-2 px-2 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
+                          <span className="text-[6px] font-black uppercase tracking-widest text-white">HD Sharp</span>
+                        </div>
+                        <button 
+                          onClick={() => downloadImage(photo.photo_url, `Event_Photo_${i}`)}
+                          className="p-3 bg-[#D4AF37] rounded-full text-black hover:scale-110 transition-transform"
+                        >
+                          <Download size={16} />
+                        </button>
                       </div>
                     </motion.div>
                   ))}
