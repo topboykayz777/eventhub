@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Crown, Sparkles, Gem, Landmark } from 'lucide-react';
+import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
 import { QRCodeSVG } from 'qrcode.react';
@@ -19,7 +19,11 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   const handleDownload = async () => {
     if (!cardRef.current) return;
     try {
-      const canvas = await html2canvas(cardRef.current, { useCORS: true, scale: 3, backgroundColor: '#000000' });
+      const canvas = await html2canvas(cardRef.current, { 
+        useCORS: true, 
+        scale: 3, 
+        backgroundColor: '#000000' 
+      });
       const link = document.createElement('a');
       link.href = canvas.toDataURL("image/png");
       link.download = `${event.event_name}_Elite_Pass.png`;
@@ -31,7 +35,11 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   };
 
   const handleShare = async () => {
-    const shareData = { title: event.event_name, text: `I'm attending ${event.event_name}!`, url: window.location.href };
+    const shareData = { 
+      title: event.event_name, 
+      text: `I'm attending ${event.event_name}! Here is my digital entry pass.`, 
+      url: window.location.href 
+    };
     try {
       if (navigator.share) await navigator.share(shareData);
       else window.open(`https://wa.me/?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`, '_blank');
@@ -39,84 +47,149 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   };
 
   const theme = event.theme?.toLowerCase() || 'modern';
-  const configs: Record<string, any> = {
-    modern: { bg: "bg-[#0a0a1a]", accent: "text-[#e94560]", border: "border-[#e94560]/20", icon: Sparkles, pattern: "opacity-10 bg-[radial-gradient(#e94560_1px,transparent_1px)] [background-size:20px_20px]" },
-    traditional: { bg: "bg-[#2d1b0d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Crown, pattern: "opacity-10 bg-[url('https://www.transparenttextures.com/patterns/az-subtle.png')]" },
-    elegant: { bg: "bg-white", accent: "text-black", border: "border-black/10", icon: Gem, pattern: "opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" }
+  
+  const themeConfigs: Record<string, any> = {
+    modern: { // Midnight Noir
+      bg: "bg-black/40",
+      accent: "text-[#D4AF37]",
+      border: "border-[#D4AF37]/30",
+      icon: Sparkles,
+      glow: "shadow-[#D4AF37]/10"
+    },
+    traditional: { // Royal Emerald
+      bg: "bg-[#064e3b]/40",
+      accent: "text-[#D4AF37]",
+      border: "border-[#D4AF37]/40",
+      icon: Crown,
+      glow: "shadow-[#D4AF37]/10"
+    },
+    elegant: { // Diamond Ivory
+      bg: "bg-white/40",
+      accent: "text-black",
+      border: "border-black/20",
+      icon: Gem,
+      glow: "shadow-black/5"
+    },
+    sahara: { // Sahara Gold
+      bg: "bg-[#78350f]/40",
+      accent: "text-[#fbbf24]",
+      border: "border-[#fbbf24]/30",
+      icon: Star,
+      glow: "shadow-[#fbbf24]/10"
+    },
+    blush: { // Blush Quartz
+      bg: "bg-[#be185d]/40",
+      accent: "text-[#fbcfe8]",
+      border: "border-[#fbcfe8]/30",
+      icon: Heart,
+      glow: "shadow-[#fbcfe8]/10"
+    },
+    amethyst: { // Amethyst Velvet
+      bg: "bg-[#581c87]/40",
+      accent: "text-[#D4AF37]",
+      border: "border-[#D4AF37]/30",
+      icon: Crown,
+      glow: "shadow-[#D4AF37]/10"
+    },
+    azure: { // Azure Silk
+      bg: "bg-[#1e3a8a]/40",
+      accent: "text-[#93c5fd]",
+      border: "border-[#93c5fd]/30",
+      icon: Sparkles,
+      glow: "shadow-[#93c5fd]/10"
+    }
   };
-  const config = configs[theme] || configs.modern;
+
+  const config = themeConfigs[theme] || themeConfigs.modern;
   const Icon = config.icon;
 
   return (
-    <div className="space-y-6 w-full max-w-xs mx-auto">
+    <div className="space-y-8 w-full max-w-sm mx-auto">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         ref={cardRef}
-        className={`relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.bg}`}
+        className={`relative aspect-[4/6] w-full rounded-[3rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.glow}`}
       >
-        <div className={`absolute inset-0 ${config.pattern}`} />
+        {/* Background Image Layer */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
+            className="w-full h-full object-cover grayscale opacity-40"
+            alt="Background"
+          />
+          <div className={`absolute inset-0 ${config.bg} backdrop-blur-xl`} />
+        </div>
         
-        <div className="relative z-10 h-full flex flex-col p-8 text-center">
-          <div className="mb-4">
-            <div className={`inline-flex p-3 rounded-xl bg-white/5 backdrop-blur-md mb-4 ${config.accent}`}>
-              <Icon size={24} />
+        <div className="relative z-10 h-full flex flex-col p-10 text-center">
+          {/* Header */}
+          <div className="mb-6">
+            <div className={`inline-flex p-4 rounded-2xl bg-white/5 backdrop-blur-md mb-6 ${config.accent}`}>
+              <Icon size={28} />
             </div>
-            <p className={`text-[7px] font-black uppercase tracking-[0.4em] mb-2 ${config.accent}`}>
+            <p className={`text-[8px] font-black uppercase tracking-[0.5em] mb-3 ${config.accent}`}>
               {rsvpId ? 'Elite Entry Pass' : 'Official Invitation'}
             </p>
-            <h2 className={`text-xl md:text-2xl font-serif italic leading-tight ${theme === 'elegant' ? 'text-black' : 'text-white'}`}>
+            <h2 className={`text-2xl md:text-3xl font-serif italic leading-tight ${theme === 'elegant' ? 'text-black' : 'text-white'}`}>
               {event.event_name}
             </h2>
           </div>
 
+          {/* QR Section - The Centerpiece */}
           <div className="flex-grow flex flex-col justify-center items-center">
             {rsvpId ? (
-              <div className="bg-white p-4 rounded-2xl shadow-xl border-4 border-black/5">
-                <QRCodeSVG value={rsvpId} size={120} level="H" />
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2.5rem] blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+                <div className="relative bg-white p-6 rounded-[2rem] shadow-2xl border-8 border-black/5">
+                  <QRCodeSVG value={rsvpId} size={140} level="H" />
+                </div>
+                <p className={`mt-6 text-[8px] font-bold uppercase tracking-[0.3em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
+                  Scan at the Concierge
+                </p>
               </div>
             ) : (
-              <div className="space-y-4 py-4 border-y border-black/5 w-full">
+              <div className="space-y-6 py-8 border-y border-white/10 w-full">
                 <div>
-                  <p className="text-[6px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-1">The Date</p>
-                  <p className={`text-sm font-serif italic ${theme === 'elegant' ? 'text-black' : 'text-white'}`}>
+                  <p className={`text-[7px] font-bold uppercase tracking-[0.4em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'} mb-2`}>The Date</p>
+                  <p className={`text-lg font-serif italic ${theme === 'elegant' ? 'text-black' : 'text-white'}`}>
                     {new Date(event.event_date).toLocaleDateString('en-NG', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[6px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-1">The Venue</p>
-                  <p className="text-[10px] font-medium text-gray-400 leading-relaxed px-4">{event.venue}</p>
+                  <p className={`text-[7px] font-bold uppercase tracking-[0.4em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'} mb-2`}>The Venue</p>
+                  <p className={`text-[11px] font-medium leading-relaxed px-4 ${theme === 'elegant' ? 'text-gray-600' : 'text-gray-300'}`}>{event.venue}</p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-black/5">
-            <div className="flex justify-center items-center gap-2 mb-2">
-              <div className="h-px w-4 bg-black/10" />
-              <Landmark size={10} className="text-gray-400" />
-              <div className="h-px w-4 bg-black/10" />
+          {/* Footer */}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="flex justify-center items-center gap-3 mb-3">
+              <div className={`h-px w-6 ${theme === 'elegant' ? 'bg-black/10' : 'bg-white/10'}`} />
+              <Landmark size={12} className="text-gray-500" />
+              <div className={`h-px w-6 ${theme === 'elegant' ? 'bg-black/10' : 'bg-white/10'}`} />
             </div>
-            <p className="text-[6px] font-black uppercase tracking-[0.4em] text-gray-400">
+            <p className="text-[7px] font-black uppercase tracking-[0.5em] text-gray-500">
               Event Hub Nigeria • Elite Series
             </p>
           </div>
         </div>
       </motion.div>
 
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button 
           onClick={handleDownload} 
-          className="flex-1 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-6 text-[8px] font-bold uppercase tracking-widest transition-all hover:scale-105"
+          className="flex-1 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-[10px] font-bold uppercase tracking-widest transition-all hover:scale-105"
         >
-          <Download className="w-3 h-3 mr-2" /> {rsvpId ? 'Save Pass' : 'Download Card'}
+          <Download className="w-4 h-4 mr-2" /> {rsvpId ? 'Save Pass' : 'Download Card'}
         </Button>
         <Button 
           onClick={handleShare}
           variant="outline" 
-          className="flex-1 rounded-none border-white/10 bg-white/5 text-white py-6 text-[8px] font-bold uppercase tracking-widest hover:bg-white/10"
+          className="flex-1 rounded-none border-white/10 bg-white/5 text-white py-8 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10"
         >
-          <Share2 className="w-3 h-3 mr-2" /> Share Invite
+          <Share2 className="w-4 h-4 mr-2" /> Share Invite
         </Button>
       </div>
     </div>
