@@ -4,85 +4,79 @@
 
 @layer base {
   :root {
-    --background: 0 0% 7%;
+    --background: 0 0% 5%; /* Deeper Obsidian */
     --foreground: 0 0% 98%;
-    --card: 0 0% 10%;
+    --card: 0 0% 8%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;
+    --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 45 60% 53%; /* Champagne Gold */
-    --primary-foreground: 0 0% 7%;
-    --secondary: 0 0% 15%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
     --accent: 45 60% 53%;
-    --accent-foreground: 0 0% 7%;
+    --accent-foreground: 0 0% 5%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
     --ring: 45 60% 53%;
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 }
 
 @layer utilities {
-  .animate-reveal {
-    animation: reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+  .glass-premium {
+    @apply bg-white/[0.03] backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
+  }
+  
+  .gold-gradient {
+    background: linear-gradient(135deg, #D4AF37 0%, #F9E4B7 50%, #D4AF37 100%);
+  }
+
+  .text-gold {
+    @apply bg-clip-text text-transparent gold-gradient;
+  }
+
+  .animate-silk-reveal {
+    animation: silk-reveal 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
   }
   
   .animate-slow-zoom {
-    animation: slow-zoom 20s linear infinite alternate;
+    animation: slow-zoom 30s linear infinite alternate;
   }
 
-  /* Custom scrollbar for a cleaner look */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
+    background: #050505;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.2);
+    background: #D4AF37;
     border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.4);
   }
 }
 
-@keyframes reveal {
-  0% { transform: translateY(100%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+@keyframes silk-reveal {
+  0% { transform: translateY(40px); opacity: 0; filter: blur(10px); }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
 }
 
 @keyframes slow-zoom {
   0% { transform: scale(1); }
-  100% { transform: scale(1.1); }
+  100% { transform: scale(1.2); }
 }
 
-/* iPhone 13 & Mobile Lock */
 html, body {
-  @apply bg-[#0f0f0f] text-white antialiased;
+  @apply bg-[#050505] text-white antialiased selection:bg-[#D4AF37] selection:text-black;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
   overflow-x: hidden;
-  position: relative;
 }
 
-/* Ensure all images are responsive by default */
-img {
-  @apply max-w-full h-auto;
-}
-
-/* Prevent horizontal scroll on root */
 #root {
   @apply overflow-x-hidden max-w-full w-full;
-  position: relative;
-}
-
-/* Fix for potential overflow from absolute elements */
-* {
-  @apply box-border;
 }
