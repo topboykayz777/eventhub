@@ -28,15 +28,22 @@ const EventPage = () => {
   }, [slug]);
 
   const fetchEvent = async () => {
-    // Robust slug lookup
+    if (!slug) return;
+
+    // Robust case-insensitive slug lookup
     const { data, error } = await supabase
       .from('events')
       .select('*, profiles(full_name)')
-      .eq('slug', slug)
+      .ilike('slug', slug)
       .maybeSingle();
 
-    if (error || !data) {
-      console.error("[EventPage] Fetch error or no data:", error);
+    if (error) {
+      console.error("[EventPage] Fetch error:", error);
+      setLoading(false);
+      return;
+    }
+
+    if (!data) {
       setLoading(false);
       return;
     }

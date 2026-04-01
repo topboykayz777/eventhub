@@ -53,7 +53,7 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
     traditional: { bg: "bg-[#064e3b]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/40", icon: Crown, glow: "shadow-[#D4AF37]/10" },
     elegant: { bg: "bg-white/60", accent: "text-black", border: "border-black/20", icon: Gem, glow: "shadow-black/5" },
     sahara: { bg: "bg-[#78350f]/60", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/30", icon: Star, glow: "shadow-[#fbbf24]/10" },
-    blush: { bg: "bg-[#be185d]/60", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/30", icon: Heart, glow: "shadow-[#fbcfe8]/10" },
+    blush: { bg: "bg-[#be185d]/60", accent: "text-[#fdf2f8]", border: "border-[#fbcfe8]/30", icon: Heart, glow: "shadow-[#fbcfe8]/10" },
     amethyst: { bg: "bg-[#581c87]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Crown, glow: "shadow-[#D4AF37]/10" },
     azure: { bg: "bg-[#1e3a8a]/60", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/30", icon: Sparkles, glow: "shadow-[#93c5fd]/10" }
   };
