@@ -79,43 +79,51 @@ const Dashboard = () => {
   };
 
   const handleQRScan = async (scannedText: string) => {
+    const trimmedText = scannedText.trim();
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     
-    if (!uuidRegex.test(scannedText)) {
-      showError("Invalid QR: This is not a guest ticket.");
+    // Check if it's a URL (Invitation) instead of a UUID (Ticket)
+    if (trimmedText.startsWith('http')) {
+      showError("This is an Invitation Link, not a Guest Ticket. Guests must RSVP first to get a ticket.");
+      return;
+    }
+
+    if (!uuidRegex.test(trimmedText)) {
+      showError("Invalid QR: This is not a recognized guest ticket.");
       return;
     }
 
     const { data: rsvp, error: fetchError } = await supabase
       .from('rsvps')
-      .select('*, events(id)')
-      .eq('id', scannedText)
+      .select('*, events(id, event_name)')
+      .eq('id', trimmedText)
       .single();
 
     if (fetchError || !rsvp) {
-      showError("Invalid Guest Ticket");
+      showError("Ticket not found in the registry.");
       return;
     }
 
     if (rsvp.event_id !== activeEventId) {
-      showError("This guest belongs to a different event");
+      showError(`This ticket belongs to another event: ${rsvp.events?.event_name}`);
       return;
     }
 
     if (rsvp.checked_in) {
-      showSuccess(`${rsvp.guest_name} is already checked in`);
+      showSuccess(`${rsvp.guest_name} is already checked in.`);
       return;
     }
 
     const { error: updateError } = await supabase
       .from('rsvps')
       .update({ checked_in: true })
-      .eq('id', scannedText);
+      .eq('id', trimmedText);
 
     if (updateError) {
-      showError("Check-in failed");
+      showError("Check-in failed. Please try manual entry.");
     } else {
-      showSuccess(`Welcome, ${rsvp.guest_name}!`);
+      showSuccess(`Welcome, ${rsvp.guest_name}! Check-in successful.`);
+      fetchEvents(); // Refresh to update counts
     }
   };
 
@@ -151,7 +159,6 @@ const Dashboard = () => {
     const url = `${window.location.origin}/event/${event.slug}`;
     const message = `✨ You are cordially invited to ${event.event_name} ✨\n\nPlease view the official invitation and RSVP here: ${url}\n\nWe look forward to celebrating with you!`;
     
-    // Use a direct link to ensure it bypasses popup blockers better
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     showSuccess('WhatsApp sharing initiated.');
