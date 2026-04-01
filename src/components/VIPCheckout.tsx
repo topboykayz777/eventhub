@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { Crown, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Crown, Sparkles, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 import TicketQR from './TicketQR';
 
 const VIPCheckout = () => {
@@ -14,28 +14,14 @@ const VIPCheckout = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [reference, setReference] = useState('');
   const [loading, setLoading] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-
-  useEffect(() => {
-    const loadScript = () => {
-      if (window.hasOwnProperty('PaystackPop')) {
-        setScriptLoaded(true);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://js.paystack.co/v1/inline.js';
-      script.async = true;
-      script.onload = () => setScriptLoaded(true);
-      document.body.appendChild(script);
-    };
-    loadScript();
-  }, []);
 
   const payNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     
-    if (!scriptLoaded) {
-      showError("Payment system is still initializing. Please wait a moment.");
+    const paystack = (window as any).PaystackPop;
+    
+    if (!paystack) {
+      showError("Payment system is still loading. Please wait a moment.");
       return;
     }
 
@@ -49,8 +35,7 @@ const VIPCheckout = () => {
     try {
       const PAYSTACK_PUBLIC_KEY = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
       
-      // @ts-ignore
-      const handler = PaystackPop.setup({
+      const handler = paystack.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: email,
         amount: 5000 * 100, // ₦5,000 in kobo
@@ -58,13 +43,12 @@ const VIPCheckout = () => {
         callback: async (response: any) => {
           const ref = response.reference;
           
-          // Save to Supabase
           const { error } = await supabase.from('tickets').insert({
             user_email: email,
             reference: ref
           });
 
-          if (error) console.error("Database error:", error);
+          if (error) console.error("[VIPCheckout] Database error:", error);
 
           setReference(ref);
           setIsPaid(true);
@@ -79,7 +63,7 @@ const VIPCheckout = () => {
 
       handler.openIframe();
     } catch (err) {
-      console.error("Paystack error:", err);
+      console.error("[VIPCheckout] Initialization Error:", err);
       showError("Could not open payment window.");
       setLoading(false);
     }
@@ -137,7 +121,7 @@ const VIPCheckout = () => {
             disabled={loading}
             className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-xl text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500 shadow-xl shadow-[#D4AF37]/10"
           >
-            {loading ? 'Processing...' : 'Buy VIP Ticket'} <ArrowRight className="ml-2 w-4 h-4" />
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buy VIP Ticket'} <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
 

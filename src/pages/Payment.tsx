@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
-import { CreditCard, ShieldCheck } from 'lucide-react';
+import { CreditCard, ShieldCheck, Loader2 } from 'lucide-react';
 
 const Payment = () => {
   const { id } = useParams();
@@ -14,7 +14,7 @@ const Payment = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchEventAndUser = async () => {
@@ -31,59 +31,67 @@ const Payment = () => {
       setLoading(false);
     };
     fetchEventAndUser();
-
-    // Load Paystack Script
-    if (window.hasOwnProperty('PaystackPop')) {
-      setScriptLoaded(true);
-    } else {
-      const script = document.createElement('script');
-      script.src = 'https://js.paystack.co/v1/inline.js';
-      script.async = true;
-      script.onload = () => setScriptLoaded(true);
-      document.body.appendChild(script);
-    }
   }, [id, navigate]);
 
   const handlePayment = () => {
-    if (!scriptLoaded) {
-      showError("Payment system is initializing...");
+    if (isProcessing) return;
+    
+    const paystack = (window as any).PaystackPop;
+    
+    if (!paystack) {
+      showError("Payment system is still loading. Please refresh or wait 5 seconds.");
+      console.error("[Payment] PaystackPop not found on window object");
       return;
     }
 
+    setIsProcessing(true);
     const amount = event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000;
     const paystackKey = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
 
     try {
-      // @ts-ignore
-      const handler = PaystackPop.setup({
+      const handler = paystack.setup({
         key: paystackKey,
         email: userEmail || 'customer@eventhub.ng',
         amount: amount * 100,
         currency: 'NGN',
+        metadata: {
+          event_id: id,
+          plan: event.plan
+        },
         callback: async (response: any) => {
+          console.log("[Payment] Success:", response);
           const { error } = await supabase
             .from('events')
             .update({ is_paid: true })
             .eq('id', id);
           
           if (error) {
-            showError('Payment verification failed');
+            showError('Payment verification failed. Please contact support.');
           } else {
             showSuccess('Payment successful! Your event is now live.');
             navigate('/dashboard');
           }
+          setIsProcessing(false);
         },
         onClose: () => {
-          showError('Payment cancelled');
+          showError('Payment window closed');
+          setIsProcessing(false);
         }
       });
+      
       handler.openIframe();
     } catch (err) {
-      showError("Could not initialize payment.");
+      console.error("[Payment] Initialization Error:", err);
+      showError("Could not open payment window. Please check your internet connection.");
+      setIsProcessing(false);
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0a0a1a] text-white">Loading Payment Details...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0a0a1a] text-white">
+      <Loader2 className="w-8 h-8 animate-spin text-[#e94560]" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white">
@@ -109,9 +117,10 @@ const Payment = () => {
 
           <Button 
             onClick={handlePayment}
+            disabled={isProcessing}
             className="w-full bg-[#e94560] hover:bg-[#d43d56] text-white py-8 rounded-2xl text-xl font-black shadow-xl shadow-[#e94560]/20 transition-all hover:scale-105 active:scale-95"
           >
-            PAY WITH PAYSTACK
+            {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : 'PAY WITH PAYSTACK'}
           </Button>
           
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
