@@ -6,6 +6,7 @@ import { Download, Share2, Heart, Star, PartyPopper, GlassWater, Music, Crown, S
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion } from 'framer-motion';
 
 interface DigitalInviteProps {
   event: any;
@@ -21,199 +22,162 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
     try {
       const canvas = await html2canvas(cardRef.current, {
         useCORS: true,
-        scale: 2,
-        backgroundColor: '#1a1a2e'
+        scale: 3, // Higher scale for "Nanobanana" quality
+        backgroundColor: '#000000'
       });
       
       const image = canvas.toDataURL("image/png");
       const link = document.createElement('a');
       link.href = image;
-      link.download = `${event.event_name}_Invite.png`;
+      link.download = `${event.event_name}_Elite_Pass.png`;
       link.click();
-      showSuccess('Invitation card saved to your device!');
+      showSuccess('Your Elite Pass has been secured to your gallery.');
     } catch (err) {
-      showError('Failed to generate image. Please try again.');
+      showError('Failed to generate high-res image.');
     }
   };
 
-  const getDesignType = () => {
-    const name = event.event_name.toLowerCase();
+  const handleShare = async () => {
+    const shareData = {
+      title: event.event_name,
+      text: `I'm attending ${event.event_name}! Here is my digital entry pass.`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback to WhatsApp
+        const text = encodeURIComponent(`${shareData.text} ${shareData.url}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+      }
+    } catch (err) {
+      console.log('Share cancelled');
+    }
+  };
+
+  const getDesignConfig = () => {
     const theme = event.theme?.toLowerCase() || 'modern';
-
-    if (name.includes('wedding')) return 'royal-wedding';
-    if (name.includes('gala')) return 'midnight-gala';
-    if (name.includes('birthday')) return 'celebration-gold';
-    if (name.includes('concert') || name.includes('music')) return 'neon-vibe';
-    if (name.includes('corporate') || name.includes('launch')) return 'minimal-executive';
-    if (name.includes('traditional') || theme === 'traditional') return 'heritage-classic';
-    if (name.includes('party')) return 'electric-night';
-    if (name.includes('anniversary')) return 'diamond-anniversary';
-    if (name.includes('fashion')) return 'vogue-chic';
-    return 'standard-elite';
+    
+    const configs: Record<string, any> = {
+      modern: {
+        bg: "bg-[#0a0a1a]",
+        accent: "text-[#e94560]",
+        border: "border-[#e94560]/30",
+        gradient: "from-[#e94560]/20 to-transparent",
+        icon: Sparkles
+      },
+      traditional: {
+        bg: "bg-[#2d1b0d]",
+        accent: "text-[#D4AF37]",
+        border: "border-[#D4AF37]/40",
+        gradient: "from-[#D4AF37]/20 to-transparent",
+        icon: Crown
+      },
+      elegant: {
+        bg: "bg-white",
+        accent: "text-black",
+        border: "border-black/10",
+        gradient: "from-gray-100 to-transparent",
+        icon: Gem
+      }
+    };
+    
+    return configs[theme] || configs.modern;
   };
 
-  const design = getDesignType();
-
-  const designConfigs: Record<string, any> = {
-    'royal-wedding': {
-      bg: "bg-[#fdfcf0]",
-      border: "border-[#b8860b]",
-      text: "text-[#5d4037]",
-      accent: "text-[#b8860b]",
-      icon: Heart,
-      pattern: "opacity-10",
-      font: "font-serif"
-    },
-    'midnight-gala': {
-      bg: "bg-[#0a0a1a]",
-      border: "border-[#D4AF37]",
-      text: "text-white",
-      accent: "text-[#D4AF37]",
-      icon: GlassWater,
-      pattern: "opacity-20",
-      font: "font-serif"
-    },
-    'celebration-gold': {
-      bg: "bg-gradient-to-br from-[#D4AF37] to-[#B8860B]",
-      border: "border-white/20",
-      text: "text-black",
-      accent: "text-black/60",
-      icon: Crown,
-      pattern: "opacity-30",
-      font: "font-sans"
-    },
-    'neon-vibe': {
-      bg: "bg-black",
-      border: "border-[#e94560]",
-      text: "text-white",
-      accent: "text-[#e94560]",
-      icon: Music,
-      pattern: "opacity-40",
-      font: "font-sans"
-    },
-    'minimal-executive': {
-      bg: "bg-white",
-      border: "border-gray-900",
-      text: "text-gray-900",
-      accent: "text-gray-400",
-      icon: Landmark,
-      pattern: "opacity-5",
-      font: "font-sans"
-    },
-    'heritage-classic': {
-      bg: "bg-[#5d4037]",
-      border: "border-[#b8860b]",
-      text: "text-[#fdfcf0]",
-      accent: "text-[#b8860b]",
-      icon: Star,
-      pattern: "opacity-20",
-      font: "font-serif"
-    },
-    'electric-night': {
-      bg: "bg-[#1a1a2e]",
-      border: "border-[#4ecca3]",
-      text: "text-white",
-      accent: "text-[#4ecca3]",
-      icon: PartyPopper,
-      pattern: "opacity-20",
-      font: "font-sans"
-    },
-    'diamond-anniversary': {
-      bg: "bg-gray-50",
-      border: "border-gray-200",
-      text: "text-gray-800",
-      accent: "text-blue-400",
-      icon: Gem,
-      pattern: "opacity-10",
-      font: "font-serif"
-    },
-    'vogue-chic': {
-      bg: "bg-black",
-      border: "border-white",
-      text: "text-white",
-      accent: "text-gray-500",
-      icon: Camera,
-      pattern: "opacity-10",
-      font: "font-serif"
-    },
-    'standard-elite': {
-      bg: "bg-[#0f0f0f]",
-      border: "border-[#D4AF37]",
-      text: "text-white",
-      accent: "text-[#D4AF37]",
-      icon: Sparkles,
-      pattern: "opacity-10",
-      font: "font-sans"
-    }
-  };
-
-  const config = designConfigs[design];
+  const config = getDesignConfig();
   const Icon = config.icon;
 
   return (
-    <div className="space-y-6">
-      <div 
+    <div className="space-y-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         ref={cardRef}
-        className={`aspect-[4/5] w-full max-w-sm mx-auto rounded-[2.5rem] p-10 text-center flex flex-col justify-between border-4 shadow-2xl relative overflow-hidden ${config.bg} ${config.text} ${config.font}`}
+        className={`relative aspect-[4/6] w-full max-w-sm mx-auto rounded-[3rem] overflow-hidden shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)] border-4 ${config.border} ${config.bg}`}
       >
-        {/* Background Decoration */}
-        <div className={`absolute inset-0 ${config.pattern} pointer-events-none flex items-center justify-center`}>
-          <Icon size={300} className="rotate-12" />
+        {/* Luxury Textures */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient}`} />
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
         </div>
 
-        <div className="z-10">
-          <div className="flex justify-center mb-6">
-            <div className={`p-4 rounded-full ${config.bg === 'bg-white' ? 'bg-gray-100' : 'bg-white/5'} ${config.accent}`}>
+        <div className="relative z-10 h-full flex flex-col p-10 text-center">
+          {/* Header */}
+          <div className="mb-8">
+            <div className={`inline-flex p-4 rounded-2xl bg-white/5 backdrop-blur-md mb-6 ${config.accent}`}>
               <Icon size={32} />
             </div>
+            <p className={`text-[10px] font-black uppercase tracking-[0.5em] mb-4 ${config.accent}`}>
+              {rsvpId ? 'Official Entry Pass' : 'Formal Invitation'}
+            </p>
+            <h2 className={`text-3xl md:text-4xl font-serif italic leading-tight text-white`}>
+              {event.event_name}
+            </h2>
           </div>
-          <p className={`font-bold tracking-[0.4em] uppercase text-[10px] mb-4 ${config.accent}`}>
-            {rsvpId ? 'Official Entry Pass' : 'Formal Invitation'}
-          </p>
-          <h2 className={`text-3xl md:text-4xl font-serif italic leading-tight mb-4`}>{event.event_name}</h2>
-          <div className={`w-16 h-0.5 mx-auto ${config.accent.replace('text-', 'bg-')}`} />
-        </div>
 
-        <div className="z-10 space-y-6">
-          {rsvpId ? (
-            <div className="bg-white p-6 rounded-3xl inline-block mx-auto shadow-2xl border-8 border-black/5">
-              <QRCodeSVG 
-                value={rsvpId} 
-                size={140}
-                fgColor="#000000"
-              />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <p className={`${config.accent} text-[8px] font-bold uppercase tracking-[0.3em] mb-2 opacity-60`}>The Date</p>
-                <p className="font-serif italic text-xl">
-                  {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}
-                </p>
-                <p className={`font-bold text-sm mt-1 ${config.accent}`}>
-                  At {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {/* QR Section - The Masterpiece */}
+          <div className="flex-grow flex flex-col justify-center items-center">
+            {rsvpId ? (
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2.5rem] blur-lg opacity-30 group-hover:opacity-50 transition-opacity" />
+                <div className="relative bg-white p-6 rounded-[2rem] shadow-2xl border-8 border-black/5">
+                  <QRCodeSVG 
+                    value={rsvpId} 
+                    size={160}
+                    level="H"
+                    includeMargin={false}
+                  />
+                </div>
+                <p className="mt-6 text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500">
+                  Scan at the Concierge
                 </p>
               </div>
-              
-              <div>
-                <p className={`${config.accent} text-[8px] font-bold uppercase tracking-[0.3em] mb-2 opacity-60`}>The Venue</p>
-                <p className="font-medium text-sm leading-relaxed px-4">{event.venue}</p>
+            ) : (
+              <div className="space-y-6 py-8 border-y border-white/5 w-full">
+                <div>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-2">The Date</p>
+                  <p className="text-xl font-serif italic text-white">
+                    {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-2">The Venue</p>
+                  <p className="text-sm font-medium text-gray-300 leading-relaxed px-4">{event.venue}</p>
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 pt-8 border-t border-white/5">
+            <div className="flex justify-center items-center gap-3 mb-4">
+              <div className="h-px w-8 bg-white/10" />
+              <Landmark size={14} className="text-gray-600" />
+              <div className="h-px w-8 bg-white/10" />
             </div>
-          )}
+            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-gray-600">
+              Event Hub Nigeria • Elite Series
+            </p>
+          </div>
         </div>
+      </motion.div>
 
-        <div className="z-10 pt-8 border-t border-black/5">
-          <p className="opacity-40 text-[9px] font-bold uppercase tracking-[0.4em]">Event Hub Nigeria • Elite Series</p>
-        </div>
-      </div>
-
-      <div className="flex gap-4 justify-center">
-        <Button onClick={handleDownload} className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
+        <Button 
+          onClick={handleDownload} 
+          className="flex-1 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-[10px] font-bold uppercase tracking-widest transition-all hover:scale-105"
+        >
           <Download className="w-4 h-4 mr-2" /> {rsvpId ? 'Save Pass' : 'Download Card'}
         </Button>
-        <Button variant="outline" className="rounded-none border-white/10 bg-white/5 text-white px-8 py-6 text-[10px] font-bold uppercase tracking-widest">
-          <Share2 className="w-4 h-4 mr-2" /> Share
+        <Button 
+          onClick={handleShare}
+          variant="outline" 
+          className="flex-1 rounded-none border-white/10 bg-white/5 text-white py-8 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10"
+        >
+          <Share2 className="w-4 h-4 mr-2" /> Share Invite
         </Button>
       </div>
     </div>
