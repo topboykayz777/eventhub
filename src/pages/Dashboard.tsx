@@ -28,17 +28,12 @@ const Dashboard = () => {
   useEffect(() => {
     fetchEvents();
 
-    // Establish real-time subscription for instant updates
-    // This ensures the dashboard updates the moment a guest RSVPs
     const channel = supabase
       .channel('dashboard-changes')
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'rsvps' }, 
-        () => {
-          console.log("[Dashboard] Live update detected in registry.");
-          fetchEvents();
-        }
+        () => fetchEvents()
       )
       .on(
         'postgres_changes', 
@@ -82,14 +77,13 @@ const Dashboard = () => {
     if (error) showError("Update failed");
     else {
       showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
-      fetchEvents(); // Immediate local refresh
+      fetchEvents();
     }
   };
 
   const handleQRScan = async (scannedText: string) => {
     const trimmedText = scannedText.trim();
     
-    // If it's a URL, it's likely the general invite link, not a specific ticket
     if (trimmedText.startsWith('http')) {
       showError("This is the general Invite Link. Please scan a Guest's unique Elite Pass.");
       return;

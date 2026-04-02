@@ -103,7 +103,7 @@ const EventPage = () => {
       if (error) {
         // If RLS still fails, we provide a clear message
         if (error.code === '42501') {
-          throw new Error("Database permission error. Please ensure the 'Public can view RSVPs' policy is active.");
+          throw new Error("Database permission error. Please ensure the 'Public can view RSVPs' policy is active in your Supabase dashboard.");
         }
         throw error;
       }
