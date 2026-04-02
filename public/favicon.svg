@@ -1,4 +1,6 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="8" y="8" width="16" height="16" transform="rotate(45 16 16)" stroke="#D4AF37" stroke-width="2"/>
-  <text x="16" y="22" fill="#D4AF37" font-family="serif" font-size="16" text-anchor="middle" style="font-weight: bold">E</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background Diamond -->
+  <rect x="25" y="25" width="50" height="50" fill="#050505" stroke="#D4AF37" stroke-width="2" transform="rotate(45 50 50)" />
+  <!-- Brand Initial -->
+  <text x="50" y="62" font-family="serif" font-size="32" font-style="italic" fill="#D4AF37" text-anchor="middle" font-weight="bold">E</text>
 </svg>
