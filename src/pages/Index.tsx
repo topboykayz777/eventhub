@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import FeaturedEvents from '@/components/landing/FeaturedEvents';
+import FeatureShowcase from '@/components/landing/FeatureShowcase';
 import PricingSection from '@/components/landing/PricingSection';
 import FAQ from '@/components/landing/FAQ';
 import VIPCheckout from '@/components/VIPCheckout';
@@ -66,6 +67,8 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        <FeatureShowcase />
 
         {/* VIP Ticket Section */}
         <section className="py-40 px-6 bg-[#050505] relative">

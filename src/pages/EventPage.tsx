@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, RefreshCw, Megaphone, Table as TableIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -26,7 +26,8 @@ const EventPage = () => {
     if (slug) {
       fetchEvent();
       
-      const channel = supabase
+      // Real-time subscription for event changes (Broadcasts, Details)
+      const eventChannel = supabase
         .channel(`event-realtime-${slug}`)
         .on(
           'postgres_changes',
@@ -38,16 +39,40 @@ const EventPage = () => {
           },
           (payload) => {
             setEvent(payload.new);
-            if (payload.new.is_paid) {
+            if (payload.new.is_paid && !event?.is_paid) {
               confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
           }
         )
         .subscribe();
 
-      return () => { supabase.removeChannel(channel); };
+      return () => { supabase.removeChannel(eventChannel); };
     }
   }, [slug]);
+
+  // Real-time subscription for specific RSVP changes (Seating)
+  useEffect(() => {
+    if (submittedRsvp?.id) {
+      const rsvpChannel = supabase
+        .channel(`rsvp-realtime-${submittedRsvp.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'rsvps',
+            filter: `id=eq.${submittedRsvp.id}`
+          },
+          (payload) => {
+            setSubmittedRsvp(payload.new);
+            showSuccess("Your seating has been updated!");
+          }
+        )
+        .subscribe();
+
+      return () => { supabase.removeChannel(rsvpChannel); };
+    }
+  }, [submittedRsvp?.id]);
 
   const fetchEvent = async () => {
     if (!slug) return;
@@ -89,7 +114,6 @@ const EventPage = () => {
     setIsSubmitting(true);
     
     try {
-      // We insert and select the ID. This requires the 'Public can view RSVPs' policy.
       const { data, error } = await supabase
         .from('rsvps')
         .insert({
@@ -97,28 +121,16 @@ const EventPage = () => {
           guest_name: rsvpData.name,
           guest_phone: rsvpData.phone
         })
-        .select('id')
+        .select('*')
         .single();
 
-      if (error) {
-        // If RLS still fails, we provide a clear message
-        if (error.code === '42501') {
-          throw new Error("Database permission error. Please ensure the 'Public can view RSVPs' policy is active in your Supabase dashboard.");
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
-      
-      setSubmittedRsvp({ 
-        guest_name: rsvpData.name, 
-        guest_phone: rsvpData.phone,
-        id: data.id 
-      });
+      setSubmittedRsvp(data);
     } catch (err: any) {
-      console.error("[RSVP Error]", err);
-      showError(err.message || 'Failed to submit RSVP. Please try again.');
+      showError(err.message || 'Failed to submit RSVP.');
     } finally {
       setIsSubmitting(false);
     }
@@ -136,25 +148,8 @@ const EventPage = () => {
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md">
         <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-8 opacity-50" />
         <h1 className="text-4xl font-serif italic mb-4">Event Not Found</h1>
-        <p className="text-gray-500 mb-8 leading-relaxed">
-          The link you followed may be broken or the event has been removed. 
-        </p>
+        <p className="text-gray-500 mb-8 leading-relaxed">The link you followed may be broken.</p>
         <Link to="/"><Button variant="ghost" className="text-gray-500 hover:text-white">Return Home</Button></Link>
-      </motion.div>
-    </div>
-  );
-
-  if (!event.is_paid && !isHost) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
-        <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
-        <h1 className="text-3xl font-serif italic mb-4 text-[#D4AF37]">Pending Activation</h1>
-        <p className="text-gray-500 mb-10 text-sm leading-relaxed">
-          The host is currently finalizing the details for <span className="text-white font-bold">"{event.event_name}"</span>. 
-        </p>
-        <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] animate-pulse">
-          <RefreshCw className="w-3 h-3 animate-spin" /> Waiting for Host...
-        </div>
       </motion.div>
     </div>
   );
@@ -179,6 +174,23 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
+      {/* Real-time Broadcast Banner */}
+      <AnimatePresence>
+        {event.broadcast_message && (
+          <motion.div 
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            exit={{ y: -100 }}
+            className="fixed top-0 left-0 right-0 z-[100] bg-[#D4AF37] text-black py-4 px-8 flex items-center justify-center gap-4 shadow-2xl"
+          >
+            <Megaphone className="w-5 h-5 animate-bounce" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-center">
+              {event.broadcast_message}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="relative h-[60vh] md:h-[75vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.2, opacity: 0 }}
@@ -256,7 +268,7 @@ const EventPage = () => {
           <div className="md:col-span-2">
             <AnimatePresence mode="wait">
               {submittedRsvp ? (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32">
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-8">
                   <div className="text-center mb-12">
                     <div className="bg-green-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle2 className="text-green-500 w-8 h-8" />
@@ -264,6 +276,30 @@ const EventPage = () => {
                     <h2 className="text-2xl font-serif italic mb-2">You're on the list</h2>
                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
+
+                  {/* Real-time Seating Update */}
+                  <AnimatePresence mode="wait">
+                    {submittedRsvp.table_number && (
+                      <motion.div 
+                        key={submittedRsvp.table_number}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-8 rounded-[2rem] text-center"
+                      >
+                        <TableIcon className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Your Assigned Seating</p>
+                        <motion.p 
+                          key={submittedRsvp.table_number}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-4xl font-serif italic text-[#D4AF37]"
+                        >
+                          Table {submittedRsvp.table_number}
+                        </motion.p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
                 </motion.div>
               ) : (

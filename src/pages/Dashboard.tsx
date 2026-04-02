@@ -16,6 +16,7 @@ import GuestList from '@/components/dashboard/GuestList';
 import Analytics from '@/components/dashboard/Analytics';
 import ConciergeTools from '@/components/dashboard/ConciergeTools';
 import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
+import BroadcastBox from '@/components/dashboard/BroadcastBox';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -202,6 +203,10 @@ const Dashboard = () => {
                 <div className="grid lg:grid-cols-12 gap-12">
                   <EventCard event={event} onCopyLink={copyLink} />
                   <div className="lg:col-span-8">
+                    <div className="mb-12">
+                      <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
+                    </div>
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
                       {[
                         { icon: Users, label: 'Total RSVPs', value: event.rsvps?.length || 0 },
