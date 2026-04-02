@@ -35,7 +35,7 @@ const EventPage = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // We fetch the event. If RLS blocks it for a guest, data will be null.
+      // We fetch the event. We use a public-friendly query.
       const { data, error } = await supabase
         .from('events')
         .select('*, profiles(full_name)')
@@ -152,7 +152,7 @@ const EventPage = () => {
     </div>
   );
 
-  // If event is null (blocked by RLS) or not paid and user isn't host
+  // If event is not found or not paid and user isn't host
   if (!event || (!event.is_paid && !isHost)) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
       <motion.div 
