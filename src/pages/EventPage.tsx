@@ -22,55 +22,12 @@ const EventPage = () => {
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
   const [isHost, setIsHost] = useState(false);
 
+  // 1. Memory Fix: Check for existing RSVP on load
   useEffect(() => {
     if (slug) {
       fetchEvent();
-      
-      const eventChannel = supabase
-        .channel(`event-realtime-${slug}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'events',
-            filter: `slug=eq.${slug}`
-          },
-          (payload) => {
-            setEvent(payload.new);
-            if (payload.new.is_paid && !event?.is_paid) {
-              confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            }
-          }
-        )
-        .subscribe();
-
-      return () => { supabase.removeChannel(eventChannel); };
     }
   }, [slug]);
-
-  useEffect(() => {
-    if (submittedRsvp?.id) {
-      const rsvpChannel = supabase
-        .channel(`rsvp-realtime-${submittedRsvp.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'rsvps',
-            filter: `id=eq.${submittedRsvp.id}`
-          },
-          (payload) => {
-            setSubmittedRsvp(payload.new);
-            showSuccess("Your seating has been updated!");
-          }
-        )
-        .subscribe();
-
-      return () => { supabase.removeChannel(rsvpChannel); };
-    }
-  }, [submittedRsvp?.id]);
 
   const fetchEvent = async () => {
     if (!slug) return;
@@ -91,6 +48,20 @@ const EventPage = () => {
         setEvent(data);
         setIsHost(user?.id === data.host_id);
         
+        // Check local storage for an existing RSVP for this specific event
+        const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
+        if (savedRsvpId) {
+          const { data: rsvp, error: rsvpError } = await supabase
+            .from('rsvps')
+            .select('*')
+            .eq('id', savedRsvpId)
+            .maybeSingle();
+          
+          if (rsvp && !rsvpError) {
+            setSubmittedRsvp(rsvp);
+          }
+        }
+
         if (data.is_paid) {
           supabase.rpc('increment_view_count', { event_id: data.id }).catch(() => {});
         }
@@ -101,6 +72,59 @@ const EventPage = () => {
       setLoading(false);
     }
   };
+
+  // Real-time listener for the event (broadcasts, etc.)
+  useEffect(() => {
+    if (!slug) return;
+    
+    const eventChannel = supabase
+      .channel(`event-realtime-${slug}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'events',
+          filter: `slug=eq.${slug}`
+        },
+        (payload) => {
+          setEvent(payload.new);
+          if (payload.new.is_paid && !event?.is_paid) {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(eventChannel); };
+  }, [slug, event?.is_paid]);
+
+  // Real-time listener for the specific guest's RSVP (table updates, etc.)
+  useEffect(() => {
+    if (submittedRsvp?.id) {
+      const rsvpChannel = supabase
+        .channel(`rsvp-realtime-${submittedRsvp.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'rsvps',
+            filter: `id=eq.${submittedRsvp.id}`
+          },
+          (payload) => {
+            setSubmittedRsvp(payload.new);
+            // Only show toast if something meaningful changed (like table number)
+            if (payload.old.table_number !== payload.new.table_number) {
+              showSuccess("Your seating has been updated!");
+            }
+          }
+        )
+        .subscribe();
+
+      return () => { supabase.removeChannel(rsvpChannel); };
+    }
+  }, [submittedRsvp?.id]);
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,6 +148,9 @@ const EventPage = () => {
 
       if (error) throw error;
 
+      // Save identity to local storage
+      localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
+      
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
       setSubmittedRsvp(data);

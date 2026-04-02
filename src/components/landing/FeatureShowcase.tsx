@@ -51,6 +51,7 @@ const features = [
 
 const FeatureShowcase = () => {
   const [activeTab, setActiveTab] = useState('design');
+  const [miniTheme, setMiniTheme] = useState('modern');
 
   return (
     <section className="py-24 md:py-40 px-4 md:px-6 bg-[#080808] relative overflow-hidden">
@@ -122,40 +123,44 @@ const FeatureShowcase = () => {
                 {activeTab === 'design' && (
                   <motion.div 
                     key="design-anim"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="w-full max-w-sm space-y-6"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="w-full max-w-sm space-y-8"
                   >
-                    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/10">
+                    <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
                       <motion.div 
                         animate={{ 
-                          backgroundColor: ['#0a0a1a', '#064e3b', '#78350f', '#0a0a1a'],
+                          backgroundColor: miniTheme === 'modern' ? '#0a0a1a' : miniTheme === 'traditional' ? '#064e3b' : '#78350f',
                         }}
-                        transition={{ duration: 6, repeat: Infinity }}
-                        className="absolute inset-0 flex items-center justify-center p-8"
+                        className="absolute inset-0 flex flex-col p-8"
                       >
-                        <div className="text-center space-y-4">
-                          <motion.div 
-                            animate={{ y: [0, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="w-16 h-16 bg-white/10 rounded-full mx-auto flex items-center justify-center"
-                          >
-                            <Sparkles className="text-[#D4AF37]" />
-                          </motion.div>
-                          <div className="h-2 w-32 bg-white/20 rounded-full mx-auto" />
-                          <div className="h-2 w-24 bg-white/10 rounded-full mx-auto" />
+                        <div className="w-full h-32 bg-white/5 rounded-2xl mb-6 overflow-hidden">
+                          <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" alt="Preview" />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="h-2 w-full bg-white/20 rounded-full" />
+                          <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                        </div>
+                        <div className="mt-auto flex justify-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                            <Sparkles className="text-[#D4AF37] w-5 h-5" />
+                          </div>
                         </div>
                       </motion.div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     </div>
-                    <div className="flex justify-center gap-4">
-                      {['#D4AF37', '#10b981', '#fbbf24'].map((c, i) => (
-                        <motion.div 
-                          key={i}
-                          animate={{ scale: [1, 1.2, 1] }}
-                          transition={{ delay: i * 0.5, duration: 2, repeat: Infinity }}
-                          className="w-8 h-8 rounded-full border-2 border-white/20"
-                          style={{ backgroundColor: c }}
+                    
+                    <div className="flex justify-center gap-6">
+                      {[
+                        { id: 'modern', color: 'bg-[#0a0a1a]' },
+                        { id: 'traditional', color: 'bg-[#064e3b]' },
+                        { id: 'sahara', color: 'bg-[#78350f]' }
+                      ].map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => setMiniTheme(t.id)}
+                          className={`w-10 h-10 rounded-full border-2 transition-all ${t.color} ${miniTheme === t.id ? 'border-[#D4AF37] scale-125' : 'border-white/20'}`}
                         />
                       ))}
                     </div>
@@ -170,34 +175,39 @@ const FeatureShowcase = () => {
                     exit={{ opacity: 0, x: -50 }}
                     className="w-full max-w-xs relative"
                   >
-                    <div className="aspect-[9/19] bg-black border-4 border-white/10 rounded-[2.5rem] p-4 relative overflow-hidden">
+                    <div className="aspect-[9/19] bg-black border-4 border-white/10 rounded-[2.5rem] p-4 relative overflow-hidden shadow-2xl">
                       <div className="h-1 w-12 bg-white/20 rounded-full mx-auto mb-6" />
-                      <div className="space-y-4">
-                        <div className="aspect-square bg-white/5 rounded-2xl flex items-center justify-center">
-                          <Zap className="text-[#D4AF37] w-12 h-12" />
+                      <div className="space-y-6">
+                        <div className="aspect-square bg-white/5 rounded-3xl flex items-center justify-center">
+                          <div className="bg-white p-3 rounded-xl">
+                            <Zap className="text-black w-10 h-10" />
+                          </div>
                         </div>
-                        <div className="h-2 w-full bg-white/10 rounded-full" />
-                        <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                        <div className="space-y-3">
+                          <div className="h-2 w-full bg-white/10 rounded-full" />
+                          <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                        </div>
                         <motion.div 
-                          animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                          animate={{ y: [0, -5, 0], opacity: [0.8, 1, 0.8] }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="h-10 w-full bg-[#25D366] rounded-xl flex items-center justify-center gap-2"
+                          className="h-12 w-full bg-[#25D366] rounded-xl flex items-center justify-center gap-3"
                         >
-                          <Share2 size={14} className="text-white" />
-                          <span className="text-[8px] font-bold text-white uppercase">Share to WhatsApp</span>
+                          <Share2 size={16} className="text-white" />
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Share to WhatsApp</span>
                         </motion.div>
                       </div>
+                      
                       <motion.div 
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 1, duration: 0.5 }}
-                        className="absolute bottom-8 left-4 right-4 bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/10"
+                        className="absolute bottom-8 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-full bg-[#25D366] flex items-center justify-center">
-                            <Send size={10} className="text-white" />
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center">
+                            <Send size={12} className="text-white" />
                           </div>
-                          <div className="h-1.5 w-20 bg-white/20 rounded-full" />
+                          <div className="h-2 w-24 bg-white/20 rounded-full" />
                         </div>
                       </motion.div>
                     </div>
@@ -211,22 +221,22 @@ const FeatureShowcase = () => {
                     animate={{ opacity: 1 }}
                     className="w-full max-w-md space-y-8"
                   >
-                    <div className="flex justify-between items-end">
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live RSVP Feed</p>
+                    <div className="flex justify-between items-end mb-12">
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">Live RSVP Feed</p>
                         <motion.p 
-                          animate={{ scale: [1, 1.1, 1] }}
+                          animate={{ scale: [1, 1.05, 1] }}
                           transition={{ duration: 1, repeat: Infinity }}
-                          className="text-6xl font-serif italic text-[#D4AF37]"
+                          className="text-7xl font-serif italic text-[#D4AF37]"
                         >
                           124
                         </motion.p>
                       </div>
-                      <div className="h-24 w-1 bg-white/5 rounded-full relative overflow-hidden">
+                      <div className="h-32 w-1.5 bg-white/5 rounded-full relative overflow-hidden">
                         <motion.div 
-                          animate={{ height: ['0%', '80%', '0%'] }}
+                          animate={{ height: ['0%', '85%', '0%'] }}
                           transition={{ duration: 4, repeat: Infinity }}
-                          className="absolute bottom-0 left-0 right-0 bg-[#D4AF37]"
+                          className="absolute bottom-0 left-0 right-0 bg-[#D4AF37] shadow-[0_0_20px_#D4AF37]"
                         />
                       </div>
                     </div>
@@ -237,13 +247,15 @@ const FeatureShowcase = () => {
                           initial={{ x: -20, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
                           transition={{ delay: i * 0.3, repeat: Infinity, repeatDelay: 3 }}
-                          className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center justify-between"
+                          className="bg-white/5 p-6 rounded-2xl border border-white/5 flex items-center justify-between"
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20" />
-                            <div className="h-2 w-24 bg-white/10 rounded-full" />
+                          <div className="flex items-center gap-5">
+                            <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                              <Users className="text-[#D4AF37] w-4 h-4" />
+                            </div>
+                            <div className="h-2 w-32 bg-white/10 rounded-full" />
                           </div>
-                          <CheckCircle2 className="text-green-500 w-4 h-4" />
+                          <CheckCircle2 className="text-green-500 w-5 h-5" />
                         </motion.div>
                       ))}
                     </div>
@@ -255,44 +267,42 @@ const FeatureShowcase = () => {
                     key="ledger-anim"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-md space-y-6"
+                    className="w-full max-w-md space-y-10"
                   >
-                    <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10 relative overflow-hidden">
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 relative overflow-hidden">
                       <div className="relative z-10">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Budget</p>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-4">Total Budget</p>
                         <motion.p 
-                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          animate={{ opacity: [0.6, 1, 0.6] }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="text-4xl font-serif italic text-white"
+                          className="text-5xl font-serif italic text-white"
                         >
                           ₦4,250,000
                         </motion.p>
+                        
+                        <div className="mt-10 h-3 w-full bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: "0%" }}
+                            animate={{ width: "75%" }}
+                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                            className="h-full gold-gradient shadow-[0_0_20px_#D4AF37]"
+                          />
+                        </div>
                       </div>
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 blur-3xl rounded-full" />
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/5 blur-[100px] rounded-full" />
                     </div>
-                    <div className="space-y-3">
-                      <motion.div 
-                        animate={{ x: [0, 10, 0] }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                        className="bg-red-500/5 p-4 rounded-2xl border border-red-500/10 flex justify-between items-center"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Minus size={14} className="text-red-500" />
-                          <span className="text-[10px] font-bold text-gray-400 uppercase">Catering</span>
-                        </div>
-                        <span className="text-sm font-serif italic text-white">-₦850k</span>
-                      </motion.div>
-                      <motion.div 
-                        animate={{ x: [0, -10, 0] }}
-                        transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-                        className="bg-green-500/5 p-4 rounded-2xl border border-green-500/10 flex justify-between items-center"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Plus size={14} className="text-green-500" />
-                          <span className="text-[10px] font-bold text-gray-400 uppercase">Sponsorship</span>
-                        </div>
-                        <span className="text-sm font-serif italic text-white">+₦1.2M</span>
-                      </motion.div>
+                    
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="bg-red-500/5 p-6 rounded-2xl border border-red-500/10">
+                        <Minus className="text-red-500 w-4 h-4 mb-3" />
+                        <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Expenses</p>
+                        <p className="text-xl font-serif italic text-white">₦1.2M</p>
+                      </div>
+                      <div className="bg-green-500/5 p-6 rounded-2xl border border-green-500/10">
+                        <Plus className="text-green-500 w-4 h-4 mb-3" />
+                        <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Income</p>
+                        <p className="text-xl font-serif italic text-white">₦2.8M</p>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -302,34 +312,38 @@ const FeatureShowcase = () => {
                     key="concierge-anim"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-md space-y-8"
+                    className="w-full max-w-xs relative"
                   >
-                    <div className="relative">
+                    <div className="aspect-[9/19] bg-black border-4 border-white/10 rounded-[2.5rem] p-4 relative overflow-hidden shadow-2xl">
+                      <div className="h-1 w-12 bg-white/20 rounded-full mx-auto mb-12" />
+                      
                       <motion.div 
-                        animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="bg-[#D4AF37] p-6 rounded-2xl text-black text-center relative z-10"
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                        className="bg-[#D4AF37] p-4 rounded-2xl text-black mb-12 shadow-2xl"
                       >
-                        <Megaphone className="w-6 h-6 mx-auto mb-2" />
-                        <p className="text-[10px] font-black uppercase tracking-widest">Broadcast Live</p>
-                        <p className="text-sm font-serif italic">"The Grand Entrance begins in 5 minutes!"</p>
+                        <div className="flex items-center gap-3 mb-2">
+                          <Megaphone size={14} />
+                          <span className="text-[8px] font-black uppercase tracking-widest">Broadcast</span>
+                        </div>
+                        <p className="text-xs font-serif italic">"Dinner is now served in the Grand Ballroom!"</p>
                       </motion.div>
-                      <div className="absolute -inset-4 bg-[#D4AF37]/20 blur-2xl rounded-full animate-pulse" />
-                    </div>
-                    <div className="grid grid-cols-4 gap-4">
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                        <motion.div 
-                          key={i}
+
+                      <div className="bg-white/5 p-6 rounded-3xl border border-white/10 text-center">
+                        <TableIcon className="w-6 h-6 text-[#D4AF37] mx-auto mb-4" />
+                        <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2">Your Seating</p>
+                        <motion.p 
                           animate={{ 
-                            backgroundColor: i % 3 === 0 ? '#D4AF37' : 'rgba(255,255,255,0.05)',
-                            color: i % 3 === 0 ? '#000' : '#666'
+                            scale: [1, 1.2, 1],
+                            color: ['#fff', '#D4AF37', '#fff']
                           }}
-                          transition={{ delay: i * 0.2, duration: 2, repeat: Infinity }}
-                          className="aspect-square rounded-xl flex items-center justify-center"
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="text-4xl font-serif italic"
                         >
-                          <TableIcon size={14} />
-                        </motion.div>
-                      ))}
+                          Table 4
+                        </motion.p>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -341,24 +355,24 @@ const FeatureShowcase = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="relative flex flex-col items-center"
                   >
-                    <div className="w-48 h-48 bg-white p-4 rounded-[2rem] relative overflow-hidden shadow-2xl">
+                    <div className="w-56 h-56 bg-white p-6 rounded-[3rem] relative overflow-hidden shadow-2xl">
                       <div className="w-full h-full bg-black/5 flex items-center justify-center">
-                        <Zap className="text-black/10 w-16 h-16" />
+                        <Zap className="text-black/10 w-20 h-20" />
                       </div>
                       <motion.div 
                         animate={{ top: ['-10%', '110%', '-10%'] }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="absolute left-0 right-0 h-1 bg-[#D4AF37] shadow-[0_0_15px_#D4AF37] z-20"
+                        className="absolute left-0 right-0 h-1.5 bg-[#D4AF37] shadow-[0_0_25px_#D4AF37] z-20"
                       />
                     </div>
                     <motion.div 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
-                      className="mt-8 bg-green-500/10 border border-green-500/20 px-8 py-4 rounded-full flex items-center gap-3"
+                      className="mt-12 bg-green-500/10 border border-green-500/20 px-10 py-5 rounded-full flex items-center gap-4"
                     >
-                      <CheckCircle2 className="text-green-500 w-5 h-5" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-green-500">Access Granted</span>
+                      <CheckCircle2 className="text-green-500 w-6 h-6" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-green-500">Access Granted</span>
                     </motion.div>
                   </motion.div>
                 )}
