@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2 } from 'lucide-react';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Modular Components
@@ -28,13 +28,29 @@ const Dashboard = () => {
   useEffect(() => {
     fetchEvents();
 
+    // Establish real-time subscription for instant updates
     const channel = supabase
       .channel('dashboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rsvps' }, () => fetchEvents())
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, () => fetchEvents())
-      .subscribe();
+      .on(
+        'postgres_changes', 
+        { event: '*', schema: 'public', table: 'rsvps' }, 
+        (payload) => {
+          console.log("[Dashboard] Real-time RSVP update received:", payload);
+          fetchEvents();
+        }
+      )
+      .on(
+        'postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'events' }, 
+        () => fetchEvents()
+      )
+      .subscribe((status) => {
+        console.log("[Dashboard] Real-time subscription status:", status);
+      });
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      supabase.removeChannel(channel); 
+    };
   }, []);
 
   const fetchEvents = async () => {
@@ -50,8 +66,12 @@ const Dashboard = () => {
       .eq('host_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) showError(error.message);
-    else setEvents(data || []);
+    if (error) {
+      console.error("[Dashboard] Fetch error:", error);
+      showError(error.message);
+    } else {
+      setEvents(data || []);
+    }
     setLoading(false);
   };
 
@@ -66,18 +86,18 @@ const Dashboard = () => {
   };
 
   const handleQRScan = async (scannedText: string) => {
-    const trimmedText = scannedText.trim();
+    // Clean the scanned text thoroughly for mobile compatibility
+    const trimmedText = scannedText.trim().toLowerCase();
     
-    // Check if the scanned text is a URL (General Invite) instead of a UUID (Ticket)
     if (trimmedText.startsWith('http')) {
       showError("This is an Invite Link. Please scan a Guest's Elite Pass.");
       return;
     }
 
-    // Validate UUID format to prevent database errors
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(trimmedText)) {
-      showError("Invalid Ticket Format.");
+    // Robust UUID validation that works across all devices/scanners
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(trimmedText)) {
+      showError("Invalid Ticket Format. Please ensure the QR is clear.");
       return;
     }
 
@@ -107,8 +127,9 @@ const Dashboard = () => {
       .update({ checked_in: true })
       .eq('id', trimmedText);
 
-    if (updateError) showError("Check-in failed.");
-    else {
+    if (updateError) {
+      showError("Check-in failed.");
+    } else {
       showSuccess(`Welcome, ${rsvp.guest_name}!`);
       fetchEvents();
     }
@@ -146,7 +167,12 @@ const Dashboard = () => {
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white"><Loader2 className="animate-spin" /></div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
+      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
+      <p className="text-[10px] font-bold tracking-[0.5em] uppercase animate-pulse">Syncing Atelier...</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white overflow-x-hidden">
@@ -158,6 +184,13 @@ const Dashboard = () => {
             <h1 className="text-4xl md:text-7xl font-serif italic text-white leading-tight">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
           <div className="flex gap-4 w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              onClick={fetchEvents}
+              className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
             <Link to="/create-event" className="flex-1 md:flex-none">
               <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 md:px-10 py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10">
                 + New Event
@@ -181,9 +214,9 @@ const Dashboard = () => {
                   <div className="lg:col-span-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
                       {[
-                        { icon: Users, label: 'Total RSVPs', value: event.rsvps.length },
-                        { icon: CheckCircle2, label: 'Checked In', value: event.rsvps.filter((r: any) => r.checked_in).length },
-                        { icon: Eye, label: 'Page Views', value: event.view_count },
+                        { icon: Users, label: 'Total RSVPs', value: event.rsvps?.length || 0 },
+                        { icon: CheckCircle2, label: 'Checked In', value: event.rsvps?.filter((r: any) => r.checked_in).length || 0 },
+                        { icon: Eye, label: 'Page Views', value: event.view_count || 0 },
                         { icon: TrendingUp, label: 'Status', value: event.is_paid ? 'Active' : 'Pending' }
                       ].map((stat, i) => (
                         <div key={i} className="bg-white/5 p-8 border border-white/5 text-center">
@@ -200,7 +233,14 @@ const Dashboard = () => {
                         <TabsTrigger value="tools" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white">Concierge Tools</TabsTrigger>
                       </TabsList>
                       <TabsContent value="guests">
-                        <GuestList rsvps={event.rsvps} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => downloadGuestList(event)} onToggleCheckIn={toggleCheckIn} />
+                        <GuestList 
+                          rsvps={event.rsvps || []} 
+                          searchQuery={searchQuery} 
+                          onSearchChange={setSearchQuery} 
+                          onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
+                          onExportCSV={() => downloadGuestList(event)} 
+                          onToggleCheckIn={toggleCheckIn} 
+                        />
                       </TabsContent>
                       <TabsContent value="tools">
                         <ConciergeTools event={event} onSendWhatsAppBlast={() => sendWhatsAppBlast(event)} />
