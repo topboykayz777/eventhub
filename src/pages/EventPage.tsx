@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Camera, Download, ShieldCheck, RefreshCw, Users } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Camera, Download, ShieldCheck, RefreshCw, Users, AlertTriangle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -17,6 +17,7 @@ const EventPage = () => {
   const { slug } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '', guestCount: 1 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
@@ -25,66 +26,68 @@ const EventPage = () => {
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
-    fetchEvent();
-
-    // Real-time subscription to catch the moment the host pays
-    // We listen for any update to this specific event
-    const channel = supabase
-      .channel(`event-${slug}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'events',
-          filter: `slug=eq.${slug}`
-        },
-        (payload) => {
-          console.log("[EventPage] Real-time update received:", payload.new);
-          setEvent(payload.new);
-          if (payload.new.is_paid) {
-            fetchLivePhotos(payload.new.id);
-            confetti({
-              particleCount: 100,
-              spread: 70,
-              origin: { y: 0.6 }
-            });
+    if (slug) {
+      fetchEvent();
+      
+      // Real-time listener for instant activation
+      const channel = supabase
+        .channel(`event-realtime-${slug}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'events',
+            filter: `slug=eq.${slug}`
+          },
+          (payload) => {
+            console.log("[EventPage] Real-time update:", payload.new);
+            setEvent(payload.new);
+            if (payload.new.is_paid) {
+              fetchLivePhotos(payload.new.id);
+              confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => { supabase.removeChannel(channel); };
+    }
   }, [slug]);
 
   const fetchEvent = async () => {
     if (!slug) return;
     setLoading(true);
+    setErrorDetail(null);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-
-      // We fetch the event. Because of the new RLS policy, this will succeed 
-      // even if is_paid is false.
+      
+      // We use .ilike for case-insensitive matching and .maybeSingle to avoid errors if not found
       const { data, error } = await supabase
         .from('events')
-        .select('*, profiles(full_name)')
-        .ilike('slug', slug)
+        .select('*')
+        .ilike('slug', slug.trim())
         .maybeSingle();
 
-      if (data) {
+      if (error) {
+        console.error("[EventPage] Database Error:", error);
+        setErrorDetail(error.message);
+      } else if (data) {
         setEvent(data);
         setIsHost(user?.id === data.host_id);
         
         if (data.is_paid) {
           fetchLivePhotos(data.id);
-          supabase.rpc('increment_view_count', { event_id: data.id }).then(() => {});
+          // Increment view count silently
+          supabase.rpc('increment_view_count', { event_id: data.id }).catch(() => {});
         }
+      } else {
+        console.warn("[EventPage] No event found for slug:", slug);
       }
-    } catch (err) {
-      console.error("[EventPage] Unexpected error:", err);
+    } catch (err: any) {
+      console.error("[EventPage] Unexpected Error:", err);
+      setErrorDetail(err.message);
     } finally {
       setLoading(false);
     }
@@ -121,22 +124,13 @@ const EventPage = () => {
         photo_url: publicUrl
       });
 
-      showSuccess('HD Sharpness Processing Complete.');
+      showSuccess('Photo uploaded to the live feed.');
       fetchLivePhotos(event.id);
     } catch (err: any) {
       showError(err.message);
     } finally {
       setUploadingPhoto(false);
     }
-  };
-
-  const downloadImage = (url: string, name: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${name}_HD.png`;
-    link.target = "_blank";
-    link.click();
-    showSuccess('HD Asset downloading...');
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
@@ -147,7 +141,6 @@ const EventPage = () => {
     }
 
     setIsSubmitting(true);
-    
     const { data, error } = await supabase.from('rsvps').insert({
       event_id: event.id,
       guest_name: rsvpData.name,
@@ -158,13 +151,8 @@ const EventPage = () => {
     if (error) {
       showError('Failed to submit RSVP');
     } else {
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#D4AF37', '#ffffff', '#000000']
-      });
-      showSuccess('RSVP submitted! Welcome to the guest list.');
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      showSuccess('Welcome to the guest list!');
       setSubmittedRsvp(data);
     }
     setIsSubmitting(false);
@@ -177,40 +165,42 @@ const EventPage = () => {
     </div>
   );
 
-  // If event doesn't exist at all
   if (!event) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
-      <h1 className="text-4xl font-serif italic mb-4">Event Not Found</h1>
-      <p className="text-gray-500 mb-8">The link you followed may be broken or the event has been removed.</p>
-      <Link to="/"><Button className="bg-[#D4AF37] text-black rounded-none px-8 py-4">Return Home</Button></Link>
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md">
+        <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-8 opacity-50" />
+        <h1 className="text-4xl font-serif italic mb-4">Event Not Found</h1>
+        <p className="text-gray-500 mb-8 leading-relaxed">
+          The link you followed may be broken or the event has been removed. 
+          Please verify the URL or contact the host.
+        </p>
+        {errorDetail && (
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-[10px] font-mono text-red-400 text-left overflow-x-auto">
+            Error: {errorDetail}
+          </div>
+        )}
+        <div className="flex flex-col gap-4">
+          <Button onClick={() => fetchEvent()} variant="outline" className="border-white/10 text-white rounded-none py-6">
+            <RefreshCw className="w-4 h-4 mr-2" /> Try Again
+          </Button>
+          <Link to="/"><Button variant="ghost" className="text-gray-500 hover:text-white">Return Home</Button></Link>
+        </div>
+      </motion.div>
     </div>
   );
 
   // If event exists but is NOT paid, and user is NOT the host
   if (!event.is_paid && !isHost) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md"
-      >
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
         <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
         <h1 className="text-3xl font-serif italic mb-4 text-[#D4AF37]">Pending Activation</h1>
         <p className="text-gray-500 mb-10 text-sm leading-relaxed">
           The host is currently finalizing the details for <span className="text-white font-bold">"{event.event_name}"</span>. 
           This page will activate automatically once the masterpiece is ready.
         </p>
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] animate-pulse">
-            <RefreshCw className="w-3 h-3 animate-spin" /> Waiting for Host...
-          </div>
-          <Button 
-            onClick={() => fetchEvent()}
-            variant="ghost"
-            className="text-gray-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"
-          >
-            Manual Refresh
-          </Button>
+        <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] animate-pulse">
+          <RefreshCw className="w-3 h-3 animate-spin" /> Waiting for Host...
         </div>
       </motion.div>
     </div>
@@ -227,9 +217,6 @@ const EventPage = () => {
     azure: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", button: "bg-[#93c5fd] hover:bg-[#60a5fa] text-black", card: "bg-white/5 border-[#93c5fd]/20 backdrop-blur-xl", rsvpCard: "bg-[#93c5fd] text-black" }
   }[theme as string] || { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#e94560]", button: "bg-[#e94560] hover:bg-[#d43d56]", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-[#0a0a1a]" };
 
-  const hasGallery = event.plan === 'Standard' || event.plan === 'Pro';
-  const hasDigitalInvite = event.plan === 'Standard' || event.plan === 'Pro';
-
   return (
     <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} transition-colors duration-700 overflow-x-hidden`}>
       <div className="relative h-[60vh] md:h-[75vh] w-full overflow-hidden">
@@ -239,7 +226,6 @@ const EventPage = () => {
           transition={{ duration: 1.5 }}
           src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
           className="w-full h-full object-cover grayscale contrast-125"
-          style={{ filter: 'contrast(1.2) brightness(0.8)' }}
           alt={event.event_name}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${themeConfig.bg.replace('bg-', '')} via-transparent to-transparent`} />
@@ -274,7 +260,7 @@ const EventPage = () => {
 
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           <div className="md:col-span-3 space-y-12 md:space-y-16">
-            {hasDigitalInvite && (
+            {(event.plan === 'Standard' || event.plan === 'Pro') && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 text-center">The Official Invitation</h2>
                 <DigitalInvite event={event} />
@@ -306,50 +292,6 @@ const EventPage = () => {
                 </div>
               </div>
             </motion.div>
-
-            {hasGallery && (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${themeConfig.card} p-10 md:p-16 rounded-[3rem] border`}>
-                <div className="flex justify-between items-center mb-12">
-                  <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4">
-                    <Camera className="w-4 h-4" /> Wall of Fame
-                  </h2>
-                  <Label htmlFor="live-upload" className="cursor-pointer bg-[#D4AF37] text-black px-6 py-3 text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
-                    {uploadingPhoto ? 'Processing HD...' : 'Add HD Photo'}
-                    <input id="live-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
-                  </Label>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {livePhotos.map((photo, i) => (
-                    <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} className="aspect-square relative group overflow-hidden">
-                      <img 
-                        src={photo.photo_url} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 contrast-125" 
-                        style={{ filter: 'contrast(1.1) brightness(0.9)' }}
-                        alt="Live feed" 
-                      />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
-                        <div className="flex items-center gap-2 px-2 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
-                          <ShieldCheck size={10} className="text-green-500" />
-                          <span className="text-[6px] font-black uppercase tracking-widest text-white">HD Sharp</span>
-                        </div>
-                        <button 
-                          onClick={() => downloadImage(photo.photo_url, `Event_Photo_${i}`)}
-                          className="p-3 bg-[#D4AF37] rounded-full text-black hover:scale-110 transition-transform"
-                        >
-                          <Download size={16} />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                  {livePhotos.length === 0 && (
-                    <div className="col-span-full py-20 text-center border border-dashed border-white/10">
-                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500">Be the first to capture a moment.</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
           </div>
 
           <div className="md:col-span-2">
@@ -363,7 +305,7 @@ const EventPage = () => {
                     <h2 className="text-2xl font-serif italic mb-2">You're on the list</h2>
                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
-                  {hasDigitalInvite && <DigitalInvite event={event} rsvpId={submittedRsvp.id} />}
+                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
                 </motion.div>
               ) : (
                 <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${themeConfig.rsvpCard} p-10 md:p-16 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
