@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp } from 'lucide-react';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Modular Components
@@ -96,7 +96,6 @@ const Dashboard = () => {
   };
 
   const copyLink = (slug: string) => {
-    // We ensure the slug is trimmed and exactly as it appears in the DB
     const cleanSlug = slug.trim();
     const url = `${window.location.origin}/event/${cleanSlug}`;
     navigator.clipboard.writeText(url);
