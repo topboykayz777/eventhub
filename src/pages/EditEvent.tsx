@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool } from 'lucide-react';
+import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const EditEvent = () => {
@@ -48,7 +48,7 @@ const EditEvent = () => {
 
     setFormData({
       eventName: data.event_name,
-      eventDate: new Date(data.event_date).toISOString().slice(0, 16),
+      eventDate: data.event_date,
       venue: data.venue,
       message: data.message || '',
       theme: data.theme || 'modern',
@@ -104,7 +104,6 @@ const EditEvent = () => {
         .from('events')
         .update({
           event_name: formData.eventName,
-          event_date: new Date(formData.eventDate).toISOString(),
           venue: formData.venue,
           message: formData.message,
           theme: formData.theme,
@@ -152,23 +151,23 @@ const EditEvent = () => {
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
       </div>
 
-      <div className="max-w-5xl mx-auto py-24 px-6 relative z-10">
-        <div className="flex justify-between items-center mb-16">
+      <div className="max-w-5xl mx-auto py-12 md:py-24 px-4 md:px-6 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
           <Button 
             variant="ghost" 
             onClick={() => navigate('/dashboard')} 
-            className="text-gray-400 hover:text-[#D4AF37] transition-colors"
+            className="text-gray-400 hover:text-[#D4AF37] transition-colors p-0"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
-          <div className="text-right">
+          <div className="text-left md:text-right">
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">The Edit Suite</span>
-            <h1 className="text-4xl font-serif italic">Refine Your Masterpiece</h1>
+            <h1 className="text-4xl md:text-5xl font-serif italic">Refine Your Masterpiece</h1>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-12">
-          <GlassCard className="p-12 border-white/5">
+          <GlassCard className="p-8 md:p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
                 <Type className="text-[#D4AF37] w-5 h-5" />
@@ -198,7 +197,40 @@ const EditEvent = () => {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-12 border-white/5">
+          <GlassCard className="p-8 md:p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Calendar className="text-[#D4AF37] w-5 h-5" />
+              </div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Event Schedule</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Scheduled Date & Time</Label>
+                <div className="min-h-16 bg-white/5 border border-white/10 flex items-center px-6 py-4 text-lg font-light text-gray-400">
+                  <div className="flex items-center gap-4">
+                    <Clock className="w-5 h-5 text-[#D4AF37]" />
+                    <span>
+                      {new Date(formData.eventDate).toLocaleString('en-NG', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[8px] text-[#D4AF37] font-bold uppercase tracking-widest mt-2">
+                  Contact support to reschedule this event.
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-8 md:p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
                 <ImageIcon className="text-[#D4AF37] w-5 h-5" />
@@ -209,13 +241,13 @@ const EditEvent = () => {
             <div className="space-y-10">
               <div className="space-y-4">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait</Label>
-                <div className="flex items-center gap-8">
+                <div className="flex flex-col sm:flex-row items-center gap-8">
                   {formData.photo_url && (
-                    <div className="w-32 h-32 border border-white/10 overflow-hidden">
+                    <div className="w-full sm:w-32 h-48 sm:h-32 border border-white/10 overflow-hidden">
                       <img src={formData.photo_url} className="w-full h-full object-cover" alt="Cover" />
                     </div>
                   )}
-                  <Label htmlFor="cover-upload" className="cursor-pointer h-32 flex-1 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
+                  <Label htmlFor="cover-upload" className="cursor-pointer h-32 w-full flex-1 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
                     {uploading ? <Loader2 className="w-5 h-5 animate-spin text-[#D4AF37]" /> : <Upload className="w-5 h-5 text-gray-600" />}
                     <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Change Cover Portrait</span>
                     <input id="cover-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e)} />
@@ -235,7 +267,7 @@ const EditEvent = () => {
 
               <div className="space-y-4">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Photo Gallery (Premium)</Label>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                   {formData.gallery_urls.map((url, i) => (
                     <div key={i} className="relative aspect-square border border-white/10 group">
                       <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
@@ -258,7 +290,7 @@ const EditEvent = () => {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-12 border-white/5">
+          <GlassCard className="p-8 md:p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
                 <Palette className="text-[#D4AF37] w-5 h-5" />
@@ -266,7 +298,7 @@ const EditEvent = () => {
               <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Aesthetic Theme</h2>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
               {themes.map((t) => (
                 <button
                   key={t.id}

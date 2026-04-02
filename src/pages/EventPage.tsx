@@ -89,18 +89,30 @@ const EventPage = () => {
     }
 
     setIsSubmitting(true);
-    const { data, error } = await supabase.from('rsvps').insert({
+    
+    // We perform the insert without .select() because public users 
+    // might not have SELECT permissions on the rsvps table, causing a 406 error
+    // even if the insert itself succeeded.
+    const { error } = await supabase.from('rsvps').insert({
       event_id: event.id,
       guest_name: rsvpData.name,
       guest_phone: rsvpData.phone
-    }).select().single();
+    });
 
     if (error) {
-      showError('Failed to submit RSVP');
+      console.error("[RSVP Error]", error);
+      showError(error.message || 'Failed to submit RSVP');
     } else {
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
-      setSubmittedRsvp(data);
+      
+      // Since we can't reliably get the ID back due to RLS constraints on public users,
+      // we set a success state that allows the user to see their confirmation.
+      setSubmittedRsvp({ 
+        guest_name: rsvpData.name, 
+        guest_phone: rsvpData.phone,
+        id: 'confirmed' // Placeholder to trigger the success UI
+      });
     }
     setIsSubmitting(false);
   };
@@ -197,28 +209,28 @@ const EventPage = () => {
               </motion.div>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-10 md:p-16 rounded-[3rem] border`}>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border`}>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
                 <Calendar className="w-4 h-4" /> The Particulars
               </h2>
               <div className="space-y-12">
-                <div className="flex items-start gap-8 group">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors">
+                <div className="flex items-start gap-6 md:gap-8 group">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
                     <MapPin className="text-[#D4AF37] w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Venue</p>
-                    <p className="text-xl md:text-2xl font-light leading-relaxed">{event.venue}</p>
+                    <p className="text-lg md:text-2xl font-light leading-relaxed">{event.venue}</p>
                   </div>
                 </div>
                 {event.message && (
-                  <div className="flex items-start gap-8 group">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors">
+                  <div className="flex items-start gap-6 md:gap-8 group">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
                       <MessageSquare className="text-[#D4AF37] w-5 h-5" />
                     </div>
                     <div>
                       <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Host's Message</p>
-                      <p className="text-xl md:text-2xl font-serif italic leading-relaxed opacity-80">"{event.message}"</p>
+                      <p className="text-lg md:text-2xl font-serif italic leading-relaxed opacity-80">"{event.message}"</p>
                     </div>
                   </div>
                 )}
@@ -248,21 +260,21 @@ const EventPage = () => {
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
                 </motion.div>
               ) : (
-                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-10 md:p-16 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
+                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
                   <div className="flex items-center gap-3 mb-8">
                     <Sparkles className="text-[#D4AF37] w-5 h-5" />
-                    <h2 className="text-3xl font-serif italic tracking-tight">The Registry</h2>
+                    <h2 className="text-2xl md:text-3xl font-serif italic tracking-tight">The Registry</h2>
                   </div>
                   <form onSubmit={handleRSVP} className="space-y-8">
                     <div className="space-y-3">
                       <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
-                      <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
+                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
                     </div>
                     <div className="space-y-3">
                       <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
-                      <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
+                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
                     </div>
-                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
+                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-16 md:h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
                       {isSubmitting ? 'Processing...' : 'Confirm Attendance'}
                     </Button>
                   </form>
