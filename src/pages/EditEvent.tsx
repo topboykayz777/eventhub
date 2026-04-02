@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart } from 'lucide-react';
+import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const EditEvent = () => {
@@ -125,12 +125,17 @@ const EditEvent = () => {
 
   const themes = [
     { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
-    { id: 'traditional', label: 'Royal Emerald', color: 'bg-[#064e3b]', icon: Crown },
-    { id: 'elegant', label: 'Diamond Ivory', color: 'bg-white', icon: Gem },
-    { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Star },
-    { id: 'blush', label: 'Blush Quartz', color: 'bg-[#be185d]', icon: Heart },
-    { id: 'amethyst', label: 'Amethyst Velvet', color: 'bg-[#581c87]', icon: Crown },
-    { id: 'azure', label: 'Azure Silk', color: 'bg-[#1e3a8a]', icon: Sparkles }
+    { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
+    { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
+    { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
+    { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
+    { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
+    { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
+    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
+    { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
+    { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
+    { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
+    { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool }
   ];
 
   if (loading) return (
@@ -196,36 +201,6 @@ const EditEvent = () => {
           <GlassCard className="p-12 border-white/5">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <Palette className="text-[#D4AF37] w-5 h-5" />
-              </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Aesthetic Theme</h2>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {themes.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, theme: t.id })}
-                  className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
-                    formData.theme === t.id 
-                      ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
-                      : 'border-white/5 hover:border-white/10'
-                  }`}
-                >
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    <t.icon className={`w-5 h-5 ${formData.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
-                    <span className="text-[8px] font-bold uppercase tracking-widest">{t.label}</span>
-                  </div>
-                  <div className={`absolute top-0 right-0 w-12 h-12 ${t.color} opacity-20 -mr-6 -mt-6 rotate-45`} />
-                </button>
-              ))}
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-12 border-white/5">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
                 <ImageIcon className="text-[#D4AF37] w-5 h-5" />
               </div>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Visual Assets</h2>
@@ -246,6 +221,16 @@ const EditEvent = () => {
                     <input id="cover-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e)} />
                   </Label>
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host's Message</Label>
+                <Textarea 
+                  placeholder="A personal note to your guests..."
+                  className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light resize-none"
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                />
               </div>
 
               <div className="space-y-4">
@@ -270,6 +255,36 @@ const EditEvent = () => {
                   </Label>
                 </div>
               </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Palette className="text-[#D4AF37] w-5 h-5" />
+              </div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Aesthetic Theme</h2>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {themes.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, theme: t.id })}
+                  className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
+                    formData.theme === t.id 
+                      ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
+                      : 'border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <div className="relative z-10 flex flex-col justify-between h-full">
+                    <t.icon className={`w-5 h-5 ${formData.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
+                    <span className="text-[8px] font-bold uppercase tracking-widest">{t.label}</span>
+                  </div>
+                  <div className={`absolute top-0 right-0 w-12 h-12 ${t.color} opacity-20 -mr-6 -mt-6 rotate-45`} />
+                </button>
+              ))}
             </div>
           </GlassCard>
 

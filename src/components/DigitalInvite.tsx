@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck } from 'lucide-react';
+import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck, Flower2, Waves, Sun, Moon, PenTool } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
 import { QRCodeSVG } from 'qrcode.react';
@@ -52,10 +52,15 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
     modern: { bg: "bg-black/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Sparkles, glow: "shadow-[#D4AF37]/10" },
     traditional: { bg: "bg-[#064e3b]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/40", icon: Crown, glow: "shadow-[#D4AF37]/10" },
     elegant: { bg: "bg-white/60", accent: "text-black", border: "border-black/20", icon: Gem, glow: "shadow-black/5" },
-    sahara: { bg: "bg-[#78350f]/60", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/30", icon: Star, glow: "shadow-[#fbbf24]/10" },
-    blush: { bg: "bg-[#be185d]/60", accent: "text-[#fdf2f8]", border: "border-[#fbcfe8]/30", icon: Heart, glow: "shadow-[#fbcfe8]/10" },
-    amethyst: { bg: "bg-[#581c87]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Crown, glow: "shadow-[#D4AF37]/10" },
-    azure: { bg: "bg-[#1e3a8a]/60", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/30", icon: Sparkles, glow: "shadow-[#93c5fd]/10" }
+    sahara: { bg: "bg-[#78350f]/60", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/30", icon: Sun, glow: "shadow-[#fbbf24]/10" },
+    velvet: { bg: "bg-[#2e1065]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Moon, glow: "shadow-[#D4AF37]/10" },
+    garden: { bg: "bg-[#064e3b]/60", accent: "text-[#10b981]", border: "border-[#10b981]/30", icon: Flower2, glow: "shadow-[#10b981]/10" },
+    oceanic: { bg: "bg-[#1e3a8a]/60", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/30", icon: Waves, glow: "shadow-[#93c5fd]/10" },
+    rose: { bg: "bg-[#831843]/60", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/30", icon: Heart, glow: "shadow-[#fbcfe8]/10" },
+    earth: { bg: "bg-[#431407]/60", accent: "text-[#fb923c]", border: "border-[#fb923c]/30", icon: Landmark, glow: "shadow-[#fb923c]/10" },
+    silver: { bg: "bg-[#1f2937]/60", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/30", icon: Star, glow: "shadow-[#9ca3af]/10" },
+    dynasty: { bg: "bg-[#7f1d1d]/60", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Crown, glow: "shadow-[#D4AF37]/10" },
+    vintage: { bg: "bg-[#fef3c7]/60", accent: "text-[#92400e]", border: "border-[#92400e]/30", icon: PenTool, glow: "shadow-[#92400e]/10" }
   };
 
   const config = themeConfigs[theme] || themeConfigs.modern;
@@ -70,7 +75,6 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
         ref={cardRef}
         className={`relative aspect-[4/5.5] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.glow}`}
       >
-        {/* Background Image Layer with HD Sharpening Filter */}
         <div className="absolute inset-0 z-0">
           <img 
             src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
@@ -97,7 +101,7 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
             <p className={`text-[7px] font-black uppercase tracking-[0.4em] mb-2 ${config.accent}`}>
               {rsvpId ? 'Elite Entry Pass' : 'Official Invitation'}
             </p>
-            <h2 className={`text-xl md:text-2xl font-serif italic leading-tight ${theme === 'elegant' ? 'text-black' : 'text-white'}`}>
+            <h2 className={`text-xl md:text-2xl font-serif italic leading-tight ${theme === 'elegant' || theme === 'vintage' ? 'text-black' : 'text-white'}`}>
               {event.event_name}
             </h2>
           </div>
@@ -108,7 +112,7 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
               <div className="relative bg-white p-4 rounded-[1.5rem] shadow-2xl border-4 border-black/5">
                 <QRCodeSVG value={qrValue} size={110} level="H" />
               </div>
-              <p className={`mt-4 text-[7px] font-bold uppercase tracking-[0.2em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
+              <p className={`mt-4 text-[7px] font-bold uppercase tracking-[0.2em] ${theme === 'elegant' || theme === 'vintage' ? 'text-gray-500' : 'text-gray-400'}`}>
                 {rsvpId ? 'Scan at the Door' : 'Scan to RSVP'}
               </p>
             </div>
@@ -116,17 +120,17 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
 
           <div className="mt-4 pt-4 border-t border-white/10">
             <div className="space-y-1 mb-3">
-              <p className={`text-[6px] font-bold uppercase tracking-[0.3em] ${theme === 'elegant' ? 'text-gray-500' : 'text-gray-400'}`}>
+              <p className={`text-[6px] font-bold uppercase tracking-[0.3em] ${theme === 'elegant' || theme === 'vintage' ? 'text-gray-500' : 'text-gray-400'}`}>
                 {new Date(event.event_date).toLocaleDateString('en-NG', { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
-              <p className={`text-[8px] font-medium truncate px-2 ${theme === 'elegant' ? 'text-gray-600' : 'text-gray-300'}`}>
+              <p className={`text-[8px] font-medium truncate px-2 ${theme === 'elegant' || theme === 'vintage' ? 'text-gray-600' : 'text-gray-300'}`}>
                 {event.venue}
               </p>
             </div>
             <div className="flex justify-center items-center gap-2">
-              <div className={`h-px w-4 ${theme === 'elegant' ? 'bg-black/10' : 'bg-white/10'}`} />
+              <div className={`h-px w-4 ${theme === 'elegant' || theme === 'vintage' ? 'bg-black/10' : 'bg-white/10'}`} />
               <Landmark size={10} className="text-gray-500" />
-              <div className={`h-px w-4 ${theme === 'elegant' ? 'bg-black/10' : 'bg-white/10'}`} />
+              <div className={`h-px w-4 ${theme === 'elegant' || theme === 'vintage' ? 'bg-black/10' : 'bg-white/10'}`} />
             </div>
           </div>
         </div>
