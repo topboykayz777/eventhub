@@ -4,11 +4,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
-import FeaturedEvents from '@/components/landing/FeaturedEvents';
 import FeatureShowcase from '@/components/landing/FeatureShowcase';
 import PricingSection from '@/components/landing/PricingSection';
 import FAQ from '@/components/landing/FAQ';
-import VIPCheckout from '@/components/VIPCheckout';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
@@ -41,7 +39,6 @@ const Index = () => {
       
       <main className="overflow-x-hidden max-w-full">
         <Hero />
-        <FeaturedEvents />
         
         <section className="py-32 border-y border-white/5 bg-[#080808]">
           <div className="max-w-7xl mx-auto px-6">
@@ -69,19 +66,6 @@ const Index = () => {
         </section>
 
         <FeatureShowcase />
-
-        {/* VIP Ticket Section */}
-        <section className="py-40 px-6 bg-[#050505] relative">
-          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="max-w-xl mx-auto">
-            <div className="text-center mb-20">
-              <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block">Limited Availability</span>
-              <h2 className="text-5xl md:text-7xl font-serif italic text-white mb-8">The VIP <span className="text-[#D4AF37]">Pass</span></h2>
-              <p className="text-gray-500 font-light tracking-wide">Secure your entry to the season's most anticipated events with our exclusive digital ticketing.</p>
-            </div>
-            <VIPCheckout />
-          </div>
-        </section>
 
         <section className="py-40 px-6 bg-[#080808]">
           <div className="max-w-7xl mx-auto">
@@ -113,7 +97,7 @@ const Index = () => {
                     className="w-full h-[600px] object-cover grayscale hover:grayscale-0 transition-all duration-1000"
                   />
                 </div>
-                <div className="absolute -top-12 -right-12 w-48 h-48 border-t border-r border-[#D4AF37]/20" />
+                <div className="absolute -top-12 -right-12 w-48 h-48 border-t-r border-[#D4AF37]/20" />
                 <div className="absolute -bottom-12 -left-12 w-48 h-48 border-b border-l border-[#D4AF37]/20" />
               </div>
             </div>
