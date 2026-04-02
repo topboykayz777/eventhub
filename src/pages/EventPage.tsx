@@ -89,7 +89,7 @@ const EventPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Insert the RSVP. We use .select() to get the ID back for the ticket.
+      // We insert and select the ID. This requires the 'Public can view RSVPs' policy.
       const { data, error } = await supabase
         .from('rsvps')
         .insert({
@@ -100,7 +100,13 @@ const EventPage = () => {
         .select('id')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If RLS still fails, we provide a clear message
+        if (error.code === '42501') {
+          throw new Error("Database permission error. Please ensure the 'Public can view RSVPs' policy is active.");
+        }
+        throw error;
+      }
 
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
