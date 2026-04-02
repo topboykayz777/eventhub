@@ -1,141 +1,169 @@
 "use client";
 
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Wallet, ShieldCheck, CheckCircle2, 
   Share2, Users, Megaphone, 
   Table as TableIcon, Zap, Send, Plus, Minus,
   MousePointer2, Smartphone, BarChart3, ArrowRight,
-  CreditCard, Lock, Check
+  CreditCard, Lock, Check, Calendar, MapPin, Type
 } from 'lucide-react';
 
-const FeatureShowcase = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
+const steps = [
+  {
+    id: 'creation',
+    label: 'Phase I: The Genesis',
+    action: 'Designing the Masterpiece...',
+    desc: 'A human-like interaction filling out the event details in the Creator Suite.'
+  },
+  {
+    id: 'activation',
+    label: 'Phase II: The Activation',
+    action: 'Securing the Presence...',
+    desc: 'Simulating the Paystack secure payment flow and instant activation.'
+  },
+  {
+    id: 'dashboard',
+    label: 'Phase III: The Command Center',
+    action: 'Orchestrating in Real-time...',
+    desc: 'Monitoring live RSVPs and broadcasting updates to all guests.'
+  },
+  {
+    id: 'guest',
+    label: 'Phase IV: The Elite Pass',
+    action: 'The Guest Experience...',
+    desc: 'A mobile simulation of the digital invite and unique entry QR code.'
+  },
+  {
+    id: 'ledger',
+    label: 'Phase V: The Master Ledger',
+    action: 'Financial Precision...',
+    desc: 'Tracking every naira of income and expenses in the financial suite.'
+  },
+  {
+    id: 'gatekeeper',
+    label: 'Phase VI: The Gatekeeper',
+    action: 'Seamless Venue Entry...',
+    desc: 'Live QR verification at the door for exclusive access control.'
+  }
+];
 
-  // Map scroll progress to steps (0 to 5)
-  const step = useTransform(scrollYProgress, [0, 0.15, 0.35, 0.55, 0.75, 0.95], [0, 1, 2, 3, 4, 5]);
-  
-  // We'll use a state-like approach with the transform to trigger specific UI changes
-  const [activeStep, setActiveStep] = React.useState(0);
-  
-  React.useEffect(() => {
-    return step.onChange(v => setActiveStep(Math.floor(v)));
-  }, [step]);
+const FeatureShowcase = () => {
+  const [activeStep, setActiveStep] = useState(0);
+
+  // Automatic cycle every 6 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % steps.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <section ref={containerRef} className="relative h-[600vh] bg-[#050505]">
-      {/* Sticky Simulation Container */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
-        
-        {/* Background Ambient Glows */}
-        <div className="absolute inset-0 pointer-events-none">
-          <motion.div 
-            animate={{ 
-              opacity: [0.1, 0.2, 0.1],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ duration: 8, repeat: Infinity }}
-            className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#D4AF37]/10 blur-[150px] rounded-full" 
-          />
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-500/5 blur-[150px] rounded-full" />
+    <section className="py-24 md:py-40 px-4 md:px-6 bg-[#050505] relative overflow-hidden">
+      {/* Background Ambient Glows */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl aspect-square bg-[#D4AF37]/5 blur-[150px] rounded-full pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-16 md:mb-24">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block"
+          >
+            The Orchestration Journey
+          </motion.span>
+          <h2 className="text-4xl md:text-8xl font-serif italic text-white mb-8">
+            The <span className="text-[#D4AF37]">Ecosystem</span> in Motion
+          </h2>
+          
+          {/* Progress Bar */}
+          <div className="flex justify-center gap-2 md:gap-4">
+            {steps.map((_, i) => (
+              <button 
+                key={i}
+                onClick={() => setActiveStep(i)}
+                className={`h-1 transition-all duration-1000 rounded-full ${
+                  i === activeStep ? 'w-12 md:w-20 bg-[#D4AF37]' : i < activeStep ? 'w-6 md:w-8 bg-[#D4AF37]/30' : 'w-4 md:w-6 bg-white/10'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="max-w-7xl w-full px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
-          
-          {/* Left Side: The Narrative */}
-          <div className="space-y-12">
-            <div className="space-y-6">
-              <motion.span 
-                key={`label-${activeStep}`}
-                initial={{ opacity: 0, x: -20 }}
+        <div className="grid lg:grid-cols-12 gap-12 md:gap-24 items-center">
+          {/* Left: The Narrative (Hidden on small screens to focus on animation) */}
+          <div className="lg:col-span-5 hidden lg:block space-y-12">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep}
+                initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase block"
+                exit={{ opacity: 0, x: 30 }}
+                className="space-y-8"
               >
-                {activeStep === 0 && "Phase I: The Genesis"}
-                {activeStep === 1 && "Phase II: The Activation"}
-                {activeStep === 2 && "Phase III: The Command Center"}
-                {activeStep === 3 && "Phase IV: The Guest Experience"}
-                {activeStep === 4 && "Phase V: The Financial Suite"}
-                {activeStep === 5 && "Phase VI: The Gatekeeper"}
-              </motion.span>
-              
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`title-${activeStep}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-6"
-                >
-                  <h2 className="text-5xl md:text-7xl font-serif italic text-white leading-tight">
-                    {activeStep === 0 && <>Design Your <span className="text-[#D4AF37]">Legacy</span></>}
-                    {activeStep === 1 && <>Secure Your <span className="text-[#D4AF37]">Presence</span></>}
-                    {activeStep === 2 && <>Real-time <span className="text-[#D4AF37]">Orchestration</span></>}
-                    {activeStep === 3 && <>The Elite <span className="text-[#D4AF37]">Pass</span></>}
-                    {activeStep === 4 && <>The Master <span className="text-[#D4AF37]">Ledger</span></>}
-                    {activeStep === 5 && <>Seamless <span className="text-[#D4AF37]">Access</span></>}
-                  </h2>
-                  <p className="text-gray-500 text-lg font-light leading-relaxed max-w-md">
-                    {activeStep === 0 && "Start by crafting a bespoke digital invitation. Choose themes that reflect your heritage and style."}
-                    {activeStep === 1 && "Activate your event with a single secure payment. Your masterpiece goes live across the globe instantly."}
-                    {activeStep === 2 && "Monitor RSVPs as they stream in. Send live broadcasts to every guest's device simultaneously."}
-                    {activeStep === 3 && "Guests receive high-definition entry passes. Our 'Memory' system recognizes them every time they return."}
-                    {activeStep === 4 && "Track every naira with precision. Manage vendors, expenses, and income in one elegant financial suite."}
-                    {activeStep === 5 && "Verify identities at the door with our integrated QR engine. Ensure a secure and exclusive atmosphere."}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Progress Indicators */}
-            <div className="flex gap-3">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div 
-                  key={i}
-                  className={`h-1 rounded-full transition-all duration-700 ${
-                    i <= activeStep ? 'w-12 bg-[#D4AF37]' : 'w-6 bg-white/10'
-                  }`}
-                />
-              ))}
-            </div>
+                <div className="space-y-4">
+                  <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em]">{steps[activeStep].label}</p>
+                  <h3 className="text-5xl font-serif italic text-white leading-tight">{steps[activeStep].action}</h3>
+                </div>
+                <p className="text-gray-500 text-lg font-light leading-relaxed max-w-md">
+                  {steps[activeStep].desc}
+                </p>
+                <div className="flex items-center gap-6 pt-8">
+                  <div className="w-12 h-12 rounded-full border border-[#D4AF37]/30 flex items-center justify-center">
+                    <span className="text-[#D4AF37] font-serif italic text-xl">{activeStep + 1}</span>
+                  </div>
+                  <div className="h-px flex-1 bg-gradient-to-r from-[#D4AF37]/30 to-transparent" />
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Right Side: The Live Simulation */}
-          <div className="relative aspect-square lg:aspect-auto lg:h-[700px] w-full">
-            <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-[3rem] md:rounded-[5rem] overflow-hidden shadow-2xl backdrop-blur-3xl">
+          {/* Right: The High-Fidelity Simulation */}
+          <div className="lg:col-span-7">
+            <div className="relative aspect-square md:aspect-[4/3] bg-white/[0.02] border border-white/5 rounded-[3rem] md:rounded-[5rem] overflow-hidden shadow-2xl backdrop-blur-3xl">
               
+              {/* Simulation Header */}
+              <div className="absolute top-8 left-8 right-8 z-50 flex justify-between items-center">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/20" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/20" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/20" />
+                </div>
+                <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-gray-500">Live Simulation</span>
+                </div>
+              </div>
+
               <AnimatePresence mode="wait">
                 
-                {/* SCENE 0: CREATION */}
+                {/* SCENE 0: CREATION (Form Filling) */}
                 {activeStep === 0 && (
                   <motion.div 
                     key="scene-0"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="h-full w-full p-12 flex flex-col"
+                    className="h-full w-full p-12 md:p-20 flex flex-col justify-center"
                   >
-                    <div className="flex justify-between items-center mb-12">
-                      <div className="h-2 w-24 bg-white/10 rounded-full" />
-                      <Sparkles className="text-[#D4AF37] w-6 h-6" />
-                    </div>
-                    <div className="space-y-8">
-                      <div className="space-y-3">
-                        <div className="h-2 w-20 bg-gray-600 rounded-full" />
-                        <div className="h-16 bg-white/5 border border-white/10 rounded-none flex items-center px-6 relative">
-                          <motion.div 
+                    <div className="space-y-10 max-w-md mx-auto w-full">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-[#D4AF37]">
+                          <Type size={14} />
+                          <span className="text-[8px] font-bold uppercase tracking-widest">Event Identity</span>
+                        </div>
+                        <div className="h-16 bg-white/5 border border-white/10 rounded-none flex items-center px-6 relative overflow-hidden">
+                          <motion.span 
                             initial={{ width: 0 }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 2, delay: 0.5 }}
-                            className="h-4 bg-[#D4AF37]/20 rounded-sm"
-                          />
+                            animate={{ width: "auto" }}
+                            transition={{ duration: 2, delay: 1 }}
+                            className="text-lg font-light text-white whitespace-nowrap overflow-hidden"
+                          >
+                            The Balogun Wedding Gala
+                          </motion.span>
                           <motion.div 
-                            animate={{ x: [0, 200, 150], y: [0, 0, 0] }}
+                            animate={{ x: [0, 240, 200], y: [40, 0, 0] }}
                             transition={{ duration: 2 }}
                             className="absolute left-4"
                           >
@@ -144,28 +172,41 @@ const FeatureShowcase = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
-                        <div className="h-32 bg-white/5 border border-[#D4AF37]/30 rounded-none relative overflow-hidden">
-                          <div className="absolute inset-0 bg-[#D4AF37]/5" />
-                          <div className="absolute bottom-4 left-4 h-1.5 w-12 bg-[#D4AF37] rounded-full" />
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 text-gray-500">
+                            <Calendar size={14} />
+                            <span className="text-[8px] font-bold uppercase tracking-widest">Date</span>
+                          </div>
+                          <div className="h-16 bg-white/5 border border-white/10 rounded-none flex items-center px-6">
+                            <span className="text-sm text-gray-400">Dec 24, 2026</span>
+                          </div>
                         </div>
-                        <div className="h-32 bg-white/5 border border-white/10 rounded-none" />
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 text-gray-500">
+                            <MapPin size={14} />
+                            <span className="text-[8px] font-bold uppercase tracking-widest">Venue</span>
+                          </div>
+                          <div className="h-16 bg-white/5 border border-white/10 rounded-none flex items-center px-6">
+                            <span className="text-sm text-gray-400">Eko Hotel</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* SCENE 1: ACTIVATION */}
+                {/* SCENE 1: ACTIVATION (Payment) */}
                 {activeStep === 1 && (
                   <motion.div 
                     key="scene-1"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.1 }}
-                    className="h-full w-full flex items-center justify-center p-12"
+                    className="h-full w-full flex items-center justify-center p-8 md:p-20"
                   >
-                    <div className="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-black">
+                    <div className="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-black relative overflow-hidden">
                       <div className="flex justify-between items-center mb-10">
-                        <CreditCard size={24} />
+                        <CreditCard size={24} className="text-gray-400" />
                         <div className="flex gap-2">
                           <div className="w-8 h-5 bg-blue-600 rounded-sm" />
                           <div className="w-8 h-5 bg-orange-500 rounded-sm" />
@@ -176,35 +217,43 @@ const FeatureShowcase = () => {
                         <div className="h-3 w-2/3 bg-gray-100 rounded-full" />
                       </div>
                       <motion.button 
-                        whileTap={{ scale: 0.95 }}
+                        animate={{ scale: [1, 0.95, 1] }}
+                        transition={{ delay: 1, duration: 0.5 }}
                         className="w-full bg-black text-white py-6 rounded-xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3"
                       >
-                        <Lock size={14} /> Pay ₦15,000
+                        <Lock size={14} /> Secure Payment
                       </motion.button>
+                      
                       <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1.5 }}
-                        className="mt-8 flex items-center justify-center gap-3 text-green-600"
+                        transition={{ delay: 2 }}
+                        className="absolute inset-0 bg-white flex flex-col items-center justify-center p-10 text-center"
                       >
-                        <CheckCircle2 size={20} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Success</span>
+                        <div className="bg-green-500/10 w-20 h-20 rounded-full flex items-center justify-center mb-6">
+                          <CheckCircle2 className="text-green-500 w-10 h-10" />
+                        </div>
+                        <h4 className="text-2xl font-serif italic mb-2">Activation Complete</h4>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-gray-500">Your event is now live</p>
                       </motion.div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* SCENE 2: DASHBOARD */}
+                {/* SCENE 2: DASHBOARD (Real-time) */}
                 {activeStep === 2 && (
                   <motion.div 
                     key="scene-2"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="h-full w-full p-12 flex flex-col"
+                    className="h-full w-full p-12 md:p-20 flex flex-col"
                   >
                     <div className="flex justify-between items-end mb-16">
                       <div className="space-y-4">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em]">Live RSVPs</p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em]">Live RSVPs</p>
+                        </div>
                         <motion.p 
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -228,13 +277,15 @@ const FeatureShowcase = () => {
                     <motion.div 
                       initial={{ x: -50, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      className="bg-[#D4AF37] p-6 rounded-2xl text-black flex items-center gap-6 shadow-2xl"
+                      transition={{ delay: 1 }}
+                      className="bg-[#D4AF37] p-6 rounded-2xl text-black flex items-center gap-6 shadow-2xl relative overflow-hidden"
                     >
                       <Megaphone className="animate-bounce" />
                       <div>
                         <p className="text-[8px] font-black uppercase tracking-widest mb-1">Global Broadcast</p>
                         <p className="text-sm font-serif italic">"The Buffet is now open!"</p>
                       </div>
+                      <div className="absolute top-0 right-0 w-12 h-12 bg-black/5 rotate-45 -mr-6 -mt-6" />
                     </motion.div>
 
                     <div className="mt-auto space-y-4">
@@ -251,13 +302,13 @@ const FeatureShowcase = () => {
                   </motion.div>
                 )}
 
-                {/* SCENE 3: GUEST EXPERIENCE */}
+                {/* SCENE 3: GUEST EXPERIENCE (Mobile) */}
                 {activeStep === 3 && (
                   <motion.div 
                     key="scene-3"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="h-full w-full flex items-center justify-center p-12"
+                    className="h-full w-full flex items-center justify-center p-8 md:p-20"
                   >
                     <div className="w-72 aspect-[9/19] bg-black border-4 border-white/10 rounded-[3rem] p-6 relative overflow-hidden shadow-2xl">
                       <div className="h-1 w-12 bg-white/20 rounded-full mx-auto mb-12" />
@@ -279,15 +330,15 @@ const FeatureShowcase = () => {
                   </motion.div>
                 )}
 
-                {/* SCENE 4: LEDGER */}
+                {/* SCENE 4: LEDGER (Financials) */}
                 {activeStep === 4 && (
                   <motion.div 
                     key="scene-4"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="h-full w-full p-12 flex flex-col"
+                    className="h-full w-full p-12 md:p-20 flex flex-col"
                   >
-                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12 relative overflow-hidden">
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12 relative overflow-hidden shadow-2xl">
                       <div className="relative z-10">
                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-4">Event Balance</p>
                         <p className="text-6xl font-serif italic text-white">₦2,840,000</p>
@@ -295,7 +346,8 @@ const FeatureShowcase = () => {
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: "65%" }}
-                            className="h-full gold-gradient"
+                            transition={{ duration: 2, delay: 1 }}
+                            className="h-full gold-gradient shadow-[0_0_20px_#D4AF37]"
                           />
                         </div>
                       </div>
@@ -305,26 +357,29 @@ const FeatureShowcase = () => {
                       <div className="bg-green-500/5 p-8 border border-green-500/10 rounded-3xl">
                         <Plus className="text-green-500 mb-4" />
                         <p className="text-2xl font-serif italic">₦4.2M</p>
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500">Income</p>
                       </div>
                       <div className="bg-red-500/5 p-8 border border-red-500/10 rounded-3xl">
                         <Minus className="text-red-500 mb-4" />
                         <p className="text-2xl font-serif italic">₦1.4M</p>
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500">Expenses</p>
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* SCENE 5: GATEKEEPER */}
+                {/* SCENE 5: GATEKEEPER (QR Scan) */}
                 {activeStep === 5 && (
                   <motion.div 
                     key="scene-5"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="h-full w-full flex flex-col items-center justify-center p-12"
+                    className="h-full w-full flex flex-col items-center justify-center p-12 md:p-20"
                   >
                     <div className="w-64 h-64 bg-white p-6 rounded-[3rem] relative overflow-hidden shadow-2xl border-8 border-black/5">
-                      <div className="w-full h-full bg-black/5 flex items-center justify-center">
+                      <div className="w-full h-full bg-black/5 flex flex-col items-center justify-center gap-4">
                         <Zap className="text-black/10 w-24 h-24" />
+                        <span className="text-[8px] font-black uppercase tracking-widest text-black/20">Scanning...</span>
                       </div>
                       <motion.div 
                         animate={{ top: ['-10%', '110%', '-10%'] }}
@@ -335,7 +390,7 @@ const FeatureShowcase = () => {
                     <motion.div 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
+                      transition={{ delay: 1 }}
                       className="mt-16 bg-green-500/10 border border-green-500/20 px-12 py-6 rounded-full flex items-center gap-6 shadow-2xl"
                     >
                       <CheckCircle2 className="text-green-500 w-8 h-8" />
@@ -352,7 +407,7 @@ const FeatureShowcase = () => {
               {/* UI Frame Elements */}
               <div className="absolute top-6 left-1/2 -translate-x-1/2 h-1.5 w-24 bg-white/10 rounded-full" />
               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-                {[0, 1, 2, 3, 4, 5].map(i => (
+                {steps.map((_, i) => (
                   <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === activeStep ? 'bg-[#D4AF37]' : 'bg-white/10'}`} />
                 ))}
               </div>
@@ -361,14 +416,6 @@ const FeatureShowcase = () => {
 
         </div>
       </div>
-
-      {/* Scroll Triggers (Invisible spacers to drive the scroll progress) */}
-      <div className="h-screen" /> {/* Step 0 */}
-      <div className="h-screen" /> {/* Step 1 */}
-      <div className="h-screen" /> {/* Step 2 */}
-      <div className="h-screen" /> {/* Step 3 */}
-      <div className="h-screen" /> {/* Step 4 */}
-      <div className="h-screen" /> {/* Step 5 */}
     </section>
   );
 };
