@@ -67,6 +67,20 @@ const Dashboard = () => {
 
   const handleQRScan = async (scannedText: string) => {
     const trimmedText = scannedText.trim();
+    
+    // Check if the scanned text is a URL (General Invite) instead of a UUID (Ticket)
+    if (trimmedText.startsWith('http')) {
+      showError("This is an Invite Link. Please scan a Guest's Elite Pass.");
+      return;
+    }
+
+    // Validate UUID format to prevent database errors
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(trimmedText)) {
+      showError("Invalid Ticket Format.");
+      return;
+    }
+
     const { data: rsvp, error: fetchError } = await supabase
       .from('rsvps')
       .select('*, events(id, event_name)')
@@ -79,7 +93,12 @@ const Dashboard = () => {
     }
 
     if (rsvp.event_id !== activeEventId) {
-      showError(`This ticket belongs to another event: ${rsvp.events?.event_name}`);
+      showError(`Wrong Event: This ticket is for "${rsvp.events?.event_name}"`);
+      return;
+    }
+
+    if (rsvp.checked_in) {
+      showSuccess(`${rsvp.guest_name} is already checked in.`);
       return;
     }
 
