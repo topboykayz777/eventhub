@@ -28,8 +28,9 @@ const EventPage = () => {
     fetchEvent();
 
     // Real-time subscription to catch the moment the host pays
+    // We listen for any update to this specific event
     const channel = supabase
-      .channel('public-event-updates')
+      .channel(`event-${slug}`)
       .on(
         'postgres_changes',
         {
@@ -40,9 +41,14 @@ const EventPage = () => {
         },
         (payload) => {
           console.log("[EventPage] Real-time update received:", payload.new);
+          setEvent(payload.new);
           if (payload.new.is_paid) {
-            setEvent(payload.new);
             fetchLivePhotos(payload.new.id);
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
           }
         }
       )
@@ -60,15 +66,13 @@ const EventPage = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      // We fetch the event. Because of the new RLS policy, this will succeed 
+      // even if is_paid is false.
       const { data, error } = await supabase
         .from('events')
         .select('*, profiles(full_name)')
         .ilike('slug', slug)
         .maybeSingle();
-
-      if (error) {
-        console.error("[EventPage] Fetch error:", error);
-      }
 
       if (data) {
         setEvent(data);
@@ -114,7 +118,6 @@ const EventPage = () => {
       
       await supabase.from('event_photos').insert({
         event_id: event.id,
-        photo_url:<dyad-write path="src/pages/EventPage.tsx" description="Continuing the EventPage.tsx file with the full implementation of the real-time listener and UI logic.">
         photo_url: publicUrl
       });
 
@@ -174,7 +177,17 @@ const EventPage = () => {
     </div>
   );
 
-  if (!event || (!event.is_paid && !isHost)) return (
+  // If event doesn't exist at all
+  if (!event) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
+      <h1 className="text-4xl font-serif italic mb-4">Event Not Found</h1>
+      <p className="text-gray-500 mb-8">The link you followed may be broken or the event has been removed.</p>
+      <Link to="/"><Button className="bg-[#D4AF37] text-black rounded-none px-8 py-4">Return Home</Button></Link>
+    </div>
+  );
+
+  // If event exists but is NOT paid, and user is NOT the host
+  if (!event.is_paid && !isHost) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
@@ -184,20 +197,20 @@ const EventPage = () => {
         <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
         <h1 className="text-3xl font-serif italic mb-4 text-[#D4AF37]">Pending Activation</h1>
         <p className="text-gray-500 mb-10 text-sm leading-relaxed">
-          This masterpiece is currently being refined by the host. If you believe the event is live, please refresh.
+          The host is currently finalizing the details for <span className="text-white font-bold">"{event.event_name}"</span>. 
+          This page will activate automatically once the masterpiece is ready.
         </p>
         <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] animate-pulse">
+            <RefreshCw className="w-3 h-3 animate-spin" /> Waiting for Host...
+          </div>
           <Button 
             onClick={() => fetchEvent()}
-            className="bg-[#D4AF37] text-black rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-[#B8860B]"
+            variant="ghost"
+            className="text-gray-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"
           >
-            <RefreshCw className="w-4 h-4 mr-2" /> Refresh Status
+            Manual Refresh
           </Button>
-          <Link to="/">
-            <Button variant="ghost" className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-              Return Home
-            </Button>
-          </Link>
         </div>
       </motion.div>
     </div>
