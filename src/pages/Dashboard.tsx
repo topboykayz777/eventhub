@@ -29,13 +29,14 @@ const Dashboard = () => {
     fetchEvents();
 
     // Establish real-time subscription for instant updates
+    // This ensures the dashboard updates the moment a guest RSVPs
     const channel = supabase
-      .channel('dashboard-realtime')
+      .channel('dashboard-changes')
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'rsvps' }, 
-        (payload) => {
-          console.log("[Dashboard] Real-time RSVP update received:", payload);
+        () => {
+          console.log("[Dashboard] Live update detected in registry.");
           fetchEvents();
         }
       )
@@ -44,9 +45,7 @@ const Dashboard = () => {
         { event: 'UPDATE', schema: 'public', table: 'events' }, 
         () => fetchEvents()
       )
-      .subscribe((status) => {
-        console.log("[Dashboard] Real-time subscription status:", status);
-      });
+      .subscribe();
 
     return () => { 
       supabase.removeChannel(channel); 
@@ -67,7 +66,6 @@ const Dashboard = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("[Dashboard] Fetch error:", error);
       showError(error.message);
     } else {
       setEvents(data || []);
@@ -82,36 +80,34 @@ const Dashboard = () => {
       .eq('id', rsvpId);
     
     if (error) showError("Update failed");
-    else showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
+    else {
+      showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
+      fetchEvents(); // Immediate local refresh
+    }
   };
 
   const handleQRScan = async (scannedText: string) => {
-    // Clean the scanned text thoroughly for mobile compatibility
-    const trimmedText = scannedText.trim().toLowerCase();
+    const trimmedText = scannedText.trim();
     
+    // If it's a URL, it's likely the general invite link, not a specific ticket
     if (trimmedText.startsWith('http')) {
-      showError("This is an Invite Link. Please scan a Guest's Elite Pass.");
+      showError("This is the general Invite Link. Please scan a Guest's unique Elite Pass.");
       return;
     }
 
-    // Robust UUID validation that works across all devices/scanners
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidPattern.test(trimmedText)) {
-      showError("Invalid Ticket Format. Please ensure the QR is clear.");
-      return;
-    }
-
+    // We search for the RSVP record using the scanned ID
     const { data: rsvp, error: fetchError } = await supabase
       .from('rsvps')
       .select('*, events(id, event_name)')
       .eq('id', trimmedText)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !rsvp) {
-      showError("Ticket not found in the registry.");
+      showError("Ticket not recognized. Please ensure the guest has RSVP'd.");
       return;
     }
 
+    // Security check: Ensure the ticket belongs to the event currently being scanned
     if (rsvp.event_id !== activeEventId) {
       showError(`Wrong Event: This ticket is for "${rsvp.events?.event_name}"`);
       return;
@@ -122,13 +118,14 @@ const Dashboard = () => {
       return;
     }
 
+    // Perform the check-in
     const { error: updateError } = await supabase
       .from('rsvps')
       .update({ checked_in: true })
       .eq('id', trimmedText);
 
     if (updateError) {
-      showError("Check-in failed.");
+      showError("Check-in failed. Please try again.");
     } else {
       showSuccess(`Welcome, ${rsvp.guest_name}!`);
       fetchEvents();
@@ -136,8 +133,7 @@ const Dashboard = () => {
   };
 
   const copyLink = (slug: string) => {
-    const cleanSlug = slug.trim();
-    const url = `${window.location.origin}/event/${cleanSlug}`;
+    const url = `${window.location.origin}/event/${slug.trim()}`;
     navigator.clipboard.writeText(url);
     showSuccess('Link copied to clipboard!');
   };

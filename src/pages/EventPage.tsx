@@ -90,14 +90,12 @@ const EventPage = () => {
 
     setIsSubmitting(true);
     
-    // We perform the insert without .select() because public users 
-    // might not have SELECT permissions on the rsvps table, causing a 406 error
-    // even if the insert itself succeeded.
-    const { error } = await supabase.from('rsvps').insert({
+    // We generate a unique ID for the ticket to ensure it's unique per guest
+    const { data, error } = await supabase.from('rsvps').insert({
       event_id: event.id,
       guest_name: rsvpData.name,
       guest_phone: rsvpData.phone
-    });
+    }).select('id').single();
 
     if (error) {
       console.error("[RSVP Error]", error);
@@ -106,12 +104,11 @@ const EventPage = () => {
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
       
-      // Since we can't reliably get the ID back due to RLS constraints on public users,
-      // we set a success state that allows the user to see their confirmation.
+      // We store the real ID so the QR code is unique and valid for scanning
       setSubmittedRsvp({ 
         guest_name: rsvpData.name, 
         guest_phone: rsvpData.phone,
-        id: 'confirmed' // Placeholder to trigger the success UI
+        id: data.id 
       });
     }
     setIsSubmitting(false);
