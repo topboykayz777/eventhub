@@ -57,29 +57,28 @@ const Payment = () => {
           event_id: id,
           plan: event.plan
         },
-        callback: async function(response: any) {
+        callback: function(response: any) {
           console.log("[Payment] Success:", response);
           
-          // We update the database and wait for confirmation
-          const { error } = await supabase
+          // Update the database and wait for confirmation
+          supabase
             .from('events')
-            .update({ 
-              is_paid: true
-            })
-            .eq('id', id);
-
-          if (error) {
-            console.error("[Payment] Database update error:", error);
-            showError("Payment received, but we couldn't update your event status. Please contact support.");
-            setIsProcessing(false);
-          } else {
-            showSuccess('Payment successful! Your event is now live.');
-            // Small delay to ensure DB consistency before redirect
-            setTimeout(() => {
-              navigate('/dashboard', { replace: true });
-              setIsProcessing(false);
-            }, 1500);
-          }
+            .update({ is_paid: true })
+            .eq('id', id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("[Payment] Database update error:", error);
+                showError("Payment received, but we couldn't update your event status. Please contact support.");
+                setIsProcessing(false);
+              } else {
+                showSuccess('Payment successful! Your event is now live.');
+                // Small delay to ensure DB consistency before redirect
+                setTimeout(() => {
+                  navigate('/dashboard', { replace: true });
+                  setIsProcessing(false);
+                }, 1500);
+              }
+            });
         },
         onClose: function() {
           showError('Payment window closed');
