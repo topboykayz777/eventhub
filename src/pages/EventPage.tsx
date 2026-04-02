@@ -26,6 +26,31 @@ const EventPage = () => {
 
   useEffect(() => {
     fetchEvent();
+
+    // Real-time subscription to catch the moment the host pays
+    const channel = supabase
+      .channel('public-event-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'events',
+          filter: `slug=eq.${slug}`
+        },
+        (payload) => {
+          console.log("[EventPage] Real-time update received:", payload.new);
+          if (payload.new.is_paid) {
+            setEvent(payload.new);
+            fetchLivePhotos(payload.new.id);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [slug]);
 
   const fetchEvent = async () => {
@@ -35,7 +60,6 @@ const EventPage = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // We fetch the event. We use a public-friendly query.
       const { data, error } = await supabase
         .from('events')
         .select('*, profiles(full_name)')
@@ -44,8 +68,6 @@ const EventPage = () => {
 
       if (error) {
         console.error("[EventPage] Fetch error:", error);
-        setLoading(false);
-        return;
       }
 
       if (data) {
@@ -54,7 +76,6 @@ const EventPage = () => {
         
         if (data.is_paid) {
           fetchLivePhotos(data.id);
-          // Increment view count silently
           supabase.rpc('increment_view_count', { event_id: data.id }).then(() => {});
         }
       }
@@ -93,6 +114,7 @@ const EventPage = () => {
       
       await supabase.from('event_photos').insert({
         event_id: event.id,
+        photo_url:<dyad-write path="src/pages/EventPage.tsx" description="Continuing the EventPage.tsx file with the full implementation of the real-time listener and UI logic.">
         photo_url: publicUrl
       });
 
@@ -152,7 +174,6 @@ const EventPage = () => {
     </div>
   );
 
-  // If event is not found or not paid and user isn't host
   if (!event || (!event.is_paid && !isHost)) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
       <motion.div 
@@ -198,7 +219,6 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${themeConfig.bg} ${themeConfig.text} transition-colors duration-700 overflow-x-hidden`}>
-      {/* Hero Section */}
       <div className="relative h-[60vh] md:h-[75vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.2, opacity: 0 }}
