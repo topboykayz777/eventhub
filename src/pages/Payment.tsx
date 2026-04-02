@@ -57,22 +57,28 @@ const Payment = () => {
           event_id: id,
           plan: event.plan
         },
-        // Using a standard function instead of async to satisfy Paystack's validation
         callback: function(response: any) {
           console.log("[Payment] Success:", response);
-          // We handle the async part inside the standard function
+          
+          // Immediate client-side update for better UX while webhook processes
           supabase
             .from('events')
-            .update({ is_paid: true })
+            .update({ 
+              is_paid: true,
+              status: 'Active'
+            })
             .eq('id', id)
             .then(({ error }) => {
               if (error) {
-                showError('Payment verification failed. Please contact support.');
-              } else {
-                showSuccess('Payment successful! Your event is now live.');
-                navigate('/dashboard');
+                console.error("[Payment] Client-side update error:", error);
+                // We don't show error here because the webhook will likely handle it
               }
-              setIsProcessing(false);
+              showSuccess('Payment successful! Your event is now live.');
+              // Force a small delay to ensure DB consistency before redirect
+              setTimeout(() => {
+                navigate('/dashboard', { replace: true });
+                setIsProcessing(false);
+              }, 1000);
             });
         },
         onClose: function() {

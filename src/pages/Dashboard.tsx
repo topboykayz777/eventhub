@@ -28,8 +28,9 @@ const Dashboard = () => {
   useEffect(() => {
     fetchEvents();
 
+    // Listen for changes to both RSVPs and Events (for status updates)
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('dashboard-realtime')
       .on(
         'postgres_changes',
         {
@@ -37,9 +38,16 @@ const Dashboard = () => {
           schema: 'public',
           table: 'rsvps'
         },
-        () => {
-          fetchEvents();
-        }
+        () => fetchEvents()
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'events'
+        },
+        () => fetchEvents()
       )
       .subscribe();
 
@@ -82,7 +90,6 @@ const Dashboard = () => {
     const trimmedText = scannedText.trim();
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     
-    // Check if it's a URL (Invitation) instead of a UUID (Ticket)
     if (trimmedText.startsWith('http')) {
       showError("This is an Invitation Link, not a Guest Ticket. Guests must RSVP first to get a ticket.");
       return;
@@ -123,7 +130,7 @@ const Dashboard = () => {
       showError("Check-in failed. Please try manual entry.");
     } else {
       showSuccess(`Welcome, ${rsvp.guest_name}! Check-in successful.`);
-      fetchEvents(); // Refresh to update counts
+      fetchEvents();
     }
   };
 
@@ -229,6 +236,7 @@ const Dashboard = () => {
           <div className="space-y-16 md:space-y-24">
             {events.map((event, index) => {
               const checkedInCount = event.rsvps.filter((r: any) => r.checked_in).length;
+              const status = event.status || (event.is_paid ? 'Active' : 'Pending');
 
               return (
                 <motion.div 
@@ -247,7 +255,7 @@ const Dashboard = () => {
                           { icon: Users, label: 'Total RSVPs', value: event.rsvps.length },
                           { icon: CheckCircle2, label: 'Checked In', value: `${checkedInCount}/${event.rsvps.length}` },
                           { icon: Eye, label: 'Page Views', value: event.view_count },
-                          { icon: TrendingUp, label: 'Status', value: event.is_paid ? 'Active' : 'Pending' }
+                          { icon: TrendingUp, label: 'Status', value: status }
                         ].map((stat, i) => (
                           <div key={i} className="bg-white/5 p-6 md:p-8 border border-white/5 text-center">
                             <stat.icon className="w-4 h-4 md:w-5 md:h-5 mx-auto mb-3 md:mb-4 text-[#D4AF37]" />
