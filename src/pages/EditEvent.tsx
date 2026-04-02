@@ -19,6 +19,7 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [eventPlan, setEventPlan] = useState('Basic');
   const [formData, setFormData] = useState({
     eventName: '',
     eventDate: '',
@@ -46,6 +47,7 @@ const EditEvent = () => {
       return;
     }
 
+    setEventPlan(data.plan || 'Basic');
     setFormData({
       eventName: data.event_name,
       eventDate: data.event_date,
@@ -62,6 +64,22 @@ const EditEvent = () => {
     if (!e.target.files || !e.target.files[0]) return;
     
     const file = e.target.files[0];
+
+    // 10MB Limit Check
+    if (file.size > 10 * 1024 * 1024) {
+      showError("File is too large. Maximum size is 10MB.");
+      return;
+    }
+
+    // Media Count Limit Check
+    if (isGallery) {
+      const limit = eventPlan === 'Pro' ? 50 : eventPlan === 'Standard' ? 10 : 0;
+      if (formData.gallery_urls.length >= limit) {
+        showError(`Your ${eventPlan} plan is limited to ${limit} gallery items. Upgrade for more.`);
+        return;
+      }
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     setUploading(true);
@@ -80,7 +98,7 @@ const EditEvent = () => {
       } else {
         setFormData(prev => ({ ...prev, photo_url: publicUrl }));
       }
-      showSuccess('Portrait uploaded to the vault.');
+      showSuccess('Media uploaded to the vault.');
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -266,7 +284,12 @@ const EditEvent = () => {
               </div>
 
               <div className="space-y-4">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Photo Gallery (Premium)</Label>
+                <div className="flex justify-between items-center">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Media Gallery ({eventPlan})</Label>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">
+                    {formData.gallery_urls.length} / {eventPlan === 'Pro' ? '50' : eventPlan === 'Standard' ? '10' : '0'} Items
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                   {formData.gallery_urls.map((url, i) => (
                     <div key={i} className="relative aspect-square border border-white/10 group">
@@ -280,12 +303,15 @@ const EditEvent = () => {
                       </button>
                     </div>
                   ))}
-                  <Label htmlFor="gallery-upload" className="cursor-pointer aspect-square border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
-                    <Upload className="w-4 h-4 text-gray-600" />
-                    <span className="text-[7px] font-bold uppercase tracking-[0.1em] text-gray-500">Add Photo</span>
-                    <input id="gallery-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
-                  </Label>
+                  {(eventPlan === 'Standard' || eventPlan === 'Pro') && (
+                    <Label htmlFor="gallery-upload" className="cursor-pointer aspect-square border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
+                      <Upload className="w-4 h-4 text-gray-600" />
+                      <span className="text-[7px] font-bold uppercase tracking-[0.1em] text-gray-500">Add Media</span>
+                      <input id="gallery-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
+                    </Label>
+                  )}
                 </div>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 10MB per file. Images and Videos supported.</p>
               </div>
             </div>
           </GlassCard>

@@ -22,7 +22,7 @@ const plans = [
     popular: true,
     icon: Gem,
     desc: 'The definitive choice for weddings and galas.',
-    features: ['Everything in Basic', 'Photo Gallery (5 Photos)', 'Digital Invite Card', 'Email Notifications', 'HD Image Processing'],
+    features: ['Everything in Basic', '10 HD Photo Gallery', 'Digital Invite Card', 'Email Notifications', 'HD Image Processing'],
     accent: 'border-[#D4AF37]/30 shadow-[0_0_50px_-12px_rgba(212,175,55,0.3)]',
     button: 'bg-[#D4AF37] hover:bg-[#B8860B] text-black'
   },
@@ -31,7 +31,7 @@ const plans = [
     price: '20,000', 
     icon: Crown,
     desc: 'Full-suite orchestration for high-society events.',
-    features: ['Everything in Standard', 'WhatsApp Blast to Guests', 'Budget Tracker Tool', 'Vendor Directory Access', 'Priority Concierge Support'],
+    features: ['Everything in Standard', '50 Media Files (Images/Video)', 'WhatsApp Blast to Guests', 'Budget Tracker Tool', 'Vendor Directory Access'],
     accent: 'border-white/5',
     button: 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
   },
@@ -40,7 +40,6 @@ const plans = [
 const PricingSection = () => {
   return (
     <section className="py-40 px-6 bg-[#050505] relative overflow-hidden">
-      {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
