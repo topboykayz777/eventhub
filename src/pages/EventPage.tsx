@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Camera, Download, ShieldCheck, RefreshCw, Users, AlertTriangle } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -17,7 +17,6 @@ const EventPage = () => {
   const { slug } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
@@ -53,7 +52,6 @@ const EventPage = () => {
   const fetchEvent = async () => {
     if (!slug) return;
     setLoading(true);
-    setErrorDetail(null);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -64,9 +62,9 @@ const EventPage = () => {
         .ilike('slug', slug.trim())
         .maybeSingle();
 
-      if (error) {
-        setErrorDetail(error.message);
-      } else if (data) {
+      if (error) throw error;
+      
+      if (data) {
         setEvent(data);
         setIsHost(user?.id === data.host_id);
         
@@ -75,7 +73,7 @@ const EventPage = () => {
         }
       }
     } catch (err: any) {
-      setErrorDetail(err.message);
+      console.error("[EventPage] Fetch error:", err.message);
     } finally {
       setLoading(false);
     }
@@ -90,28 +88,34 @@ const EventPage = () => {
 
     setIsSubmitting(true);
     
-    // We generate a unique ID for the ticket to ensure it's unique per guest
-    const { data, error } = await supabase.from('rsvps').insert({
-      event_id: event.id,
-      guest_name: rsvpData.name,
-      guest_phone: rsvpData.phone
-    }).select('id').single();
+    try {
+      // Insert the RSVP. We use .select() to get the ID back for the ticket.
+      const { data, error } = await supabase
+        .from('rsvps')
+        .insert({
+          event_id: event.id,
+          guest_name: rsvpData.name,
+          guest_phone: rsvpData.phone
+        })
+        .select('id')
+        .single();
 
-    if (error) {
-      console.error("[RSVP Error]", error);
-      showError(error.message || 'Failed to submit RSVP');
-    } else {
+      if (error) throw error;
+
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
       
-      // We store the real ID so the QR code is unique and valid for scanning
       setSubmittedRsvp({ 
         guest_name: rsvpData.name, 
         guest_phone: rsvpData.phone,
         id: data.id 
       });
+    } catch (err: any) {
+      console.error("[RSVP Error]", err);
+      showError(err.message || 'Failed to submit RSVP. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   if (loading) return (
