@@ -57,29 +57,29 @@ const Payment = () => {
           event_id: id,
           plan: event.plan
         },
-        callback: function(response: any) {
+        callback: async function(response: any) {
           console.log("[Payment] Success:", response);
           
-          // Immediate client-side update for better UX while webhook processes
-          supabase
+          // We update the database and wait for confirmation
+          const { error } = await supabase
             .from('events')
             .update({ 
-              is_paid: true,
-              status: 'Active'
+              is_paid: true
             })
-            .eq('id', id)
-            .then(({ error }) => {
-              if (error) {
-                console.error("[Payment] Client-side update error:", error);
-                // We don't show error here because the webhook will likely handle it
-              }
-              showSuccess('Payment successful! Your event is now live.');
-              // Force a small delay to ensure DB consistency before redirect
-              setTimeout(() => {
-                navigate('/dashboard', { replace: true });
-                setIsProcessing(false);
-              }, 1000);
-            });
+            .eq('id', id);
+
+          if (error) {
+            console.error("[Payment] Database update error:", error);
+            showError("Payment received, but we couldn't update your event status. Please contact support.");
+            setIsProcessing(false);
+          } else {
+            showSuccess('Payment successful! Your event is now live.');
+            // Small delay to ensure DB consistency before redirect
+            setTimeout(() => {
+              navigate('/dashboard', { replace: true });
+              setIsProcessing(false);
+            }, 1500);
+          }
         },
         onClose: function() {
           showError('Payment window closed');
