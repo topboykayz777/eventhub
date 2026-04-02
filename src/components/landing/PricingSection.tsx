@@ -22,7 +22,7 @@ const plans = [
     popular: true,
     icon: Gem,
     desc: 'The definitive choice for weddings and galas.',
-    features: ['Everything in Basic', '10 HD Photo Gallery', 'Digital Invite Card', 'Email Notifications', 'HD Image Processing'],
+    features: ['Everything in Basic', '10 HD Photo Gallery', 'Digital Invite Card', 'HD Image Processing', 'Guest Check-in System'],
     accent: 'border-[#D4AF37]/30 shadow-[0_0_50px_-12px_rgba(212,175,55,0.3)]',
     button: 'bg-[#D4AF37] hover:bg-[#B8860B] text-black'
   },
