@@ -60,19 +60,15 @@ const Payment = () => {
           plan: event.plan
         },
         callback: async function(response: any) {
-          console.log("[Payment] Success Callback Received:", response.reference);
-          
-          // CRITICAL: Update the database immediately
+          // Update the database immediately
           const { error } = await supabase
             .from('events')
             .update({ 
-              is_paid: true,
-              status: 'Active'
+              is_paid: true
             })
             .eq('id', id);
 
           if (error) {
-            console.error("[Payment] Database update failed:", error);
             showError("Payment confirmed, but activation failed. Please refresh your dashboard.");
             setIsProcessing(false);
           } else {
@@ -84,7 +80,6 @@ const Payment = () => {
             });
             showSuccess('Masterpiece Activated!');
             
-            // Give the DB a moment to propagate before redirecting
             setTimeout(() => {
               navigate('/dashboard');
             }, 3000);
@@ -98,7 +93,6 @@ const Payment = () => {
       
       handler.openIframe();
     } catch (err) {
-      console.error("[Payment] Initialization Error:", err);
       showError("Could not open payment window.");
       setIsProcessing(false);
     }

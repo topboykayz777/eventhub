@@ -18,10 +18,9 @@ const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
-  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', guestCount: 1 });
+  const [rsvpData, setRsvpData] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
-  const [livePhotos, setLivePhotos] = useState<any[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [isHost, setIsHost] = useState(false);
 
@@ -29,7 +28,6 @@ const EventPage = () => {
     if (slug) {
       fetchEvent();
       
-      // Real-time listener for instant activation
       const channel = supabase
         .channel(`event-realtime-${slug}`)
         .on(
@@ -41,10 +39,8 @@ const EventPage = () => {
             filter: `slug=eq.${slug}`
           },
           (payload) => {
-            console.log("[EventPage] Real-time update:", payload.new);
             setEvent(payload.new);
             if (payload.new.is_paid) {
-              fetchLivePhotos(payload.new.id);
               confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
           }
@@ -63,7 +59,6 @@ const EventPage = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // We use .ilike for case-insensitive matching and .maybeSingle to avoid errors if not found
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -71,35 +66,20 @@ const EventPage = () => {
         .maybeSingle();
 
       if (error) {
-        console.error("[EventPage] Database Error:", error);
         setErrorDetail(error.message);
       } else if (data) {
         setEvent(data);
         setIsHost(user?.id === data.host_id);
         
         if (data.is_paid) {
-          fetchLivePhotos(data.id);
-          // Increment view count silently
           supabase.rpc('increment_view_count', { event_id: data.id }).catch(() => {});
         }
-      } else {
-        console.warn("[EventPage] No event found for slug:", slug);
       }
     } catch (err: any) {
-      console.error("[EventPage] Unexpected Error:", err);
       setErrorDetail(err.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchLivePhotos = async (eventId: string) => {
-    const { data } = await supabase
-      .from('event_photos')
-      .select('*')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
-    setLivePhotos(data || []);
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,13 +99,19 @@ const EventPage = () => {
       
       const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
       
-      await supabase.from('event_photos').insert({
-        event_id: event.id,
-        photo_url: publicUrl
-      });
+      // Update the gallery_urls array in the events table instead of a separate table
+      const currentGallery = event.gallery_urls || [];
+      const { error: updateError } = await supabase
+        .from('events')
+        .update({
+          gallery_urls: [...currentGallery, publicUrl]
+        })
+        .eq('id', event.id);
 
-      showSuccess('Photo uploaded to the live feed.');
-      fetchLivePhotos(event.id);
+      if (updateError) throw updateError;
+
+      showSuccess('Photo added to the gallery.');
+      fetchEvent(); // Refresh to show new photo
     } catch (err: any) {
       showError(err.message);
     } finally {
@@ -144,8 +130,7 @@ const EventPage = () => {
     const { data, error } = await supabase.from('rsvps').insert({
       event_id: event.id,
       guest_name: rsvpData.name,
-      guest_phone: rsvpData.phone,
-      guest_count: rsvpData.guestCount
+      guest_phone: rsvpData.phone
     }).select().single();
 
     if (error) {
@@ -189,7 +174,6 @@ const EventPage = () => {
     </div>
   );
 
-  // If event exists but is NOT paid, and user is NOT the host
   if (!event.is_paid && !isHost) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 p-12 rounded-[3rem] border border-white/10 max-w-md">
@@ -292,6 +276,15 @@ const EventPage = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Gallery Section */}
+            {event.gallery_urls && event.gallery_urls.length > 0 && (
+              <div className="grid grid-cols-2 gap-4">
+                {event.gallery_urls.map((url: string, i: number) => (
+                  <img key={i} src={url} className="w-full aspect-square object-cover rounded-2xl border border-white/10" alt={`Gallery ${i}`} />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2">
@@ -321,13 +314,6 @@ const EventPage = () => {
                     <div className="space-y-3">
                       <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
                       <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
-                    </div>
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Number of Guests</Label>
-                      <div className="flex items-center gap-4 bg-black/5 p-2">
-                        <Users className="ml-4 text-gray-400 w-5 h-5" />
-                        <Input type="number" min="1" max="10" required className="bg-transparent border-none h-12 text-lg font-light" value={rsvpData.guestCount} onChange={(e) => setRsvpData({ ...rsvpData, guestCount: parseInt(e.target.value) })} />
-                      </div>
                     </div>
                     <Button type="submit" disabled={isSubmitting} className={`w-full ${themeConfig.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
                       {isSubmitting ? 'Processing...' : 'Confirm Attendance'}
