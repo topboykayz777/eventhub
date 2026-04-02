@@ -1,437 +1,374 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Wallet, ShieldCheck, CheckCircle2, 
   Share2, Users, Megaphone, 
   Table as TableIcon, Zap, Send, Plus, Minus,
-  MousePointer2, Smartphone, BarChart3, ArrowRight
+  MousePointer2, Smartphone, BarChart3, ArrowRight,
+  CreditCard, Lock, Check
 } from 'lucide-react';
 
-const steps = [
-  {
-    id: 'design',
-    label: 'Step 1: The Design Studio',
-    action: 'Choosing Midnight Noir Theme...',
-    icon: Sparkles,
-  },
-  {
-    id: 'invite',
-    label: 'Step 2: The Digital Blast',
-    action: 'Generating HD Elite Passes...',
-    icon: Share2,
-  },
-  {
-    id: 'registry',
-    label: 'Step 3: The Live Registry',
-    action: 'RSVPs Streaming In Real-time...',
-    icon: Users,
-  },
-  {
-    id: 'ledger',
-    label: 'Step 4: The Financial Suite',
-    action: 'Orchestrating the Ledger...',
-    icon: Wallet,
-  },
-  {
-    id: 'concierge',
-    label: 'Step 5: The Concierge',
-    action: 'Broadcasting Live Updates...',
-    icon: Megaphone,
-  },
-  {
-    id: 'gatekeeper',
-    label: 'Step 6: The Gatekeeper',
-    action: 'Verifying Elite Access...',
-    icon: ShieldCheck,
-  }
-];
-
 const FeatureShowcase = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [miniTheme, setMiniTheme] = useState('modern');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
 
-  // Auto-play the simulation
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % steps.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+  // Map scroll progress to steps (0 to 5)
+  const step = useTransform(scrollYProgress, [0, 0.15, 0.35, 0.55, 0.75, 0.95], [0, 1, 2, 3, 4, 5]);
+  
+  // We'll use a state-like approach with the transform to trigger specific UI changes
+  const [activeStep, setActiveStep] = React.useState(0);
+  
+  React.useEffect(() => {
+    return step.onChange(v => setActiveStep(Math.floor(v)));
+  }, [step]);
 
   return (
-    <section className="py-24 md:py-40 px-4 md:px-6 bg-[#080808] relative overflow-hidden">
-      {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl aspect-square bg-[#D4AF37]/5 blur-[150px] rounded-full pointer-events-none" />
-      
-      <div className="max-w-5xl mx-auto relative z-10">
-        <div className="text-center mb-16 md:mb-24">
-          <motion.span 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block"
-          >
-            The Orchestration Journey
-          </motion.span>
-          <h2 className="text-4xl md:text-7xl font-serif italic text-white mb-8">
-            How It <span className="text-[#D4AF37]">Works</span>
-          </h2>
-          
-          {/* Step Progress Bar */}
-          <div className="flex justify-center gap-2 md:gap-4 mb-12">
-            {steps.map((step, i) => (
-              <div 
-                key={step.id}
-                className={`h-1 transition-all duration-1000 rounded-full ${
-                  i <= currentStep ? 'w-8 md:w-12 bg-[#D4AF37]' : 'w-4 md:w-6 bg-white/10'
-                }`}
-              />
-            ))}
-          </div>
+    <section ref={containerRef} className="relative h-[600vh] bg-[#050505]">
+      {/* Sticky Simulation Container */}
+      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+        
+        {/* Background Ambient Glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div 
+            animate={{ 
+              opacity: [0.1, 0.2, 0.1],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+            className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#D4AF37]/10 blur-[150px] rounded-full" 
+          />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-500/5 blur-[150px] rounded-full" />
         </div>
 
-        {/* The Main Simulation Frame */}
-        <div className="relative w-full max-w-3xl mx-auto aspect-[4/3] md:aspect-video bg-white/[0.02] border border-white/5 rounded-[2rem] md:rounded-[4rem] overflow-hidden shadow-2xl">
+        <div className="max-w-7xl w-full px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
           
-          {/* Step Label Overlay */}
-          <div className="absolute top-8 left-8 right-8 z-50 flex justify-between items-start pointer-events-none">
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={steps[currentStep].id}
+          {/* Left Side: The Narrative */}
+          <div className="space-y-12">
+            <div className="space-y-6">
+              <motion.span 
+                key={`label-${activeStep}`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="space-y-1"
+                className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase block"
               >
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">{steps[currentStep].label}</p>
-                <p className="text-lg md:text-2xl font-serif italic text-white">{steps[currentStep].action}</p>
-              </motion.div>
-            </AnimatePresence>
-            
-            <div className="w-12 h-12 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center">
-              {React.createElement(steps[currentStep].icon, { className: "text-[#D4AF37] w-6 h-6" })}
-            </div>
-          </div>
-
-          {/* Simulation Content */}
-          <div className="absolute inset-0 flex items-center justify-center p-8 md:p-20">
-            <AnimatePresence mode="wait">
+                {activeStep === 0 && "Phase I: The Genesis"}
+                {activeStep === 1 && "Phase II: The Activation"}
+                {activeStep === 2 && "Phase III: The Command Center"}
+                {activeStep === 3 && "Phase IV: The Guest Experience"}
+                {activeStep === 4 && "Phase V: The Financial Suite"}
+                {activeStep === 5 && "Phase VI: The Gatekeeper"}
+              </motion.span>
               
-              {/* DESIGN STUDIO SIMULATION */}
-              {steps[currentStep].id === 'design' && (
-                <motion.div 
-                  key="design"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.1 }}
-                  className="w-full max-w-md"
-                >
-                  <div className="relative aspect-[16/9] rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                    <motion.div 
-                      animate={{ 
-                        backgroundColor: miniTheme === 'modern' ? '#0a0a1a' : miniTheme === 'traditional' ? '#064e3b' : '#78350f',
-                      }}
-                      className="absolute inset-0 flex flex-col p-6"
-                    >
-                      <div className="flex justify-between items-center mb-4">
-                        <div className="h-1 w-12 bg-white/20 rounded-full" />
-                        <Sparkles size={10} className="text-[#D4AF37]" />
-                      </div>
-                      <div className="flex-1 bg-white/5 rounded-2xl mb-4 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" alt="Preview" />
-                        <motion.div 
-                          animate={{ x: [0, 40, -20, 0], y: [0, 20, -10, 0] }}
-                          transition={{ duration: 4, repeat: Infinity }}
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                        >
-                          <MousePointer2 size={24} className="text-[#D4AF37] fill-[#D4AF37] drop-shadow-2xl" />
-                        </motion.div>
-                      </div>
-                      <div className="flex justify-center gap-4">
-                        {['modern', 'traditional', 'sahara'].map((t) => (
-                          <button 
-                            key={t}
-                            onClick={() => setMiniTheme(t)}
-                            className={`w-8 h-8 rounded-full border-2 transition-all ${
-                              t === 'modern' ? 'bg-[#0a0a1a]' : t === 'traditional' ? 'bg-[#064e3b]' : 'bg-[#78350f]'
-                            } ${miniTheme === t ? 'border-[#D4AF37] scale-110' : 'border-white/20'}`}
-                          />
-                        ))}
-                      </div>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* INVITE SIMULATION */}
-              {steps[currentStep].id === 'invite' && (
-                <motion.div 
-                  key="invite"
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -40 }}
-                  className="w-full max-w-xs"
-                >
-                  <div className="aspect-[9/19] bg-black border-4 border-white/10 rounded-[2.5rem] p-4 relative overflow-hidden shadow-2xl">
-                    <div className="h-1 w-12 bg-white/20 rounded-full mx-auto mb-8" />
-                    <div className="space-y-6">
-                      <motion.div 
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="aspect-square bg-white/5 rounded-3xl flex flex-col items-center justify-center gap-4 border border-white/5"
-                      >
-                        <div className="bg-white p-3 rounded-xl shadow-2xl">
-                          <Zap className="text-black w-10 h-10" />
-                        </div>
-                        <span className="text-[7px] font-black uppercase tracking-widest text-[#D4AF37]">Securing QR...</span>
-                      </motion.div>
-                      <motion.div 
-                        whileHover={{ scale: 1.02 }}
-                        className="h-12 w-full bg-[#25D366] rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-green-500/20"
-                      >
-                        <Share2 size={16} className="text-white" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">WhatsApp Blast</span>
-                      </motion.div>
-                    </div>
-                    <motion.div 
-                      initial={{ x: -100, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="absolute bottom-8 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center">
-                          <Send size={12} className="text-white" />
-                        </div>
-                        <div className="h-1.5 w-24 bg-white/20 rounded-full" />
-                      </div>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* REGISTRY SIMULATION */}
-              {steps[currentStep].id === 'registry' && (
-                <motion.div 
-                  key="registry"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="w-full max-w-md space-y-8"
-                >
-                  <div className="flex justify-between items-end mb-8">
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">Live RSVP Feed</p>
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-8xl font-serif italic text-[#D4AF37]"
-                      >
-                        124
-                      </motion.p>
-                    </div>
-                    <div className="h-32 w-1.5 bg-white/5 rounded-full relative overflow-hidden">
-                      <motion.div 
-                        animate={{ height: ['0%', '85%', '0%'] }}
-                        transition={{ duration: 4, repeat: Infinity }}
-                        className="absolute bottom-0 left-0 right-0 bg-[#D4AF37] shadow-[0_0_20px_#D4AF37]"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <motion.div 
-                        key={i}
-                        initial={{ x: -50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: i * 0.2 }}
-                        className="bg-white/5 p-6 rounded-2xl border border-white/5 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-5">
-                          <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                            <Users className="text-[#D4AF37] w-4 h-4" />
-                          </div>
-                          <div className="h-2 w-32 bg-white/10 rounded-full" />
-                        </div>
-                        <CheckCircle2 className="text-green-500 w-5 h-5" />
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* LEDGER SIMULATION */}
-              {steps[currentStep].id === 'ledger' && (
-                <motion.div 
-                  key="ledger"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.1 }}
-                  className="w-full max-w-md space-y-10"
-                >
-                  <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 relative overflow-hidden shadow-2xl">
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-center mb-6">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em]">Financial Suite</p>
-                        <BarChart3 size={14} className="text-[#D4AF37]" />
-                      </div>
-                      <motion.p 
-                        animate={{ opacity: [0.6, 1, 0.6] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="text-6xl font-serif italic text-white mb-2"
-                      >
-                        ₦4,250,000
-                      </motion.p>
-                      <p className="text-[8px] font-bold uppercase tracking-widest text-[#D4AF37]">Total Event Budget</p>
-                      
-                      <div className="mt-10 space-y-2">
-                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-gray-500">
-                          <span>Utilization</span>
-                          <span>75%</span>
-                        </div>
-                        <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                          <motion.div 
-                            initial={{ width: "0%" }}
-                            animate={{ width: "75%" }}
-                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                            className="h-full gold-gradient shadow-[0_0_20px_#D4AF37]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
-                    <motion.div animate={{ x: [-10, 0, -10] }} transition={{ duration: 3, repeat: Infinity }} className="bg-red-500/5 p-6 rounded-2xl border border-red-500/10">
-                      <Minus className="text-red-500 w-4 h-4 mb-3" />
-                      <p className="text-xl font-serif italic text-white">₦1.2M</p>
-                    </motion.div>
-                    <motion.div animate={{ x: [10, 0, 10] }} transition={{ duration: 3, repeat: Infinity }} className="bg-green-500/5 p-6 rounded-2xl border border-green-500/10">
-                      <Plus className="text-green-500 w-4 h-4 mb-3" />
-                      <p className="text-xl font-serif italic text-white">₦2.8M</p>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* CONCIERGE SIMULATION */}
-              {steps[currentStep].id === 'concierge' && (
-                <motion.div 
-                  key="concierge"
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`title-${activeStep}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="w-full max-w-xs relative"
+                  className="space-y-6"
                 >
-                  <div className="aspect-[9/19] bg-black border-4 border-white/10 rounded-[2.5rem] p-4 relative overflow-hidden shadow-2xl">
-                    <div className="h-1 w-12 bg-white/20 rounded-full mx-auto mb-12" />
-                    
-                    <motion.div 
-                      initial={{ y: -100, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.5, duration: 0.5 }}
-                      className="bg-[#D4AF37] p-4 rounded-2xl text-black mb-12 shadow-2xl relative"
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <Megaphone size={14} className="animate-bounce" />
-                        <span className="text-[8px] font-black uppercase tracking-widest">Global Broadcast</span>
-                      </div>
-                      <p className="text-xs font-serif italic leading-tight">"Dinner is now served in the Grand Ballroom!"</p>
-                    </motion.div>
-
-                    <div className="bg-white/5 p-6 rounded-3xl border border-white/10 text-center relative group">
-                      <TableIcon className="w-6 h-6 text-[#D4AF37] mx-auto mb-4" />
-                      <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2">Dynamic Seating</p>
-                      <div className="flex items-center justify-center gap-4">
-                        <motion.p 
-                          animate={{ 
-                            scale: [1, 1.2, 1],
-                            color: ['#fff', '#D4AF37', '#fff']
-                          }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                          className="text-4xl font-serif italic"
-                        >
-                          Table 4
-                        </motion.p>
-                        <ArrowRight size={12} className="text-gray-600" />
-                        <p className="text-4xl font-serif italic text-white opacity-40">1</p>
-                      </div>
-                    </div>
-                  </div>
+                  <h2 className="text-5xl md:text-7xl font-serif italic text-white leading-tight">
+                    {activeStep === 0 && <>Design Your <span className="text-[#D4AF37]">Legacy</span></>}
+                    {activeStep === 1 && <>Secure Your <span className="text-[#D4AF37]">Presence</span></>}
+                    {activeStep === 2 && <>Real-time <span className="text-[#D4AF37]">Orchestration</span></>}
+                    {activeStep === 3 && <>The Elite <span className="text-[#D4AF37]">Pass</span></>}
+                    {activeStep === 4 && <>The Master <span className="text-[#D4AF37]">Ledger</span></>}
+                    {activeStep === 5 && <>Seamless <span className="text-[#D4AF37]">Access</span></>}
+                  </h2>
+                  <p className="text-gray-500 text-lg font-light leading-relaxed max-w-md">
+                    {activeStep === 0 && "Start by crafting a bespoke digital invitation. Choose themes that reflect your heritage and style."}
+                    {activeStep === 1 && "Activate your event with a single secure payment. Your masterpiece goes live across the globe instantly."}
+                    {activeStep === 2 && "Monitor RSVPs as they stream in. Send live broadcasts to every guest's device simultaneously."}
+                    {activeStep === 3 && "Guests receive high-definition entry passes. Our 'Memory' system recognizes them every time they return."}
+                    {activeStep === 4 && "Track every naira with precision. Manage vendors, expenses, and income in one elegant financial suite."}
+                    {activeStep === 5 && "Verify identities at the door with our integrated QR engine. Ensure a secure and exclusive atmosphere."}
+                  </p>
                 </motion.div>
-              )}
+              </AnimatePresence>
+            </div>
 
-              {/* GATEKEEPER SIMULATION */}
-              {steps[currentStep].id === 'gatekeeper' && (
-                <motion.div 
-                  key="gatekeeper"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.2 }}
-                  className="relative flex flex-col items-center"
-                >
-                  <div className="w-64 h-64 bg-white p-6 rounded-[3rem] relative overflow-hidden shadow-2xl border-8 border-black/5">
-                    <div className="w-full h-full bg-black/5 flex flex-col items-center justify-center gap-4">
-                      <Zap className="text-black/10 w-20 h-20" />
-                      <span className="text-[8px] font-black uppercase tracking-widest text-black/20">Scanning...</span>
-                    </div>
-                    <motion.div 
-                      animate={{ top: ['-10%', '110%', '-10%'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="absolute left-0 right-0 h-1.5 bg-[#D4AF37] shadow-[0_0_25px_#D4AF37] z-20"
-                    />
-                  </div>
-                  
+            {/* Progress Indicators */}
+            <div className="flex gap-3">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div 
+                  key={i}
+                  className={`h-1 rounded-full transition-all duration-700 ${
+                    i <= activeStep ? 'w-12 bg-[#D4AF37]' : 'w-6 bg-white/10'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Right Side: The Live Simulation */}
+          <div className="relative aspect-square lg:aspect-auto lg:h-[700px] w-full">
+            <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-[3rem] md:rounded-[5rem] overflow-hidden shadow-2xl backdrop-blur-3xl">
+              
+              <AnimatePresence mode="wait">
+                
+                {/* SCENE 0: CREATION */}
+                {activeStep === 0 && (
                   <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="mt-12 bg-green-500/10 border border-green-500/20 px-10 py-5 rounded-full flex items-center gap-4 shadow-xl"
+                    key="scene-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="h-full w-full p-12 flex flex-col"
                   >
-                    <CheckCircle2 className="text-green-500 w-6 h-6" />
-                    <div className="text-left">
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-green-500 block">Access Granted</span>
-                      <span className="text-[7px] font-bold uppercase tracking-widest text-green-500/60">Identity Verified</span>
+                    <div className="flex justify-between items-center mb-12">
+                      <div className="h-2 w-24 bg-white/10 rounded-full" />
+                      <Sparkles className="text-[#D4AF37] w-6 h-6" />
+                    </div>
+                    <div className="space-y-8">
+                      <div className="space-y-3">
+                        <div className="h-2 w-20 bg-gray-600 rounded-full" />
+                        <div className="h-16 bg-white/5 border border-white/10 rounded-none flex items-center px-6 relative">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: "100%" }}
+                            transition={{ duration: 2, delay: 0.5 }}
+                            className="h-4 bg-[#D4AF37]/20 rounded-sm"
+                          />
+                          <motion.div 
+                            animate={{ x: [0, 200, 150], y: [0, 0, 0] }}
+                            transition={{ duration: 2 }}
+                            className="absolute left-4"
+                          >
+                            <MousePointer2 size={24} className="text-[#D4AF37] fill-[#D4AF37] drop-shadow-2xl" />
+                          </motion.div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="h-32 bg-white/5 border border-[#D4AF37]/30 rounded-none relative overflow-hidden">
+                          <div className="absolute inset-0 bg-[#D4AF37]/5" />
+                          <div className="absolute bottom-4 left-4 h-1.5 w-12 bg-[#D4AF37] rounded-full" />
+                        </div>
+                        <div className="h-32 bg-white/5 border border-white/10 rounded-none" />
+                      </div>
                     </div>
                   </motion.div>
-                </motion.div>
-              )}
+                )}
 
-            </AnimatePresence>
+                {/* SCENE 1: ACTIVATION */}
+                {activeStep === 1 && (
+                  <motion.div 
+                    key="scene-1"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.1 }}
+                    className="h-full w-full flex items-center justify-center p-12"
+                  >
+                    <div className="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-black">
+                      <div className="flex justify-between items-center mb-10">
+                        <CreditCard size={24} />
+                        <div className="flex gap-2">
+                          <div className="w-8 h-5 bg-blue-600 rounded-sm" />
+                          <div className="w-8 h-5 bg-orange-500 rounded-sm" />
+                        </div>
+                      </div>
+                      <div className="space-y-6 mb-10">
+                        <div className="h-3 w-full bg-gray-100 rounded-full" />
+                        <div className="h-3 w-2/3 bg-gray-100 rounded-full" />
+                      </div>
+                      <motion.button 
+                        whileTap={{ scale: 0.95 }}
+                        className="w-full bg-black text-white py-6 rounded-xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3"
+                      >
+                        <Lock size={14} /> Pay ₦15,000
+                      </motion.button>
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.5 }}
+                        className="mt-8 flex items-center justify-center gap-3 text-green-600"
+                      >
+                        <CheckCircle2 size={20} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Success</span>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* SCENE 2: DASHBOARD */}
+                {activeStep === 2 && (
+                  <motion.div 
+                    key="scene-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full w-full p-12 flex flex-col"
+                  >
+                    <div className="flex justify-between items-end mb-16">
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em]">Live RSVPs</p>
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-8xl font-serif italic text-[#D4AF37]"
+                        >
+                          124
+                        </motion.p>
+                      </div>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4].map(i => (
+                          <motion.div 
+                            key={i}
+                            animate={{ height: [20, 60, 30, 80, 40] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                            className="w-2 bg-[#D4AF37]/20 rounded-full"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <motion.div 
+                      initial={{ x: -50, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      className="bg-[#D4AF37] p-6 rounded-2xl text-black flex items-center gap-6 shadow-2xl"
+                    >
+                      <Megaphone className="animate-bounce" />
+                      <div>
+                        <p className="text-[8px] font-black uppercase tracking-widest mb-1">Global Broadcast</p>
+                        <p className="text-sm font-serif italic">"The Buffet is now open!"</p>
+                      </div>
+                    </motion.div>
+
+                    <div className="mt-auto space-y-4">
+                      {[1, 2].map(i => (
+                        <div key={i} className="bg-white/5 p-6 border border-white/5 flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-white/10" />
+                            <div className="h-2 w-32 bg-white/10 rounded-full" />
+                          </div>
+                          <CheckCircle2 className="text-green-500 w-5 h-5" />
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* SCENE 3: GUEST EXPERIENCE */}
+                {activeStep === 3 && (
+                  <motion.div 
+                    key="scene-3"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="h-full w-full flex items-center justify-center p-12"
+                  >
+                    <div className="w-72 aspect-[9/19] bg-black border-4 border-white/10 rounded-[3rem] p-6 relative overflow-hidden shadow-2xl">
+                      <div className="h-1 w-12 bg-white/20 rounded-full mx-auto mb-12" />
+                      <div className="text-center space-y-8">
+                        <div className="inline-flex p-3 rounded-2xl bg-[#D4AF37]/10 text-[#D4AF37]">
+                          <Sparkles size={24} />
+                        </div>
+                        <h3 className="text-xl font-serif italic text-white">Welcome Back, <br/> Tunde</h3>
+                        <div className="bg-white p-4 rounded-3xl shadow-2xl inline-block">
+                          <Zap className="text-black w-24 h-24" />
+                        </div>
+                        <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                          <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500 mb-1">Your Seating</p>
+                          <p className="text-2xl font-serif italic text-[#D4AF37]">Table 4</p>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#D4AF37]/10 to-transparent pointer-events-none" />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* SCENE 4: LEDGER */}
+                {activeStep === 4 && (
+                  <motion.div 
+                    key="scene-4"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="h-full w-full p-12 flex flex-col"
+                  >
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12 relative overflow-hidden">
+                      <div className="relative z-10">
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-4">Event Balance</p>
+                        <p className="text-6xl font-serif italic text-white">₦2,840,000</p>
+                        <div className="mt-10 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: "65%" }}
+                            className="h-full gold-gradient"
+                          />
+                        </div>
+                      </div>
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/5 blur-[100px] rounded-full" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="bg-green-500/5 p-8 border border-green-500/10 rounded-3xl">
+                        <Plus className="text-green-500 mb-4" />
+                        <p className="text-2xl font-serif italic">₦4.2M</p>
+                      </div>
+                      <div className="bg-red-500/5 p-8 border border-red-500/10 rounded-3xl">
+                        <Minus className="text-red-500 mb-4" />
+                        <p className="text-2xl font-serif italic">₦1.4M</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* SCENE 5: GATEKEEPER */}
+                {activeStep === 5 && (
+                  <motion.div 
+                    key="scene-5"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full w-full flex flex-col items-center justify-center p-12"
+                  >
+                    <div className="w-64 h-64 bg-white p-6 rounded-[3rem] relative overflow-hidden shadow-2xl border-8 border-black/5">
+                      <div className="w-full h-full bg-black/5 flex items-center justify-center">
+                        <Zap className="text-black/10 w-24 h-24" />
+                      </div>
+                      <motion.div 
+                        animate={{ top: ['-10%', '110%', '-10%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        className="absolute left-0 right-0 h-2 bg-[#D4AF37] shadow-[0_0_30px_#D4AF37] z-20"
+                      />
+                    </div>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="mt-16 bg-green-500/10 border border-green-500/20 px-12 py-6 rounded-full flex items-center gap-6 shadow-2xl"
+                    >
+                      <CheckCircle2 className="text-green-500 w-8 h-8" />
+                      <div className="text-left">
+                        <span className="text-[12px] font-black uppercase tracking-[0.3em] text-green-500 block">Access Granted</span>
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-green-500/60">Tunde Afolayan • Table 4</span>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+
+              </AnimatePresence>
+
+              {/* UI Frame Elements */}
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 h-1.5 w-24 bg-white/10 rounded-full" />
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+                {[0, 1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === activeStep ? 'bg-[#D4AF37]' : 'bg-white/10'}`} />
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Bottom Navigation Dots */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-            {steps.map((_, i) => (
-              <button 
-                key={i}
-                onClick={() => setCurrentStep(i)}
-                className={`w-2 h-2 rounded-full transition-all duration-500 ${
-                  i === currentStep ? 'w-8 bg-[#D4AF37]' : 'bg-white/20'
-                }`}
-              />
-            ))}
-          </div>
         </div>
-
-        {/* Final CTA */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-24 md:mt-32 text-center"
-        >
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl shadow-[#D4AF37]/10">
-              Start Your Journey
-            </button>
-            <button className="border border-white/10 text-white hover:bg-white/5 px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase">
-              The Directory
-            </button>
-          </div>
-        </motion.div>
       </div>
+
+      {/* Scroll Triggers (Invisible spacers to drive the scroll progress) */}
+      <div className="h-screen" /> {/* Step 0 */}
+      <div className="h-screen" /> {/* Step 1 */}
+      <div className="h-screen" /> {/* Step 2 */}
+      <div className="h-screen" /> {/* Step 3 */}
+      <div className="h-screen" /> {/* Step 4 */}
+      <div className="h-screen" /> {/* Step 5 */}
     </section>
   );
 };
