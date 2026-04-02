@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw } from 'lucide-react';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Modular Components
@@ -90,7 +90,6 @@ const Dashboard = () => {
       return;
     }
 
-    // We search for the RSVP record using the scanned ID
     const { data: rsvp, error: fetchError } = await supabase
       .from('rsvps')
       .select('*, events(id, event_name)')
@@ -102,7 +101,6 @@ const Dashboard = () => {
       return;
     }
 
-    // Security check: Ensure the ticket belongs to the event currently being scanned
     if (rsvp.event_id !== activeEventId) {
       showError(`Wrong Event: This ticket is for "${rsvp.events?.event_name}"`);
       return;
@@ -113,7 +111,6 @@ const Dashboard = () => {
       return;
     }
 
-    // Perform the check-in
     const { error: updateError } = await supabase
       .from('rsvps')
       .update({ checked_in: true })
@@ -169,63 +166,63 @@ const Dashboard = () => {
     <div className="min-h-screen bg-[#0f0f0f] text-white overflow-x-hidden">
       <Navbar />
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16 md:mb-24">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-24">
           <div>
             <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">The Host's Atelier</span>
             <h1 className="text-4xl md:text-7xl font-serif italic text-white leading-tight">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex gap-3 w-full md:w-auto">
             <Button 
               variant="outline" 
               onClick={fetchEvents}
-              className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"
+              className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-6 py-6"
             >
               <RefreshCw className="w-4 h-4" />
             </Button>
-            <Link to="/create-event" className="flex-1 md:flex-none">
+            <Link to="/create-event" className="flex-[3] md:flex-none">
               <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 md:px-10 py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10">
-                + New Event
+                <Plus className="w-4 h-4 mr-2" /> New Event
               </Button>
             </Link>
           </div>
         </div>
 
         {events.length === 0 ? (
-          <div className="text-center py-40 border border-dashed border-white/10 bg-white/5">
+          <div className="text-center py-24 md:py-40 border border-dashed border-white/10 bg-white/5 px-6">
             <Sparkles className="w-12 h-12 text-[#D4AF37] mx-auto mb-8 opacity-20" />
             <h3 className="text-2xl font-serif italic mb-4">The stage is set...</h3>
             <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-12 py-8">Create Your First Event</Button></Link>
           </div>
         ) : (
-          <div className="space-y-24">
+          <div className="space-y-16 md:space-y-24">
             {events.map((event, index) => (
               <motion.div key={event.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                <div className="grid lg:grid-cols-12 gap-12">
+                <div className="grid lg:grid-cols-12 gap-8 md:gap-12">
                   <EventCard event={event} onCopyLink={copyLink} />
                   <div className="lg:col-span-8">
-                    <div className="mb-12">
+                    <div className="mb-8 md:mb-12">
                       <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
                       {[
                         { icon: Users, label: 'Total RSVPs', value: event.rsvps?.length || 0 },
                         { icon: CheckCircle2, label: 'Checked In', value: event.rsvps?.filter((r: any) => r.checked_in).length || 0 },
                         { icon: Eye, label: 'Page Views', value: event.view_count || 0 },
                         { icon: TrendingUp, label: 'Status', value: event.is_paid ? 'Active' : 'Pending' }
                       ].map((stat, i) => (
-                        <div key={i} className="bg-white/5 p-8 border border-white/5 text-center">
-                          <stat.icon className="w-5 h-5 mx-auto mb-4 text-[#D4AF37]" />
-                          <div className="text-2xl font-serif italic text-white mb-1">{stat.value}</div>
-                          <div className="text-[8px] text-gray-500 uppercase tracking-[0.3em] font-bold">{stat.label}</div>
+                        <div key={i} className="bg-white/5 p-6 md:p-8 border border-white/5 text-center">
+                          <stat.icon className="w-4 h-4 md:w-5 md:h-5 mx-auto mb-3 md:mb-4 text-[#D4AF37]" />
+                          <div className="text-xl md:text-2xl font-serif italic text-white mb-1">{stat.value}</div>
+                          <div className="text-[7px] md:text-[8px] text-gray-500 uppercase tracking-[0.3em] font-bold">{stat.label}</div>
                         </div>
                       ))}
                     </div>
 
                     <Tabs defaultValue="guests" className="w-full">
-                      <TabsList className="bg-transparent p-0 h-auto border-b border-white/5 w-full justify-start gap-12 mb-12 rounded-none">
-                        <TabsTrigger value="guests" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white">Guest List</TabsTrigger>
-                        <TabsTrigger value="tools" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white">Concierge Tools</TabsTrigger>
+                      <TabsList className="bg-transparent p-0 h-auto border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none overflow-x-auto">
+                        <TabsTrigger value="guests" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white whitespace-nowrap">Guest List</TabsTrigger>
+                        <TabsTrigger value="tools" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white whitespace-nowrap">Concierge Tools</TabsTrigger>
                       </TabsList>
                       <TabsContent value="guests">
                         <GuestList 

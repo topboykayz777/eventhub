@@ -26,7 +26,6 @@ const EventPage = () => {
     if (slug) {
       fetchEvent();
       
-      // Real-time subscription for event changes (Broadcasts, Details)
       const eventChannel = supabase
         .channel(`event-realtime-${slug}`)
         .on(
@@ -50,7 +49,6 @@ const EventPage = () => {
     }
   }, [slug]);
 
-  // Real-time subscription for specific RSVP changes (Seating)
   useEffect(() => {
     if (submittedRsvp?.id) {
       const rsvpChannel = supabase
@@ -174,24 +172,23 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
-      {/* Real-time Broadcast Banner */}
       <AnimatePresence>
         {event.broadcast_message && (
           <motion.div 
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             exit={{ y: -100 }}
-            className="fixed top-0 left-0 right-0 z-[100] bg-[#D4AF37] text-black py-4 px-8 flex items-center justify-center gap-4 shadow-2xl"
+            className="fixed top-0 left-0 right-0 z-[100] bg-[#D4AF37] text-black py-3 md:py-4 px-6 md:px-8 flex items-center justify-center gap-3 md:gap-4 shadow-2xl"
           >
-            <Megaphone className="w-5 h-5 animate-bounce" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-center">
+            <Megaphone className="w-4 h-4 md:w-5 md:h-5 animate-bounce" />
+            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">
               {event.broadcast_message}
             </span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative h-[60vh] md:h-[75vh] w-full overflow-hidden">
+      <div className="relative h-[50vh] md:h-[75vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.2, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.6 }}
@@ -204,14 +201,14 @@ const EventPage = () => {
         
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[#D4AF37] text-[8px] font-bold tracking-[0.5em] uppercase">HD Masterpiece Live</span>
+            <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
+              <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[#D4AF37] text-[7px] md:text-[8px] font-bold tracking-[0.4em] md:tracking-[0.5em] uppercase">HD Masterpiece Live</span>
             </div>
-            <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif italic mb-8 tracking-tight leading-[0.9]">
+            <h1 className="text-3xl sm:text-5xl md:text-8xl font-serif italic mb-6 md:mb-8 tracking-tight leading-[1.1] md:leading-[0.9]">
               {event.event_name}
             </h1>
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto scale-90 md:scale-100">
               <Countdown targetDate={event.event_date} />
             </div>
           </motion.div>
@@ -222,34 +219,34 @@ const EventPage = () => {
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           <div className="md:col-span-3 space-y-12 md:space-y-16">
             {(event.plan === 'Standard' || event.plan === 'Pro') && (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 text-center">The Official Invitation</h2>
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 md:mb-16">
+                <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] mb-8 md:mb-12 text-center">The Official Invitation</h2>
                 <DigitalInvite event={event} />
               </motion.div>
             )}
 
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border`}>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
-                <Calendar className="w-4 h-4" /> The Particulars
+              <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] mb-8 md:mb-12 flex items-center gap-4">
+                <Calendar className="w-3 h-3 md:w-4 md:h-4" /> The Particulars
               </h2>
-              <div className="space-y-12">
-                <div className="flex items-start gap-6 md:gap-8 group">
+              <div className="space-y-8 md:space-y-12">
+                <div className="flex items-start gap-4 md:gap-8 group">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
-                    <MapPin className="text-[#D4AF37] w-5 h-5" />
+                    <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
                   </div>
                   <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Venue</p>
-                    <p className="text-lg md:text-2xl font-light leading-relaxed">{event.venue}</p>
+                    <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">The Venue</p>
+                    <p className="text-base md:text-2xl font-light leading-relaxed">{event.venue}</p>
                   </div>
                 </div>
                 {event.message && (
-                  <div className="flex items-start gap-6 md:gap-8 group">
+                  <div className="flex items-start gap-4 md:gap-8 group">
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
-                      <MessageSquare className="text-[#D4AF37] w-5 h-5" />
+                      <MessageSquare className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
                     </div>
                     <div>
-                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Host's Message</p>
-                      <p className="text-lg md:text-2xl font-serif italic leading-relaxed opacity-80">"{event.message}"</p>
+                      <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">Host's Message</p>
+                      <p className="text-base md:text-2xl font-serif italic leading-relaxed opacity-80">"{event.message}"</p>
                     </div>
                   </div>
                 )}
@@ -257,9 +254,9 @@ const EventPage = () => {
             </motion.div>
 
             {event.gallery_urls && event.gallery_urls.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {event.gallery_urls.map((url: string, i: number) => (
-                  <img key={i} src={url} className="w-full aspect-square object-cover rounded-2xl border border-white/10" alt={`Gallery ${i}`} />
+                  <img key={i} src={url} className="w-full aspect-square object-cover rounded-xl md:rounded-2xl border border-white/10" alt={`Gallery ${i}`} />
                 ))}
               </div>
             )}
@@ -268,31 +265,30 @@ const EventPage = () => {
           <div className="md:col-span-2">
             <AnimatePresence mode="wait">
               {submittedRsvp ? (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-8">
-                  <div className="text-center mb-12">
-                    <div className="bg-green-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle2 className="text-green-500 w-8 h-8" />
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 md:top-32 space-y-6 md:space-y-8">
+                  <div className="text-center mb-8 md:mb-12">
+                    <div className="bg-green-500/10 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                      <CheckCircle2 className="text-green-500 w-6 h-6 md:w-8 md:h-8" />
                     </div>
-                    <h2 className="text-2xl font-serif italic mb-2">You're on the list</h2>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
+                    <h2 className="text-xl md:text-2xl font-serif italic mb-2">You're on the list</h2>
+                    <p className="text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
 
-                  {/* Real-time Seating Update */}
                   <AnimatePresence mode="wait">
                     {submittedRsvp.table_number && (
                       <motion.div 
                         key={submittedRsvp.table_number}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-8 rounded-[2rem] text-center"
+                        className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-center"
                       >
-                        <TableIcon className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Your Assigned Seating</p>
+                        <TableIcon className="w-6 h-6 md:w-8 md:h-8 text-[#D4AF37] mx-auto mb-3 md:mb-4" />
+                        <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">Your Assigned Seating</p>
                         <motion.p 
                           key={submittedRsvp.table_number}
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
-                          className="text-4xl font-serif italic text-[#D4AF37]"
+                          className="text-3xl md:text-4xl font-serif italic text-[#D4AF37]"
                         >
                           Table {submittedRsvp.table_number}
                         </motion.p>
@@ -303,21 +299,21 @@ const EventPage = () => {
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
                 </motion.div>
               ) : (
-                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
-                  <div className="flex items-center gap-3 mb-8">
-                    <Sparkles className="text-[#D4AF37] w-5 h-5" />
-                    <h2 className="text-2xl md:text-3xl font-serif italic tracking-tight">The Registry</h2>
+                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-2xl sticky top-24 md:top-32 border border-black/5`}>
+                  <div className="flex items-center gap-3 mb-6 md:mb-8">
+                    <Sparkles className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
+                    <h2 className="text-xl md:text-3xl font-serif italic tracking-tight">The Registry</h2>
                   </div>
-                  <form onSubmit={handleRSVP} className="space-y-8">
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
-                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
+                  <form onSubmit={handleRSVP} className="space-y-6 md:space-y-8">
+                    <div className="space-y-2 md:space-y-3">
+                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
+                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-base md:text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
                     </div>
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
-                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
+                    <div className="space-y-2 md:space-y-3">
+                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
+                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-base md:text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
                     </div>
-                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-16 md:h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
+                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-16 md:h-20 rounded-none text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
                       {isSubmitting ? 'Processing...' : 'Confirm Attendance'}
                     </Button>
                   </form>
