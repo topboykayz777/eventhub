@@ -29,7 +29,8 @@ const Signup = () => {
 
     setLoading(true);
 
-    // 1. Sign up the user
+    // Sign up the user. The database trigger 'handle_new_user' will 
+    // automatically create the profile record in the background.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -42,23 +43,10 @@ const Signup = () => {
 
     if (error) {
       showError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    if (data.user) {
-      // 2. Manually update the profile to ensure the role is saved 
-      // (The DB trigger is a fallback, but this ensures the role is set correctly)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ email: email }) // This triggers the upsert logic if needed
-        .eq('id', data.user.id);
-
-      if (profileError) {
-        console.error("Profile sync error:", profileError);
-      }
-
-      showSuccess("Verification email sent. Please check your inbox.");
+    } else if (data.user) {
+      showSuccess("Verification email sent. Please check your inbox to activate your account.");
+      // We don't navigate immediately because the user needs to confirm their email
+      // to establish an 'authenticated' session for RLS.
     }
     
     setLoading(false);
