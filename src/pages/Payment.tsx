@@ -6,8 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
-import { CreditCard, ShieldCheck, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
+import { CreditCard, ShieldCheck, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { usePaystackPayment } from 'react-paystack';
 
 const Payment = () => {
   const { id } = useParams();
@@ -15,7 +16,6 @@ const Payment = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
@@ -35,76 +35,45 @@ const Payment = () => {
     fetchEventAndUser();
   }, [id, navigate]);
 
-  const loadPaystackScript = () => {
-    return new Promise((resolve) => {
-      if ((window as any).PaystackPop) {
-        resolve(true);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://js.paystack.co/v1/inline.js';
-      script.async = true;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+  const amount = event ? (event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000) : 0;
+
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: userEmail || "customer@eventhub.ng",
+    amount: amount * 100, // Paystack expects kobo
+    publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Event ID",
+          variable_name: "event_id",
+          value: id || ""
+        }
+      ]
+    }
   };
 
-  const handlePayment = async () => {
-    if (isProcessing) return;
-    
-    setIsProcessing(true);
-    const scriptLoaded = await loadPaystackScript();
-    
-    if (!scriptLoaded || !(window as any).PaystackPop) {
-      showError("Payment gateway blocked. Please disable browser 'Shields' or 'Tracking Protection' and open this in a NEW TAB.");
-      setIsProcessing(false);
-      return;
+  const initializePayment = usePaystackPayment(config);
+
+  const onSuccess = async (reference: any) => {
+    console.log("[Payment] Success:", reference);
+    const { error } = await supabase
+      .from('events')
+      .update({ is_paid: true })
+      .eq('id', id);
+
+    if (error) {
+      showError("Payment confirmed, but activation failed. Contact support.");
+    } else {
+      setPaymentSuccess(true);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      showSuccess('Masterpiece Activated!');
+      setTimeout(() => navigate('/dashboard'), 3000);
     }
+  };
 
-    const paystack = (window as any).PaystackPop;
-    const amount = event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000;
-    const paystackKey = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
-
-    try {
-      const handler = paystack.setup({
-        key: paystackKey,
-        email: userEmail || 'customer@eventhub.ng',
-        amount: amount * 100,
-        currency: 'NGN',
-        metadata: {
-          custom_fields: [
-            { display_name: "Event ID", variable_name: "event_id", value: id },
-            { display_name: "Plan", variable_name: "plan", value: event.plan }
-          ]
-        },
-        callback: async function(response: any) {
-          const { error } = await supabase
-            .from('events')
-            .update({ is_paid: true })
-            .eq('id', id);
-
-          if (error) {
-            showError("Payment confirmed, but activation failed. Contact support.");
-            setIsProcessing(false);
-          } else {
-            setPaymentSuccess(true);
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            showSuccess('Masterpiece Activated!');
-            setTimeout(() => navigate('/dashboard'), 3000);
-          }
-        },
-        onClose: function() {
-          showError('Payment cancelled.');
-          setIsProcessing(false);
-        }
-      });
-      
-      handler.openIframe();
-    } catch (err: any) {
-      showError("Security block detected. Please open this page in a NEW TAB to pay.");
-      setIsProcessing(false);
-    }
+  const onClose = () => {
+    showError("Payment window closed.");
   };
 
   if (loading) return (
@@ -142,16 +111,24 @@ const Payment = () => {
           </p>
           <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5">
             <div className="text-5xl font-serif italic text-white mb-2">
-              ₦{event.plan === 'Basic' ? '10,000' : event.plan === 'Standard' ? '15,000' : '20,000'}
+              ₦{amount.toLocaleString()}
             </div>
           </div>
+          
           <Button 
-            onClick={handlePayment}
-            disabled={isProcessing}
+            onClick={() => initializePayment({ onSuccess, onClose })}
             className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
           >
-            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Secure Activation'}
+            Secure Activation
           </Button>
+
+          <div className="mt-8 p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex items-start gap-3 text-left">
+            <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+            <p className="text-[9px] text-blue-200/70 leading-relaxed">
+              If the window doesn't open, check your browser's **Address Bar** for a "Pop-up Blocked" icon and click "Allow".
+            </p>
+          </div>
+
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
             <ShieldCheck className="w-4 h-4" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Secured by Paystack</span>
