@@ -35,20 +35,35 @@ const Payment = () => {
     fetchEventAndUser();
   }, [id, navigate]);
 
-  const handlePayment = () => {
+  const loadPaystackScript = () => {
+    return new Promise((resolve) => {
+      if ((window as any).PaystackPop) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://js.paystack.co/v1/inline.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async () => {
     if (isProcessing) return;
     
-    const paystack = (window as any).PaystackPop;
+    setIsProcessing(true);
+    const scriptLoaded = await loadPaystackScript();
     
-    if (!paystack) {
-      showError("Payment gateway is still loading. Please refresh or wait 5 seconds.");
+    if (!scriptLoaded || !(window as any).PaystackPop) {
+      showError("Payment gateway blocked. Please disable browser 'Shields' or 'Tracking Protection' and open this in a NEW TAB.");
+      setIsProcessing(false);
       return;
     }
 
-    setIsProcessing(true);
+    const paystack = (window as any).PaystackPop;
     const amount = event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000;
-    
-    // Using the provided test key
     const paystackKey = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
 
     try {
@@ -59,43 +74,24 @@ const Payment = () => {
         currency: 'NGN',
         metadata: {
           custom_fields: [
-            {
-              display_name: "Event ID",
-              variable_name: "event_id",
-              value: id
-            },
-            {
-              display_name: "Plan",
-              variable_name: "plan",
-              value: event.plan
-            }
+            { display_name: "Event ID", variable_name: "event_id", value: id },
+            { display_name: "Plan", variable_name: "plan", value: event.plan }
           ]
         },
         callback: async function(response: any) {
-          console.log("[Payment] Success response:", response);
-          
           const { error } = await supabase
             .from('events')
-            .update({ 
-              is_paid: true
-            })
+            .update({ is_paid: true })
             .eq('id', id);
 
           if (error) {
-            showError("Payment confirmed, but activation failed. Please contact support.");
+            showError("Payment confirmed, but activation failed. Contact support.");
             setIsProcessing(false);
           } else {
             setPaymentSuccess(true);
-            confetti({
-              particleCount: 150,
-              spread: 70,
-              origin: { y: 0.6 }
-            });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             showSuccess('Masterpiece Activated!');
-            
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 3000);
+            setTimeout(() => navigate('/dashboard'), 3000);
           }
         },
         onClose: function() {
@@ -106,8 +102,7 @@ const Payment = () => {
       
       handler.openIframe();
     } catch (err: any) {
-      console.error("[Payment] Paystack Error:", err);
-      showError("Could not open payment window. Please check if an AdBlocker is active.");
+      showError("Security block detected. Please open this page in a NEW TAB to pay.");
       setIsProcessing(false);
     }
   };
@@ -126,10 +121,7 @@ const Payment = () => {
             <CheckCircle2 className="text-green-500 w-12 h-12" />
           </div>
           <h1 className="text-4xl font-serif italic mb-4">Activation Complete</h1>
-          <p className="text-gray-500 mb-10">Your event is now live and viewable by all guests. Redirecting to your dashboard...</p>
-          <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] animate-pulse">
-            <Sparkles className="w-4 h-4" /> Syncing with the Cloud...
-          </div>
+          <p className="text-gray-500 mb-10">Your event is now live. Redirecting...</p>
         </div>
       </div>
     );
@@ -143,28 +135,23 @@ const Payment = () => {
           <div className="bg-[#D4AF37]/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
             <CreditCard className="text-[#D4AF37] w-12 h-12" />
           </div>
-          
           <h1 className="text-3xl font-serif italic mb-2 tracking-tight">Activate Event</h1>
           <p className="text-gray-400 mb-10">
-            You selected the <span className="text-white font-bold">{event.plan}</span> plan for <br/>
+            Plan: <span className="text-white font-bold">{event.plan}</span><br/>
             <span className="text-[#D4AF37] italic">"{event.event_name}"</span>
           </p>
-          
           <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5">
             <div className="text-5xl font-serif italic text-white mb-2">
               ₦{event.plan === 'Basic' ? '10,000' : event.plan === 'Standard' ? '15,000' : '20,000'}
             </div>
-            <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-bold">One-time activation</p>
           </div>
-
           <Button 
             onClick={handlePayment}
             disabled={isProcessing}
-            className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-xl shadow-[#D4AF37]/10"
+            className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
           >
             {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Secure Activation'}
           </Button>
-          
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
             <ShieldCheck className="w-4 h-4" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Secured by Paystack</span>
