@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Users, CheckCircle2, Loader2, MessageSquare, CheckSquare, Square, Copy, Check } from 'lucide-react';
+import { X, Send, Users, CheckCircle2, Loader2, MessageSquare, CheckSquare, Square, Copy, Check, ArrowRight, Play, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -18,20 +18,28 @@ interface WhatsAppBlastProps {
 const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) => {
   const [message, setMessage] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [isInitiated, setIsInitiated] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isLooping, setIsLooping] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedIds(rsvps.map(r => r.id));
-      setIsInitiated(false);
+      setIsLooping(false);
+      setCurrentIndex(0);
     }
   }, [isOpen, rsvps]);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/\D/g, '');
+    // Nigeria specific: if starts with 0, replace with 234
+    if (cleaned.startsWith('0')) {
+      cleaned = '234' + cleaned.substring(1);
+    }
+    // If it's just 10 digits (e.g. 803...), add 234
+    if (cleaned.length === 10) {
+      cleaned = '234' + cleaned;
+    }
+    return cleaned;
   };
 
   const toggleSelectAll = () => {
@@ -39,7 +47,7 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
     else setSelectedIds(rsvps.map(r => r.id));
   };
 
-  const handleInitiate = () => {
+  const handleStartLoop = () => {
     if (!message.trim()) {
       showError("Please enter a message.");
       return;
@@ -48,31 +56,31 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
       showError("Please select at least one guest.");
       return;
     }
-    setIsInitiated(true);
-    showSuccess("Blast sequence ready.");
-  };
-
-  const copyAllNumbers = () => {
-    const selectedGuests = rsvps.filter(r => selectedIds.includes(r.id));
-    const numbers = selectedGuests.map(r => r.guest_phone).join(', ');
-    navigator.clipboard.writeText(numbers);
-    setCopied(true);
-    showSuccess("All numbers copied. You can now paste them into a WhatsApp Broadcast List.");
-    setTimeout(() => setCopied(false), 3000);
-  };
-
-  const copyMessage = () => {
-    const fullMessage = `${message}\n\nView Event: ${window.location.origin}/event/${event.slug}`;
-    navigator.clipboard.writeText(fullMessage);
-    showSuccess("Message copied to clipboard.");
-  };
-
-  const sendToGuest = (phone: string) => {
-    const text = encodeURIComponent(`${message}\n\nView Event: ${window.location.origin}/event/${event.slug}`);
-    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+    setIsLooping(true);
+    setCurrentIndex(0);
+    showSuccess("Blast Loop Started.");
   };
 
   const selectedGuests = rsvps.filter(r => selectedIds.includes(r.id));
+  const currentGuest = selectedGuests[currentIndex];
+
+  const sendAndNext = () => {
+    if (!currentGuest) return;
+
+    const formattedPhone = formatPhone(currentGuest.guest_phone);
+    const text = encodeURIComponent(`${message}\n\nView Event: ${window.location.origin}/event/${event.slug}`);
+    
+    // Open WhatsApp
+    window.open(`https://api.whatsapp.com/send?phone=${formattedPhone}&text=${text}`, '_blank');
+
+    // Move to next guest automatically
+    if (currentIndex < selectedGuests.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      showSuccess("Blast Sequence Complete!");
+      setIsLooping(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -101,21 +109,14 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
               </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-8">
-              {!isInitiated ? (
-                <>
-                  <div className="bg-[#25D366]/5 border border-[#25D366]/20 p-6 mb-8">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#25D366] mb-2">Pro Tip: Instant Blasting</p>
-                    <p className="text-[11px] text-gray-400 leading-relaxed">
-                      To message everyone at once, use the **"Copy All Numbers"** button below, then paste them into a **WhatsApp Broadcast List**.
-                    </p>
-                  </div>
-
+            <div className="flex-grow overflow-y-auto custom-scrollbar pr-2">
+              {!isLooping ? (
+                <div className="space-y-8">
                   <div className="space-y-4">
                     <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Your Message</Label>
                     <Textarea 
                       placeholder="e.g. The Buffet is now open! Please proceed to the dining hall."
-                      className="min-h-[120px] bg-white/5 border-white/10 rounded-none focus:border-[#25D366]/50 text-lg font-light resize-none"
+                      className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#25D366]/50 text-lg font-light resize-none"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
@@ -123,96 +124,84 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
 
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Select Recipients ({selectedIds.length})</Label>
-                      <button 
-                        onClick={toggleSelectAll}
-                        className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37] hover:opacity-70"
-                      >
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Recipients ({selectedIds.length})</Label>
+                      <button onClick={toggleSelectAll} className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">
                         {selectedIds.length === rsvps.length ? 'Deselect All' : 'Select All'}
                       </button>
                     </div>
-                    
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
+                    <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
                       {rsvps.map((rsvp) => (
                         <div 
                           key={rsvp.id} 
-                          onClick={() => toggleSelect(rsvp.id)}
-                          className={`flex items-center justify-between p-4 border cursor-pointer transition-all ${
-                            selectedIds.includes(rsvp.id) ? 'bg-[#25D366]/10 border-[#25D366]/30' : 'bg-white/5 border-white/5'
+                          onClick={() => setSelectedIds(prev => prev.includes(rsvp.id) ? prev.filter(i => i !== rsvp.id) : [...prev, rsvp.id])}
+                          className={`p-3 border cursor-pointer text-[8px] font-bold uppercase tracking-widest transition-all ${
+                            selectedIds.includes(rsvp.id) ? 'bg-[#25D366]/10 border-[#25D366]/30 text-white' : 'bg-white/5 border-white/5 text-gray-500'
                           }`}
                         >
-                          <div className="flex items-center gap-4">
-                            {selectedIds.includes(rsvp.id) ? <CheckSquare className="w-4 h-4 text-[#25D366]" /> : <Square className="w-4 h-4 text-gray-600" />}
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-white">{rsvp.guest_name}</span>
-                          </div>
-                          <span className="text-[8px] text-gray-500 font-mono">{rsvp.guest_phone}</span>
+                          {rsvp.guest_name}
                         </div>
                       ))}
                     </div>
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="space-y-6">
-                  <div className="bg-[#25D366]/5 border border-[#25D366]/20 p-6">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#25D366] mb-2">Blast Sequence Active</p>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                      Click "Send" for each guest to open a pre-filled chat. This is the safest way to avoid WhatsApp spam filters.
-                    </p>
+                <div className="h-full flex flex-col items-center justify-center text-center py-12">
+                  <div className="w-full bg-white/5 h-1 mb-12">
+                    <motion.div 
+                      className="bg-[#25D366] h-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${((currentIndex + 1) / selectedGuests.length) * 100}%` }}
+                    />
                   </div>
                   
-                  <div className="space-y-2">
-                    {selectedGuests.map((rsvp) => (
-                      <div key={rsvp.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/5">
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-white">{rsvp.guest_name}</p>
-                          <p className="text-[8px] text-gray-500">{rsvp.guest_phone}</p>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          onClick={() => sendToGuest(rsvp.guest_phone)}
-                          className="bg-[#25D366] hover:bg-[#128C7E] text-white text-[8px] font-black uppercase tracking-widest h-10 px-6"
-                        >
-                          Send
-                        </Button>
-                      </div>
-                    ))}
+                  <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">
+                    Guest {currentIndex + 1} of {selectedGuests.length}
+                  </span>
+                  
+                  <h2 className="text-4xl md:text-6xl font-serif italic text-white mb-4">
+                    {currentGuest?.guest_name}
+                  </h2>
+                  <p className="text-gray-500 font-mono mb-12">{currentGuest?.guest_phone}</p>
+
+                  <div className="bg-[#25D366]/5 border border-[#25D366]/20 p-6 mb-12 max-w-md">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#25D366] mb-2">The Loop Strategy</p>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      Click the button below. WhatsApp will open with the message ready. Send it, then come back here—the next guest will be waiting.
+                    </p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="pt-8 shrink-0 space-y-4">
-              {!isInitiated ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <Button 
-                    onClick={copyAllNumbers}
-                    variant="outline"
-                    className="border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
-                  >
-                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-                    Copy All Numbers
-                  </Button>
-                  <Button 
-                    onClick={handleInitiate}
-                    className="bg-[#25D366] hover:bg-[#128C7E] text-white py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
-                  >
-                    Personal Sequence
-                  </Button>
-                </div>
+            <div className="pt-8 shrink-0">
+              {!isLooping ? (
+                <Button 
+                  onClick={handleStartLoop}
+                  className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase"
+                >
+                  <Play className="w-4 h-4 mr-2" /> Start Blast Loop
+                </Button>
               ) : (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <Button 
                     variant="outline"
-                    onClick={() => setIsInitiated(false)}
-                    className="border-white/10 bg-white/5 text-white py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                    onClick={() => setIsLooping(false)}
+                    className="col-span-1 border-white/10 bg-white/5 text-white py-10 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
                   >
-                    Back to Edit
+                    Stop
                   </Button>
                   <Button 
-                    onClick={copyMessage}
-                    className="bg-[#D4AF37] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                    onClick={sendAndNext}
+                    className="col-span-2 bg-[#25D366] hover:bg-[#128C7E] text-white py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase"
                   >
-                    Copy Message
+                    Send & Next <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => currentIndex < selectedGuests.length - 1 && setCurrentIndex(prev => prev + 1)}
+                    className="col-span-1 text-gray-500 hover:text-white py-10 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    Skip <SkipForward className="ml-2 w-3 h-3" />
                   </Button>
                 </div>
               )}
