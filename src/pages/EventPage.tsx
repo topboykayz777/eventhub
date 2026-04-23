@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon, Bookmark } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon, Bookmark, Navigation } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
+import MediaLightbox from '@/components/MediaLightbox';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -21,6 +22,10 @@ const EventPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
   const [isHost, setIsHost] = useState(false);
+  
+  // Lightbox State
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
   useEffect(() => {
     if (slug) {
@@ -160,6 +165,15 @@ const EventPage = () => {
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
+  const openLightbox = (index: number) => {
+    setCurrentMediaIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const getGoogleMapsUrl = (venue: string) => {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
@@ -255,7 +269,15 @@ const EventPage = () => {
                   </div>
                   <div>
                     <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">The Venue</p>
-                    <p className="text-base md:text-2xl font-light leading-relaxed">{event.venue}</p>
+                    <p className="text-base md:text-2xl font-light leading-relaxed mb-4">{event.venue}</p>
+                    <a 
+                      href={getGoogleMapsUrl(event.venue)} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:opacity-70 transition-opacity"
+                    >
+                      <Navigation size={12} className="fill-current" /> Get Directions
+                    </a>
                   </div>
                 </div>
                 {event.message && (
@@ -275,24 +297,33 @@ const EventPage = () => {
             {event.gallery_urls && event.gallery_urls.length > 0 && (
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {event.gallery_urls.map((url: string, i: number) => (
-                  isVideo(url) ? (
-                    <video 
-                      key={i} 
-                      src={url} 
-                      autoPlay 
-                      muted 
-                      loop 
-                      playsInline 
-                      className="w-full aspect-square object-cover rounded-xl md:rounded-2xl border border-white/10"
-                    />
-                  ) : (
-                    <img 
-                      key={i} 
-                      src={url} 
-                      className="w-full aspect-square object-cover rounded-xl md:rounded-2xl border border-white/10" 
-                      alt={`Gallery ${i}`} 
-                    />
-                  )
+                  <motion.div 
+                    key={i}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => openLightbox(i)}
+                    className="cursor-pointer relative group overflow-hidden rounded-xl md:rounded-2xl border border-white/10"
+                  >
+                    {isVideo(url) ? (
+                      <video 
+                        src={url} 
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline 
+                        className="w-full aspect-square object-cover"
+                      />
+                    ) : (
+                      <img 
+                        src={url} 
+                        className="w-full aspect-square object-cover" 
+                        alt={`Gallery ${i}`} 
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Sparkles className="text-white w-6 h-6" />
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -310,7 +341,6 @@ const EventPage = () => {
                     <p className="text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
 
-                  {/* Live Updates Companion Message */}
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -375,6 +405,17 @@ const EventPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Component */}
+      {event.gallery_urls && (
+        <MediaLightbox 
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          mediaUrls={event.gallery_urls}
+          currentIndex={currentMediaIndex}
+          onNavigate={setCurrentMediaIndex}
+        />
+      )}
     </div>
   );
 };
