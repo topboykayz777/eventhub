@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
@@ -8,8 +8,36 @@ import PricingSection from '@/components/landing/PricingSection';
 import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 
 const Index = () => {
+  useEffect(() => {
+    // Celebratory burst on landing
+    const end = Date.now() + 3 * 1000;
+    const colors = ['#D4AF37', '#ffffff', '#F9E4B7'];
+
+    (function frame() {
+      confetti({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors: colors
+      });
+      confetti({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors: colors
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+  }, []);
+
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",

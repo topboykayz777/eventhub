@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, RefreshCw, Megaphone, Table as TableIcon } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -22,7 +22,6 @@ const EventPage = () => {
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
   const [isHost, setIsHost] = useState(false);
 
-  // 1. Memory Fix: Check for existing RSVP on load
   useEffect(() => {
     if (slug) {
       fetchEvent();
@@ -48,7 +47,6 @@ const EventPage = () => {
         setEvent(data);
         setIsHost(user?.id === data.host_id);
         
-        // Check local storage for an existing RSVP for this specific event
         const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
         if (savedRsvpId) {
           const { data: rsvp, error: rsvpError } = await supabase
@@ -63,7 +61,8 @@ const EventPage = () => {
         }
 
         if (data.is_paid) {
-          supabase.rpc('increment_view_count', { event_id: data.id }).catch(() => {});
+          // Removed .catch() as PostgrestFilterBuilder handles errors via the returned object
+          supabase.rpc('increment_view_count', { event_id: data.id });
         }
       }
     } catch (err: any) {
@@ -73,7 +72,6 @@ const EventPage = () => {
     }
   };
 
-  // Real-time listener for the event (broadcasts, etc.)
   useEffect(() => {
     if (!slug) return;
     
@@ -99,7 +97,6 @@ const EventPage = () => {
     return () => { supabase.removeChannel(eventChannel); };
   }, [slug, event?.is_paid]);
 
-  // Real-time listener for the specific guest's RSVP (table updates, etc.)
   useEffect(() => {
     if (submittedRsvp?.id) {
       const rsvpChannel = supabase
@@ -114,7 +111,6 @@ const EventPage = () => {
           },
           (payload) => {
             setSubmittedRsvp(payload.new);
-            // Only show toast if something meaningful changed (like table number)
             if (payload.old.table_number !== payload.new.table_number) {
               showSuccess("Your seating has been updated!");
             }
@@ -148,7 +144,6 @@ const EventPage = () => {
 
       if (error) throw error;
 
-      // Save identity to local storage
       localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
       
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });

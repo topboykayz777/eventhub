@@ -10,8 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { Briefcase, MapPin, Phone, Instagram, Star, LayoutDashboard, Settings, ExternalLink, Upload } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Star, ExternalLink, Loader2 } from 'lucide-react';
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
@@ -40,17 +39,18 @@ const VendorDashboard = () => {
     setLoading(false);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     
+    const target = e.currentTarget as any;
     const vendorData = {
-      name: e.currentTarget.vendorName.value,
-      category: e.currentTarget.category.value,
-      location: e.currentTarget.location.value,
-      phone: e.currentTarget.phone.value,
-      instagram: e.currentTarget.instagram.value,
+      name: target.vendorName.value,
+      category: target.category.value,
+      location: target.location.value,
+      phone: target.phone.value,
+      instagram: target.instagram.value,
       user_id: user?.id
     };
 
@@ -66,7 +66,7 @@ const VendorDashboard = () => {
     setSaving(false);
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center text-white">Accessing Atelier...</div>;
+  if (loading) return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>;
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white">
