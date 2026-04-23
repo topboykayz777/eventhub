@@ -65,7 +65,7 @@ const EventPage = () => {
           }
         }
 
-        // Increment view count - This is the "Page View" metric
+        // Increment view count
         if (data.is_paid) {
           await supabase.rpc('increment_view_count', { event_id: data.id });
         }
@@ -232,11 +232,11 @@ const EventPage = () => {
 
       <div className="relative h-[50vh] md:h-[75vh] w-full overflow-hidden">
         <motion.img 
-          initial={{ scale: 1.2, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.6 }}
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.5 }}
           src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-          className="w-full h-full object-cover grayscale contrast-125"
+          className="w-full h-full object-cover brightness-90"
           alt={event.event_name}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
@@ -380,7 +380,11 @@ const EventPage = () => {
                     )}
                   </AnimatePresence>
 
-                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} />
+                  <DigitalInvite 
+                    event={event} 
+                    rsvpId={submittedRsvp.id} 
+                    guestName={submittedRsvp.guest_name}
+                  />
                 </motion.div>
               ) : (
                 <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-2xl sticky top-24 md:top-32 border border-black/5`}>
