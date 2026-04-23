@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Users, CheckCircle2, Loader2, MessageSquare, CheckSquare, Square } from 'lucide-react';
+import { X, Send, Users, CheckCircle2, Loader2, MessageSquare, CheckSquare, Square, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface WhatsAppBlastProps {
   isOpen: boolean;
@@ -18,9 +17,9 @@ interface WhatsAppBlastProps {
 
 const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) => {
   const [message, setMessage] = useState('');
-  const [sending, setSending] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isInitiated, setIsInitiated] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,7 +49,22 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
       return;
     }
     setIsInitiated(true);
-    showSuccess("Blast sequence ready. Send to guests individually below.");
+    showSuccess("Blast sequence ready.");
+  };
+
+  const copyAllNumbers = () => {
+    const selectedGuests = rsvps.filter(r => selectedIds.includes(r.id));
+    const numbers = selectedGuests.map(r => r.guest_phone).join(', ');
+    navigator.clipboard.writeText(numbers);
+    setCopied(true);
+    showSuccess("All numbers copied. You can now paste them into a WhatsApp Broadcast List.");
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  const copyMessage = () => {
+    const fullMessage = `${message}\n\nView Event: ${window.location.origin}/event/${event.slug}`;
+    navigator.clipboard.writeText(fullMessage);
+    showSuccess("Message copied to clipboard.");
   };
 
   const sendToGuest = (phone: string) => {
@@ -90,6 +104,13 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
             <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-8">
               {!isInitiated ? (
                 <>
+                  <div className="bg-[#25D366]/5 border border-[#25D366]/20 p-6 mb-8">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#25D366] mb-2">Pro Tip: Instant Blasting</p>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      To message everyone at once, use the **"Copy All Numbers"** button below, then paste them into a **WhatsApp Broadcast List**.
+                    </p>
+                  </div>
+
                   <div className="space-y-4">
                     <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Your Message</Label>
                     <Textarea 
@@ -98,7 +119,6 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
-                    <p className="text-[8px] text-gray-600 uppercase tracking-widest">The event link will be automatically appended.</p>
                   </div>
 
                   <div className="space-y-4">
@@ -112,7 +132,7 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
                       </button>
                     </div>
                     
-                    <div className="space-y-2 max-h-[250px] overflow-y-auto custom-scrollbar pr-2">
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
                       {rsvps.map((rsvp) => (
                         <div 
                           key={rsvp.id} 
@@ -136,7 +156,7 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
                   <div className="bg-[#25D366]/5 border border-[#25D366]/20 p-6">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#25D366] mb-2">Blast Sequence Active</p>
                     <p className="text-sm text-gray-400 leading-relaxed">
-                      Click "Send" for each guest. This ensures WhatsApp recognizes these as individual messages from you, preventing account flags.
+                      Click "Send" for each guest to open a pre-filled chat. This is the safest way to avoid WhatsApp spam filters.
                     </p>
                   </div>
                   
@@ -161,22 +181,40 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
               )}
             </div>
 
-            <div className="pt-8 shrink-0">
+            <div className="pt-8 shrink-0 space-y-4">
               {!isInitiated ? (
-                <Button 
-                  onClick={handleInitiate}
-                  className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all"
-                >
-                  Initiate Blast Sequence
-                </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    onClick={copyAllNumbers}
+                    variant="outline"
+                    className="border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                    Copy All Numbers
+                  </Button>
+                  <Button 
+                    onClick={handleInitiate}
+                    className="bg-[#25D366] hover:bg-[#128C7E] text-white py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    Personal Sequence
+                  </Button>
+                </div>
               ) : (
-                <Button 
-                  variant="outline"
-                  onClick={() => setIsInitiated(false)}
-                  className="w-full border-white/10 bg-white/5 text-white py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase"
-                >
-                  Back to Edit
-                </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsInitiated(false)}
+                    className="border-white/10 bg-white/5 text-white py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    Back to Edit
+                  </Button>
+                  <Button 
+                    onClick={copyMessage}
+                    className="bg-[#D4AF37] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    Copy Message
+                  </Button>
+                </div>
               )}
             </div>
           </motion.div>
