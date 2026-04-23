@@ -35,15 +35,25 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
   };
 
   const handleShare = async () => {
+    const eventUrl = `${window.location.origin}/event/${event.slug?.trim()}`;
     const shareData = { 
       title: event.event_name, 
-      text: `I'm attending ${event.event_name}! Here is my digital entry pass.`, 
-      url: window.location.href 
+      text: rsvpId 
+        ? `I'm attending ${event.event_name}! Here is my digital entry pass.` 
+        : `You are cordially invited to ${event.event_name}. Please RSVP here:`, 
+      url: eventUrl 
     };
+    
     try {
-      if (navigator.share) await navigator.share(shareData);
-      else window.open(`https://wa.me/?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`, '_blank');
-    } catch (err) { console.log('Share cancelled'); }
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        const whatsappText = `${shareData.text} ${shareData.url}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(whatsappText)}`, '_blank');
+      }
+    } catch (err) { 
+      console.log('Share cancelled'); 
+    }
   };
 
   const theme = event.theme?.toLowerCase() || 'modern';
@@ -65,7 +75,7 @@ const DigitalInvite = ({ event, rsvpId }: DigitalInviteProps) => {
 
   const config = themeConfigs[theme] || themeConfigs.modern;
   const Icon = config.icon;
-  const qrValue = rsvpId || `${window.location.origin}/event/${event.slug}`;
+  const qrValue = rsvpId || `${window.location.origin}/event/${event.slug?.trim()}`;
 
   return (
     <div className="space-y-6 w-full max-w-[320px] mx-auto">
