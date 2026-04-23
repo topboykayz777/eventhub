@@ -7,8 +7,8 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Modular Components
@@ -28,6 +28,9 @@ const Dashboard = () => {
   const [isBlastOpen, setIsBlastOpen] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
+  
+  // State to track which events are expanded
+  const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ['host-events'],
@@ -46,16 +49,20 @@ const Dashboard = () => {
     }
   });
 
+  // Expand the first event by default when data loads
+  useEffect(() => {
+    if (events.length > 0 && expandedEvents.size === 0) {
+      setExpandedEvents(new Set([events[0].id]));
+    }
+  }, [events]);
+
   useEffect(() => {
     const channel = supabase
       .channel('dashboard-realtime')
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'rsvps' }, 
-        () => {
-          console.log("[Dashboard] RSVP change detected, refetching...");
-          refetch();
-        }
+        () => refetch()
       )
       .on(
         'postgres_changes', 
@@ -69,17 +76,14 @@ const Dashboard = () => {
     };
   }, [refetch]);
 
-  const toggleCheckIn = async (rsvpId: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('rsvps')
-      .update({ checked_in: !currentStatus })
-      .eq('id', rsvpId);
-    
-    if (error) showError("Update failed");
-    else {
-      showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
-      refetch();
+  const toggleEventExpansion = (eventId: string) => {
+    const newExpanded = new Set(expandedEvents);
+    if (newExpanded.has(eventId)) {
+      newExpanded.delete(eventId);
+    } else {
+      newExpanded.add(eventId);
     }
+    setExpandedEvents(newExpanded);
   };
 
   const handleQRScan = async (scannedText: string) => {
@@ -188,60 +192,122 @@ const Dashboard = () => {
             <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-12 py-8">Create Your First Event</Button></Link>
           </div>
         ) : (
-          <div className="space-y-16 md:space-y-24">
-            {events.map((event: any) => (
-              <motion.div key={event.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                <div className="grid lg:grid-cols-12 gap-8 md:gap-12">
-                  <EventCard event={event} onCopyLink={copyLink} />
-                  <div className="lg:col-span-8">
-                    <div className="mb-8 md:mb-12">
-                      <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
-                      {[
-                        { icon: Users, label: 'Total RSVPs', value: event.rsvps?.length || 0 },
-                        { icon: CheckCircle2, label: 'Checked In', value: event.rsvps?.filter((r: any) => r.checked_in).length || 0 },
-                        { icon: Eye, label: 'Page Views', value: event.view_count || 0 },
-                        { icon: TrendingUp, label: 'Status', value: event.is_paid ? 'Active' : 'Pending' }
-                      ].map((stat, i) => (
-                        <div key={i} className="bg-white/5 p-6 md:p-8 border border-white/5 text-center">
-                          <stat.icon className="w-4 h-4 md:w-5 md:h-5 mx-auto mb-3 md:mb-4 text-[#D4AF37]" />
-                          <div className="text-xl md:text-2xl font-serif italic text-white mb-1">{stat.value}</div>
-                          <div className="text-[7px] md:text-[8px] text-gray-500 uppercase tracking-[0.3em] font-bold">{stat.label}</div>
+          <div className="space-y-8 md:space-y-12">
+            {events.map((event: any) => {
+              const isExpanded = expandedEvents.has(event.id);
+              
+              return (
+                <motion.div 
+                  key={event.id} 
+                  initial={{ opacity: 0, y: 20 }} 
+                  animate={{ opacity: 1, y: 0 }}
+                  className="border border-white/5 bg-white/[0.02] overflow-hidden"
+                >
+                  {/* Event Header / Toggle */}
+                  <div 
+                    onClick={() => toggleEventExpansion(event.id)}
+                    className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 cursor-pointer hover:bg-white/[0.04] transition-colors group"
+                  >
+                    <div className="flex items-center gap-6 w-full md:w-auto">
+                      <div className="w-16 h-20 md:w-20 md:h-24 border border-white/10 overflow-hidden shrink-0">
+                        <img src={event.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-serif italic text-white mb-2">{event.event_name}</h2>
+                        <div className="flex items-center gap-4">
+                          <span className={`text-[8px] font-black px-2 py-0.5 uppercase tracking-widest ${event.is_paid ? 'bg-green-500 text-black' : 'bg-red-500 text-white'}`}>
+                            {event.is_paid ? 'Live' : 'Pending'}
+                          </span>
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-gray-500">
+                            {event.rsvps?.length || 0} RSVPs
+                          </span>
                         </div>
-                      ))}
+                      </div>
                     </div>
-
-                    <Tabs defaultValue="guests" className="w-full">
-                      <TabsList className="bg-transparent p-0 h-auto border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none overflow-x-auto">
-                        <TabsTrigger value="guests" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white whitespace-nowrap">Guest List</TabsTrigger>
-                        <TabsTrigger value="tools" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white whitespace-nowrap">Concierge Tools</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="guests">
-                        <GuestList 
-                          rsvps={event.rsvps || []} 
-                          searchQuery={searchQuery} 
-                          onSearchChange={setSearchQuery} 
-                          onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
-                          onExportCSV={() => downloadGuestList(event)} 
-                          onToggleCheckIn={toggleCheckIn} 
-                        />
-                      </TabsContent>
-                      <TabsContent value="tools">
-                        <ConciergeTools 
-                          event={event} 
-                          onSendWhatsAppBlast={() => {
-                            setActiveEvent(event);
-                            setIsBlastOpen(true);
-                          }} 
-                        />
-                      </TabsContent>
-                    </Tabs>
+                    
+                    <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+                      <div className="hidden md:flex flex-col items-end">
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500 mb-1">Event Date</p>
+                        <p className="text-[10px] font-bold text-white uppercase tracking-widest">
+                          {new Date(event.event_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        className="text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-none px-6 py-6 text-[10px] font-bold uppercase tracking-widest"
+                      >
+                        {isExpanded ? <><ChevronUp className="w-4 h-4 mr-2" /> Close</> : <><Settings2 className="w-4 h-4 mr-2" /> Manage Event</>}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Collapsible Content */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+                      >
+                        <div className="p-6 md:p-12 border-t border-white/5 bg-black/40">
+                          <div className="grid lg:grid-cols-12 gap-8 md:gap-12">
+                            <EventCard event={event} onCopyLink={copyLink} />
+                            
+                            <div className="lg:col-span-8">
+                              <div className="mb-8 md:mb-12">
+                                <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
+                              </div>
+
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
+                                {[
+                                  { icon: Users, label: 'Total RSVPs', value: event.rsvps?.length || 0 },
+                                  { icon: CheckCircle2, label: 'Checked In', value: event.rsvps?.filter((r: any) => r.checked_in).length || 0 },
+                                  { icon: Eye, label: 'Page Views', value: event.view_count || 0 },
+                                  { icon: TrendingUp, label: 'Status', value: event.is_paid ? 'Active' : 'Pending' }
+                                ].map((stat, i) => (
+                                  <div key={i} className="bg-white/5 p-6 md:p-8 border border-white/5 text-center">
+                                    <stat.icon className="w-4 h-4 md:w-5 md:h-5 mx-auto mb-3 md:mb-4 text-[#D4AF37]" />
+                                    <div className="text-xl md:text-2xl font-serif italic text-white mb-1">{stat.value}</div>
+                                    <div className="text-[7px] md:text-[8px] text-gray-500 uppercase tracking-[0.3em] font-bold">{stat.label}</div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <Tabs defaultValue="guests" className="w-full">
+                                <TabsList className="bg-transparent p-0 h-auto border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none overflow-x-auto">
+                                  <TabsTrigger value="guests" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white whitespace-nowrap">Guest List</TabsTrigger>
+                                  <TabsTrigger value="tools" className="bg-transparent border-none p-0 pb-4 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 data-[state=active]:text-white whitespace-nowrap">Concierge Tools</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="guests">
+                                  <GuestList 
+                                    rsvps={event.rsvps || []} 
+                                    searchQuery={searchQuery} 
+                                    onSearchChange={setSearchQuery} 
+                                    onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
+                                    onExportCSV={() => downloadGuestList(event)} 
+                                    onToggleCheckIn={() => refetch()} 
+                                  />
+                                </TabsContent>
+                                <TabsContent value="tools">
+                                  <ConciergeTools 
+                                    event={event} 
+                                    onSendWhatsAppBlast={() => {
+                                      setActiveEvent(event);
+                                      setIsBlastOpen(true);
+                                    }} 
+                                  />
+                                </TabsContent>
+                              </Tabs>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
