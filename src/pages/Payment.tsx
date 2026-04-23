@@ -38,22 +38,17 @@ const Payment = () => {
   const handlePayment = () => {
     if (isProcessing) return;
     
-    // Robust check for Paystack script
     const paystack = (window as any).PaystackPop;
     
     if (!paystack) {
-      showError("The payment gateway is still initializing. Please wait a few seconds and try again.");
-      // Attempt to reload the script if missing
-      if (!document.querySelector('script[src*="paystack"]')) {
-        const script = document.createElement('script');
-        script.src = "https://js.paystack.co/v1/inline.js";
-        document.head.appendChild(script);
-      }
+      showError("Payment gateway is still loading. Please refresh or wait 5 seconds.");
       return;
     }
 
     setIsProcessing(true);
     const amount = event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000;
+    
+    // Using the provided test key
     const paystackKey = 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb';
 
     try {
@@ -63,10 +58,22 @@ const Payment = () => {
         amount: amount * 100,
         currency: 'NGN',
         metadata: {
-          event_id: id,
-          plan: event.plan
+          custom_fields: [
+            {
+              display_name: "Event ID",
+              variable_name: "event_id",
+              value: id
+            },
+            {
+              display_name: "Plan",
+              variable_name: "plan",
+              value: event.plan
+            }
+          ]
         },
         callback: async function(response: any) {
+          console.log("[Payment] Success response:", response);
+          
           const { error } = await supabase
             .from('events')
             .update({ 
@@ -92,14 +99,15 @@ const Payment = () => {
           }
         },
         onClose: function() {
-          showError('Payment window closed');
+          showError('Payment cancelled.');
           setIsProcessing(false);
         }
       });
       
       handler.openIframe();
-    } catch (err) {
-      showError("Could not open payment window.");
+    } catch (err: any) {
+      console.error("[Payment] Paystack Error:", err);
+      showError("Could not open payment window. Please check if an AdBlocker is active.");
       setIsProcessing(false);
     }
   };
