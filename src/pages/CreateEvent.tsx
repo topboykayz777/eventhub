@@ -160,9 +160,9 @@ const CreateEvent = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
-                    <SelectItem value="Basic">Basic (₦10,000)</SelectItem>
-                    <SelectItem value="Standard">Standard (₦15,000)</SelectItem>
-                    <SelectItem value="Pro">Pro (₦20,000)</SelectItem>
+                    <SelectItem value="Basic">Basic (₦25,000)</SelectItem>
+                    <SelectItem value="Standard">Standard (₦75,000)</SelectItem>
+                    <SelectItem value="Pro">Pro (₦150,000)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

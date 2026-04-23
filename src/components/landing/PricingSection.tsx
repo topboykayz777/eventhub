@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 const plans = [
   { 
     name: 'Basic', 
-    price: '10,000', 
+    price: '25,000', 
     icon: Sparkles,
     desc: 'Essential digital presence for intimate gatherings.',
     features: ['Custom Event Page', 'RSVP Tracking', 'WhatsApp Share Button', 'Countdown Timer'],
@@ -18,7 +18,7 @@ const plans = [
   },
   { 
     name: 'Standard', 
-    price: '15,000', 
+    price: '75,000', 
     popular: true,
     icon: Gem,
     desc: 'The definitive choice for weddings and galas.',
@@ -28,7 +28,7 @@ const plans = [
   },
   { 
     name: 'Pro', 
-    price: '20,000', 
+    price: '150,000', 
     icon: Crown,
     desc: 'Full-suite orchestration for high-society events.',
     features: ['Everything in Standard', '50 Media Files (Images/Video)', 'WhatsApp Blast to Guests', 'Budget Tracker Tool', 'Vendor Directory Access'],

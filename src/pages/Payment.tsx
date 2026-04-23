@@ -39,7 +39,17 @@ const Payment = () => {
   }, [id, navigate]);
 
   const currentPlan = upgradePlan || (event?.plan || 'Basic');
-  const amount = currentPlan === 'Basic' ? 10000 : currentPlan === 'Standard' ? 15000 : 20000;
+  
+  // 2026 Luxury Pricing Logic
+  const getAmount = (plan: string) => {
+    switch(plan) {
+      case 'Pro': return 150000;
+      case 'Standard': return 75000;
+      default: return 25000;
+    }
+  };
+
+  const amount = getAmount(currentPlan);
 
   const config = {
     reference: (new Date()).getTime().toString(),
