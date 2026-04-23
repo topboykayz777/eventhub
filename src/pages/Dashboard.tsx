@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -169,15 +169,20 @@ const Dashboard = () => {
             <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">The Host's Atelier</span>
             <h1 className="text-4xl md:text-7xl font-serif italic text-white leading-tight">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
-          <div className="flex gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            <Link to="/guide" className="flex-1 md:flex-none">
+              <Button variant="outline" className="w-full border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] rounded-none px-6 py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] uppercase">
+                <HelpCircle className="w-4 h-4 mr-2" /> View Guide
+              </Button>
+            </Link>
             <Button 
               variant="outline" 
               onClick={() => refetch()}
-              className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-6 py-6"
+              className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"
             >
               <RefreshCw className="w-4 h-4" />
             </Button>
-            <Link to="/create-event" className="flex-[3] md:flex-none">
+            <Link to="/create-event" className="flex-[2] md:flex-none">
               <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 md:px-10 py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10">
                 <Plus className="w-4 h-4 mr-2" /> New Event
               </Button>

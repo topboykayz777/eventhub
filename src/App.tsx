@@ -18,6 +18,7 @@ import BudgetTracker from "./pages/BudgetTracker";
 import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
 import VendorDashboard from "./pages/VendorDashboard";
+import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/budget/:id" element={<BudgetTracker />} />
           <Route path="/vendors" element={<VendorDirectory />} />
           <Route path="/vendor/:id" element={<VendorProfile />} />
+          <Route path="/guide" element={<Guide />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

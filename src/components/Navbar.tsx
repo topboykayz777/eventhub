@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu, X } from 'lucide-react';
+import { LogOut, User, Menu, X, HelpCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,6 +28,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'The Directory', path: '/vendors' },
+    { name: 'Guide', path: '/guide' },
     ...(session ? [{ name: 'Dashboard', path: '/dashboard' }] : []),
   ];
 
