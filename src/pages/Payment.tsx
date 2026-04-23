@@ -38,10 +38,17 @@ const Payment = () => {
   const handlePayment = () => {
     if (isProcessing) return;
     
+    // Robust check for Paystack script
     const paystack = (window as any).PaystackPop;
     
     if (!paystack) {
-      showError("Payment system is still loading. Please wait 5 seconds.");
+      showError("The payment gateway is still initializing. Please wait a few seconds and try again.");
+      // Attempt to reload the script if missing
+      if (!document.querySelector('script[src*="paystack"]')) {
+        const script = document.createElement('script');
+        script.src = "https://js.paystack.co/v1/inline.js";
+        document.head.appendChild(script);
+      }
       return;
     }
 
@@ -60,7 +67,6 @@ const Payment = () => {
           plan: event.plan
         },
         callback: async function(response: any) {
-          // Update the database immediately
           const { error } = await supabase
             .from('events')
             .update({ 
@@ -69,7 +75,7 @@ const Payment = () => {
             .eq('id', id);
 
           if (error) {
-            showError("Payment confirmed, but activation failed. Please refresh your dashboard.");
+            showError("Payment confirmed, but activation failed. Please contact support.");
             setIsProcessing(false);
           } else {
             setPaymentSuccess(true);

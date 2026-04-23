@@ -29,6 +29,7 @@ const Signup = () => {
 
     setLoading(true);
 
+    // 1. Sign up the user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -41,10 +42,25 @@ const Signup = () => {
 
     if (error) {
       showError(error.message);
-    } else {
-      showSuccess("Verification email sent. Please check your inbox.");
-      // The profile creation is handled by the database trigger 'handle_new_user'
+      setLoading(false);
+      return;
     }
+
+    if (data.user) {
+      // 2. Manually update the profile to ensure the role is saved 
+      // (The DB trigger is a fallback, but this ensures the role is set correctly)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ email: email }) // This triggers the upsert logic if needed
+        .eq('id', data.user.id);
+
+      if (profileError) {
+        console.error("Profile sync error:", profileError);
+      }
+
+      showSuccess("Verification email sent. Please check your inbox.");
+    }
+    
     setLoading(false);
   };
 

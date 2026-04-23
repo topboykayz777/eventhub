@@ -55,7 +55,7 @@ const EditEvent = () => {
       message: data.message || '',
       theme: data.theme || 'modern',
       photo_url: data.photo_url || '',
-      gallery_urls: data.gallery_urls || []
+      gallery_urls: data.gallery_urls || [] // Ensure this is always an array
     });
     setLoading(false);
   };
@@ -65,16 +65,14 @@ const EditEvent = () => {
     
     const file = e.target.files[0];
 
-    // 10MB Limit Check
     if (file.size > 10 * 1024 * 1024) {
       showError("File is too large. Maximum size is 10MB.");
       return;
     }
 
-    // Media Count Limit Check
     if (isGallery) {
       const limit = eventPlan === 'Pro' ? 50 : eventPlan === 'Standard' ? 10 : 0;
-      if (formData.gallery_urls.length >= limit) {
+      if ((formData.gallery_urls?.length || 0) >= limit) {
         showError(`Your ${eventPlan} plan is limited to ${limit} gallery items. Upgrade for more.`);
         return;
       }
@@ -94,7 +92,7 @@ const EditEvent = () => {
       const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
       
       if (isGallery) {
-        setFormData(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, publicUrl] }));
+        setFormData(prev => ({ ...prev, gallery_urls: [...(prev.gallery_urls || []), publicUrl] }));
       } else {
         setFormData(prev => ({ ...prev, photo_url: publicUrl }));
       }
@@ -109,7 +107,7 @@ const EditEvent = () => {
   const removeGalleryPhoto = (url: string) => {
     setFormData(prev => ({
       ...prev,
-      gallery_urls: prev.gallery_urls.filter(u => u !== url)
+      gallery_urls: (prev.gallery_urls || []).filter(u => u !== url)
     }));
   };
 
@@ -126,7 +124,7 @@ const EditEvent = () => {
           message: formData.message,
           theme: formData.theme,
           photo_url: formData.photo_url,
-          gallery_urls: formData.gallery_urls
+          gallery_urls: formData.gallery_urls || []
         })
         .eq('id', id);
 
@@ -287,11 +285,11 @@ const EditEvent = () => {
                 <div className="flex justify-between items-center">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Media Gallery ({eventPlan})</Label>
                   <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">
-                    {formData.gallery_urls.length} / {eventPlan === 'Pro' ? '50' : eventPlan === 'Standard' ? '10' : '0'} Items
+                    {(formData.gallery_urls?.length || 0)} / {eventPlan === 'Pro' ? '50' : eventPlan === 'Standard' ? '10' : '0'} Items
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                  {formData.gallery_urls.map((url, i) => (
+                  {(formData.gallery_urls || []).map((url, i) => (
                     <div key={i} className="relative aspect-square border border-white/10 group">
                       <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
                       <button 
