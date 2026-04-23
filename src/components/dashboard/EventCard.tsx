@@ -3,14 +3,14 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Copy, Edit } from 'lucide-react';
+import { Calendar, MapPin, Edit } from 'lucide-react';
 
 interface EventCardProps {
   event: any;
   onCopyLink: (slug: string) => void;
 }
 
-const EventCard = ({ event, onCopyLink }: EventCardProps) => {
+const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -47,12 +47,13 @@ const EventCard = ({ event, onCopyLink }: EventCardProps) => {
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 mt-6">
-        <Button variant="outline" onClick={() => onCopyLink(event.slug)} className="rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6">
-          <Copy className="w-3 h-3 mr-2" /> Copy Link
-        </Button>
-        <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)} className="rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6">
-          <Edit className="w-3 h-3 mr-2" /> Edit Details
+      <div className="mt-6">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate(`/edit-event/${event.id}`)} 
+          className="w-full rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6"
+        >
+          <Edit className="w-3 h-3 mr-2" /> Edit Event Details
         </Button>
       </div>
     </div>

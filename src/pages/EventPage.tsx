@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon, Bookmark } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -155,6 +155,11 @@ const EventPage = () => {
     }
   };
 
+  const isVideo = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
@@ -270,7 +275,24 @@ const EventPage = () => {
             {event.gallery_urls && event.gallery_urls.length > 0 && (
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {event.gallery_urls.map((url: string, i: number) => (
-                  <img key={i} src={url} className="w-full aspect-square object-cover rounded-xl md:rounded-2xl border border-white/10" alt={`Gallery ${i}`} />
+                  isVideo(url) ? (
+                    <video 
+                      key={i} 
+                      src={url} 
+                      autoPlay 
+                      muted 
+                      loop 
+                      playsInline 
+                      className="w-full aspect-square object-cover rounded-xl md:rounded-2xl border border-white/10"
+                    />
+                  ) : (
+                    <img 
+                      key={i} 
+                      src={url} 
+                      className="w-full aspect-square object-cover rounded-xl md:rounded-2xl border border-white/10" 
+                      alt={`Gallery ${i}`} 
+                    />
+                  )
                 ))}
               </div>
             )}
@@ -287,6 +309,22 @@ const EventPage = () => {
                     <h2 className="text-xl md:text-2xl font-serif italic mb-2">You're on the list</h2>
                     <p className="text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
+
+                  {/* Live Updates Companion Message */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-[#D4AF37] p-6 rounded-2xl text-black text-center shadow-xl"
+                  >
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Bookmark size={14} className="fill-current" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Live Companion</span>
+                    </div>
+                    <p className="text-[11px] font-bold leading-relaxed uppercase tracking-tight">
+                      Please **Keep this page open** or **Bookmark it** on your browser. 
+                      You will receive live updates, announcements, and your seating assignment here during the event.
+                    </p>
+                  </motion.div>
 
                   <AnimatePresence mode="wait">
                     {submittedRsvp.table_number && (

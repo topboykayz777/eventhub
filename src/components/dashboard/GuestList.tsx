@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, Table as TableIcon, CheckSquare, Square } from 'lucide-react';
+import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, CheckSquare, Square } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,8 +22,7 @@ const GuestList = ({
   searchQuery, 
   onSearchChange, 
   onOpenScanner, 
-  onExportCSV, 
-  onToggleCheckIn 
+  onExportCSV
 }: GuestListProps) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [tableNumber, setTableNumber] = useState('');
@@ -93,7 +92,6 @@ const GuestList = ({
         </div>
       </div>
 
-      {/* Bulk Actions Bar */}
       <AnimatePresence>
         {selectedIds.length > 0 && (
           <motion.div 
@@ -160,17 +158,14 @@ const GuestList = ({
                   </div>
                 </div>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => onToggleCheckIn(rsvp.id, rsvp.checked_in)}
-                className={`rounded-none transition-all ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-500 hover:text-white'}`}
-              >
+              
+              {/* Read-only status badge - Manual toggle disabled as requested */}
+              <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-600'}`}>
                 {rsvp.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                <span className="ml-3 text-[8px] font-black uppercase tracking-[0.3em]">
-                  {rsvp.checked_in ? 'Checked In' : 'Check In'}
+                <span className="text-[8px] font-black uppercase tracking-[0.3em]">
+                  {rsvp.checked_in ? 'Verified' : 'Pending'}
                 </span>
-              </Button>
+              </div>
             </div>
           ))
         )}

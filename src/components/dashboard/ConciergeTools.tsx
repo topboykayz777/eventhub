@@ -51,7 +51,7 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
         </button>
       ) : (
         <button 
-          onClick={() => navigate(`/payment/${event.id}`)} 
+          onClick={() => navigate(`/payment/${event.id}?upgrade=Pro`)} 
           className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#D4AF37]/20 transition-all group"
         >
           <Sparkles className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />

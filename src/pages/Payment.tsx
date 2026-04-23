@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,14 @@ import { usePaystackPayment } from 'react-paystack';
 
 const Payment = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const upgradePlan = searchParams.get('upgrade');
 
   useEffect(() => {
     const fetchEventAndUser = async () => {
@@ -35,12 +38,13 @@ const Payment = () => {
     fetchEventAndUser();
   }, [id, navigate]);
 
-  const amount = event ? (event.plan === 'Basic' ? 10000 : event.plan === 'Standard' ? 15000 : 20000) : 0;
+  const currentPlan = upgradePlan || (event?.plan || 'Basic');
+  const amount = currentPlan === 'Basic' ? 10000 : currentPlan === 'Standard' ? 15000 : 20000;
 
   const config = {
     reference: (new Date()).getTime().toString(),
     email: userEmail || "customer@eventhub.ng",
-    amount: amount * 100, // Paystack expects kobo
+    amount: amount * 100,
     publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
     metadata: {
       custom_fields: [
@@ -48,6 +52,11 @@ const Payment = () => {
           display_name: "Event ID",
           variable_name: "event_id",
           value: id || ""
+        },
+        {
+          display_name: "Plan",
+          variable_name: "plan",
+          value: currentPlan
         }
       ]
     }
@@ -56,10 +65,12 @@ const Payment = () => {
   const initializePayment = usePaystackPayment(config);
 
   const onSuccess = async (reference: any) => {
-    console.log("[Payment] Success:", reference);
     const { error } = await supabase
       .from('events')
-      .update({ is_paid: true })
+      .update({ 
+        is_paid: true,
+        plan: currentPlan 
+      })
       .eq('id', id);
 
     if (error) {
@@ -104,9 +115,11 @@ const Payment = () => {
           <div className="bg-[#D4AF37]/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
             <CreditCard className="text-[#D4AF37] w-12 h-12" />
           </div>
-          <h1 className="text-3xl font-serif italic mb-2 tracking-tight">Activate Event</h1>
+          <h1 className="text-3xl font-serif italic mb-2 tracking-tight">
+            {upgradePlan ? 'Upgrade Tier' : 'Activate Event'}
+          </h1>
           <p className="text-gray-400 mb-10">
-            Plan: <span className="text-white font-bold">{event.plan}</span><br/>
+            Plan: <span className="text-white font-bold">{currentPlan}</span><br/>
             <span className="text-[#D4AF37] italic">"{event.event_name}"</span>
           </p>
           <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5">
