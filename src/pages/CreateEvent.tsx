@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
-import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool } from 'lucide-react';
+import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 
@@ -22,6 +22,7 @@ const CreateEvent = () => {
     eventName: '',
     eventDate: '',
     venue: '',
+    venue_map_url: '',
     message: '',
     plan: 'Basic',
     theme: 'modern',
@@ -78,6 +79,7 @@ const CreateEvent = () => {
         event_name: formData.eventName,
         event_date: new Date(formData.eventDate).toISOString(),
         venue: formData.venue,
+        venue_map_url: formData.venue_map_url,
         message: formData.message,
         plan: formData.plan,
         theme: formData.theme,
@@ -177,26 +179,45 @@ const CreateEvent = () => {
               <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Logistics</h2>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-10">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
-                <Input 
-                  type="datetime-local" 
-                  required 
-                  className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                  value={formData.eventDate}
-                  onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                />
+            <div className="space-y-10">
+              <div className="grid md:grid-cols-2 gap-10">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
+                  <Input 
+                    type="datetime-local" 
+                    required 
+                    className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                    value={formData.eventDate}
+                    onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Name</Label>
+                  <Input 
+                    required 
+                    placeholder="Eko Hotel & Suites, VI, Lagos"
+                    className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                    value={formData.venue}
+                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  />
+                </div>
               </div>
+
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Address</Label>
-                <Input 
-                  required 
-                  placeholder="Eko Hotel & Suites, VI, Lagos"
-                  className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                  value={formData.venue}
-                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                />
+                <div className="flex justify-between items-center">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Exact Location Pin (Google Maps Link)</Label>
+                  <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest hover:underline">Open Maps to get link</a>
+                </div>
+                <div className="relative">
+                  <Navigation className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                  <Input 
+                    placeholder="Paste the 'Share' link from Google Maps here..."
+                    className="h-16 pl-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                    value={formData.venue_map_url}
+                    onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })}
+                  />
+                </div>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest">This ensures guests are guided to the exact entrance, not just the general area.</p>
               </div>
             </div>
           </GlassCard>
@@ -278,7 +299,7 @@ const CreateEvent = () => {
                   className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
                     formData.theme === t.id 
                       ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
-                      : 'border-white/5 hover:border-white/10'
+                      : 'border-white/5 hover:border-white/20'
                   }`}
                 >
                   <div className="relative z-10 flex flex-col justify-between h-full">

@@ -18,13 +18,16 @@ import Analytics from '@/components/dashboard/Analytics';
 import ConciergeTools from '@/components/dashboard/ConciergeTools';
 import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
 import BroadcastBox from '@/components/dashboard/BroadcastBox';
+import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isBlastOpen, setIsBlastOpen] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [activeEvent, setActiveEvent] = useState<any>(null);
 
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ['host-events'],
@@ -146,12 +149,6 @@ const Dashboard = () => {
     showSuccess('Guest list downloaded!');
   };
 
-  const sendWhatsAppBlast = (event: any) => {
-    const url = `${window.location.origin}/event/${event.slug.trim()}`;
-    const message = `✨ You are cordially invited to ${event.event_name} ✨\n\nPlease view the official invitation and RSVP here: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-  };
-
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
@@ -232,7 +229,13 @@ const Dashboard = () => {
                         />
                       </TabsContent>
                       <TabsContent value="tools">
-                        <ConciergeTools event={event} onSendWhatsAppBlast={() => sendWhatsAppBlast(event)} />
+                        <ConciergeTools 
+                          event={event} 
+                          onSendWhatsAppBlast={() => {
+                            setActiveEvent(event);
+                            setIsBlastOpen(true);
+                          }} 
+                        />
                       </TabsContent>
                     </Tabs>
                   </div>
@@ -243,6 +246,14 @@ const Dashboard = () => {
         )}
       </div>
       <QRScannerOverlay isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleQRScan} />
+      {activeEvent && (
+        <WhatsAppBlast 
+          isOpen={isBlastOpen} 
+          onClose={() => setIsBlastOpen(false)} 
+          event={activeEvent} 
+          rsvps={activeEvent.rsvps || []} 
+        />
+      )}
     </div>
   );
 };

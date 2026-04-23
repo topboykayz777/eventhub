@@ -65,8 +65,9 @@ const EventPage = () => {
           }
         }
 
+        // Increment view count - This is the "Page View" metric
         if (data.is_paid) {
-          supabase.rpc('increment_view_count', { event_id: data.id });
+          await supabase.rpc('increment_view_count', { event_id: data.id });
         }
       }
     } catch (err: any) {
@@ -170,7 +171,8 @@ const EventPage = () => {
     setLightboxOpen(true);
   };
 
-  const getGoogleMapsUrl = (venue: string) => {
+  const getGoogleMapsUrl = (venue: string, mapUrl?: string) => {
+    if (mapUrl && mapUrl.trim().startsWith('http')) return mapUrl;
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
   };
 
@@ -271,7 +273,7 @@ const EventPage = () => {
                     <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">The Venue</p>
                     <p className="text-base md:text-2xl font-light leading-relaxed mb-4">{event.venue}</p>
                     <a 
-                      href={getGoogleMapsUrl(event.venue)} 
+                      href={getGoogleMapsUrl(event.venue, event.venue_map_url)} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:opacity-70 transition-opacity"
