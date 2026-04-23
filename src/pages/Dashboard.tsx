@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
 import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Modular Components
 import EventCard from '@/components/dashboard/EventCard';
@@ -20,54 +21,50 @@ import BroadcastBox from '@/components/dashboard/BroadcastBox';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchEvents();
+  const { data: events = [], isLoading, refetch } = useQuery({
+    queryKey: ['host-events'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
+      const { data, error } = await supabase
+        .from('events')
+        .select('*, rsvps(*)')
+        .eq('host_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  useEffect(() => {
     const channel = supabase
-      .channel('dashboard-changes')
+      .channel('dashboard-realtime')
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'rsvps' }, 
-        () => fetchEvents()
+        () => {
+          console.log("[Dashboard] RSVP change detected, refetching...");
+          refetch();
+        }
       )
       .on(
         'postgres_changes', 
         { event: 'UPDATE', schema: 'public', table: 'events' }, 
-        () => fetchEvents()
+        () => refetch()
       )
       .subscribe();
 
     return () => { 
       supabase.removeChannel(channel); 
     };
-  }, []);
-
-  const fetchEvents = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('events')
-      .select('*, rsvps(*)')
-      .eq('host_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      showError(error.message);
-    } else {
-      setEvents(data || []);
-    }
-    setLoading(false);
-  };
+  }, [refetch]);
 
   const toggleCheckIn = async (rsvpId: string, currentStatus: boolean) => {
     const { error } = await supabase
@@ -78,7 +75,7 @@ const Dashboard = () => {
     if (error) showError("Update failed");
     else {
       showSuccess(!currentStatus ? "Guest checked in!" : "Check-in reversed");
-      fetchEvents();
+      refetch();
     }
   };
 
@@ -120,7 +117,7 @@ const Dashboard = () => {
       showError("Check-in failed. Please try again.");
     } else {
       showSuccess(`Welcome, ${rsvp.guest_name}!`);
-      fetchEvents();
+      refetch();
     }
   };
 
@@ -155,7 +152,7 @@ const Dashboard = () => {
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
       <p className="text-[10px] font-bold tracking-[0.5em] uppercase animate-pulse">Syncing Atelier...</p>
@@ -174,7 +171,7 @@ const Dashboard = () => {
           <div className="flex gap-3 w-full md:w-auto">
             <Button 
               variant="outline" 
-              onClick={fetchEvents}
+              onClick={() => refetch()}
               className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-6 py-6"
             >
               <RefreshCw className="w-4 h-4" />
@@ -195,7 +192,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="space-y-16 md:space-y-24">
-            {events.map((event, index) => (
+            {events.map((event: any) => (
               <motion.div key={event.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                 <div className="grid lg:grid-cols-12 gap-8 md:gap-12">
                   <EventCard event={event} onCopyLink={copyLink} />
