@@ -9,13 +9,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError, showSuccess } from '@/utils/toast';
 import { motion } from 'framer-motion';
-import { Lock, CheckCircle2 } from 'lucide-react';
+import { Lock, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    // Check if we have a session (Supabase sets this automatically from the URL fragment)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setHasSession(true);
+      } else {
+        // If no session, they shouldn't be here
+        showError("Invalid or expired recovery link.");
+        navigate('/login');
+      }
+    });
+  }, [navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,11 +48,13 @@ const ResetPassword = () => {
     if (error) {
       showError(error.message);
     } else {
-      showSuccess("Password updated successfully.");
+      showSuccess("Password updated successfully. Please sign in with your new password.");
       navigate('/login');
     }
     setLoading(false);
   };
+
+  if (!hasSession) return null;
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white">
