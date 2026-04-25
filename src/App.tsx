@@ -25,19 +25,15 @@ import VendorProfile from "./pages/VendorProfile";
 import VendorDashboard from "./pages/VendorDashboard";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
-import SecurityLock from "./components/SecurityLock";
-import RouteWatcher from "./components/RouteWatcher";
 
 const queryClient = new QueryClient();
 
-// Separate component to use hooks like useNavigate
 const AuthHandler = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        console.log("[Auth] Password recovery detected, redirecting...");
         navigate('/reset-password');
       }
     });
@@ -52,7 +48,6 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SecurityLock />
         <Toaster />
         <Sonner />
         <BrowserRouter 
@@ -62,27 +57,25 @@ const App = () => {
           }}
         >
           <AuthHandler />
-          <RouteWatcher>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/create-event" element={<CreateEvent />} />
-              <Route path="/edit-event/:id" element={<EditEvent />} />
-              <Route path="/payment/:id" element={<Payment />} />
-              <Route path="/event/:slug" element={<EventPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/vendor-dashboard" element={<VendorDashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/budget/:id" element={<BudgetTracker />} />
-              <Route path="/vendors" element={<VendorDirectory />} />
-              <Route path="/vendor/:id" element={<VendorProfile />} />
-              <Route path="/guide" element={<Guide />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </RouteWatcher>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/create-event" element={<CreateEvent />} />
+            <Route path="/edit-event/:id" element={<EditEvent />} />
+            <Route path="/payment/:id" element={<Payment />} />
+            <Route path="/event/:slug" element={<EventPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/budget/:id" element={<BudgetTracker />} />
+            <Route path="/vendors" element={<VendorDirectory />} />
+            <Route path="/vendor/:id" element={<VendorProfile />} />
+            <Route path="/guide" element={<Guide />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

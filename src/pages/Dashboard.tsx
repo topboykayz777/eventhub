@@ -7,13 +7,11 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2, HelpCircle, Quote, FileDown, EyeOff, Calendar, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import EventCard from '@/components/dashboard/EventCard';
 import GuestList from '@/components/dashboard/GuestList';
-import Analytics from '@/components/dashboard/Analytics';
 import ConciergeTools from '@/components/dashboard/ConciergeTools';
 import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
 import BroadcastBox from '@/components/dashboard/BroadcastBox';
@@ -21,7 +19,9 @@ import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
@@ -29,41 +29,48 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
-  const { data: events = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['host-events'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return [];
-      }
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
-      // Fetch events with their RSVPs and Toasts
-      const { data, error } = await supabase
+    try {
+      // Fetch events
+      const { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('*, rsvps(*), toasts(*)')
+        .select('*')
         .eq('host_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
-    }
-  });
+      if (eventsError) throw eventsError;
 
-  useEffect(() => {
-    if (events.length > 0 && expandedEvents.size === 0) {
-      setExpandedEvents(new Set([events[0].id]));
-    }
-  }, [events]);
+      // Fetch RSVPs and Toasts for each event
+      const enriched = await Promise.all((eventsData || []).map(async (event) => {
+        const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
+        const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
+        return { ...event, rsvps: rsvps || [], toasts: toasts || [] };
+      }));
 
-  const toggleToastLive = async (toastId: string, currentStatus: boolean) => {
-    const { error } = await supabase.from('toasts').update({ is_live: !currentStatus }).eq('id', toastId);
-    if (error) showError(error.message);
-    else {
-      showSuccess(!currentStatus ? "Toast is now live!" : "Toast hidden.");
-      refetch();
+      setEvents(enriched);
+      if (enriched.length > 0 && expandedEvents.size === 0) {
+        setExpandedEvents(new Set([enriched[0].id]));
+      }
+    } catch (err: any) {
+      console.error("Dashboard fetch error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const toggleEventExpansion = (eventId: string) => {
     const newExpanded = new Set(expandedEvents);
@@ -72,29 +79,35 @@ const Dashboard = () => {
     setExpandedEvents(newExpanded);
   };
 
-  const handleQRScan = async (scannedText: string) => {
-    const trimmedText = scannedText.trim();
-    if (trimmedText.startsWith('http')) {
-      showError("Please scan a Guest's unique Elite Pass QR code.");
-      return;
+  const toggleToastLive = async (toastId: string, currentStatus: boolean) => {
+    const { error } = await supabase.from('toasts').update({ is_live: !currentStatus }).eq('id', toastId);
+    if (error) showError(error.message);
+    else {
+      showSuccess(!currentStatus ? "Toast is now live!" : "Toast hidden.");
+      fetchDashboardData();
     }
-    const { data: rsvp } = await supabase.from('rsvps').select('*, events(id, event_name)').eq('id', trimmedText).maybeSingle();
-    if (!rsvp) { showError("Ticket not recognized."); return; }
-    if (rsvp.event_id !== activeEventId) { showError(`Wrong Event: For "${rsvp.events?.event_name}"`); return; }
-    if (rsvp.checked_in) { showSuccess(`${rsvp.guest_name} is already checked in.`); return; }
-    const { error } = await supabase.from('rsvps').update({ checked_in: true }).eq('id', trimmedText);
-    if (error) showError("Check-in failed.");
-    else { showSuccess(`Welcome, ${rsvp.guest_name}!`); refetch(); }
   };
 
-  if (isLoading) return (
+  const handleQRScan = async (scannedText: string) => {
+    const trimmedText = scannedText.trim();
+    const { data: rsvp } = await supabase.from('rsvps').select('*, events(id, event_name)').eq('id', trimmedText).maybeSingle();
+    if (!rsvp) { showError("Ticket not recognized."); return; }
+    if (rsvp.event_id !== activeEventId) { showError("Wrong Event Ticket."); return; }
+    if (rsvp.checked_in) { showSuccess(`${rsvp.guest_name} is already checked in.`); return; }
+    
+    const { error } = await supabase.from('rsvps').update({ checked_in: true }).eq('id', trimmedText);
+    if (error) showError("Check-in failed.");
+    else { showSuccess(`Welcome, ${rsvp.guest_name}!`); fetchDashboardData(); }
+  };
+
+  if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-24">
@@ -103,21 +116,22 @@ const Dashboard = () => {
             <h1 className="text-4xl md:text-7xl font-serif italic text-white">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
           <div className="flex gap-4">
-            <Button variant="outline" onClick={() => refetch()} className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"><RefreshCw className="w-4 h-4" /></Button>
+            <Button variant="outline" onClick={fetchDashboardData} className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"><RefreshCw className="w-4 h-4" /></Button>
             <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10"><Plus className="w-4 h-4 mr-2" /> New Event</Button></Link>
           </div>
         </div>
 
-        {isError && (
+        {error && (
           <div className="p-12 border border-red-500/20 bg-red-500/5 text-center mb-12 rounded-[2rem]">
             <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-6" />
             <h3 className="text-xl font-serif italic text-white mb-2">Vault Connection Error</h3>
-            <Button onClick={() => refetch()} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Retry Connection</Button>
+            <p className="text-red-400 text-sm mb-6">{error}</p>
+            <Button onClick={fetchDashboardData} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Retry Connection</Button>
           </div>
         )}
 
         <div className="space-y-12">
-          {events.length === 0 && !isLoading && !isError && (
+          {events.length === 0 && !loading && !error && (
             <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem]">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-8">
                 <Calendar className="text-gray-600 w-8 h-8" />
@@ -169,7 +183,7 @@ const Dashboard = () => {
                               </TabsList>
                               
                               <TabsContent value="guests">
-                                <GuestList rsvps={event.rsvps || []} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => {}} onToggleCheckIn={() => refetch()} />
+                                <GuestList rsvps={event.rsvps || []} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => {}} onToggleCheckIn={() => fetchDashboardData()} />
                               </TabsContent>
 
                               <TabsContent value="toasts">
