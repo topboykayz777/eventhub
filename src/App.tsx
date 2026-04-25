@@ -25,6 +25,7 @@ import VendorDashboard from "./pages/VendorDashboard";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 import LoadingScreen from "./components/LoadingScreen";
+import SecurityLock from "./components/SecurityLock";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +33,6 @@ const App = () => {
   const [isAppLoading, setIsAppLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial app load
     const timer = setTimeout(() => {
       setIsAppLoading(false);
     }, 2500);
@@ -42,6 +42,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <SecurityLock />
         <AnimatePresence>
           {isAppLoading && <LoadingScreen />}
         </AnimatePresence>

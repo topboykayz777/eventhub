@@ -18,11 +18,12 @@ const Payment = () => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [amount, setAmount] = useState<number>(0);
 
   const upgradePlan = searchParams.get('upgrade');
 
   useEffect(() => {
-    const fetchEventAndUser = async () => {
+    const fetchEventAndPrice = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUserEmail(user.email || '');
 
@@ -30,26 +31,28 @@ const Payment = () => {
       if (error) {
         showError('Event not found');
         navigate('/dashboard');
-      } else {
-        setEvent(data);
+        return;
       }
+      setEvent(data);
+
+      // Fetch secure price from Edge Function
+      const currentPlan = upgradePlan || (data.plan || 'Basic');
+      try {
+        const { data: priceData, error: priceError } = await supabase.functions.invoke('event-security', {
+          body: { action: 'get-price', payload: { plan: currentPlan } }
+        });
+        if (priceError) throw priceError;
+        setAmount(priceData.amount);
+      } catch (err) {
+        showError("Failed to fetch secure pricing.");
+      }
+      
       setLoading(false);
     };
-    fetchEventAndUser();
-  }, [id, navigate]);
+    fetchEventAndPrice();
+  }, [id, navigate, upgradePlan]);
 
   const currentPlan = upgradePlan || (event?.plan || 'Basic');
-  
-  // 2026 Luxury Pricing Logic
-  const getAmount = (plan: string) => {
-    switch(plan) {
-      case 'Pro': return 150000;
-      case 'Standard': return 75000;
-      default: return 25000;
-    }
-  };
-
-  const amount = getAmount(currentPlan);
 
   const config = {
     reference: (new Date()).getTime().toString(),
@@ -58,16 +61,8 @@ const Payment = () => {
     publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
     metadata: {
       custom_fields: [
-        {
-          display_name: "Event ID",
-          variable_name: "event_id",
-          value: id || ""
-        },
-        {
-          display_name: "Plan",
-          variable_name: "plan",
-          value: currentPlan
-        }
+        { display_name: "Event ID", variable_name: "event_id", value: id || "" },
+        { display_name: "Plan", variable_name: "plan", value: currentPlan }
       ]
     }
   };
@@ -77,10 +72,7 @@ const Payment = () => {
   const onSuccess = async (reference: any) => {
     const { error } = await supabase
       .from('events')
-      .update({ 
-        is_paid: true,
-        plan: currentPlan 
-      })
+      .update({ is_paid: true, plan: currentPlan })
       .eq('id', id);
 
     if (error) {
