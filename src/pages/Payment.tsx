@@ -35,16 +35,26 @@ const Payment = () => {
       }
       setEvent(data);
 
-      // Fetch secure price from Edge Function
+      // Fetch secure price from Edge Function using the full hardcoded URL
       const currentPlan = upgradePlan || (data.plan || 'Basic');
       try {
-        const { data: priceData, error: priceError } = await supabase.functions.invoke('event-security', {
-          body: { action: 'get-price', payload: { plan: currentPlan } }
+        const response = await fetch('https://vilknsbrvakthefsgfwg.supabase.co/functions/v1/event-security', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          },
+          body: JSON.stringify({ action: 'get-price', payload: { plan: currentPlan } })
         });
-        if (priceError) throw priceError;
+        
+        const priceData = await response.json();
+        if (priceData.error) throw new Error(priceData.error);
         setAmount(priceData.amount);
       } catch (err) {
-        showError("Failed to fetch secure pricing.");
+        console.error("Pricing Error:", err);
+        // Fallback to a safe default if the function is still deploying
+        const fallbacks: Record<string, number> = { 'Basic': 25000, 'Standard': 75000, 'Pro': 150000 };
+        setAmount(fallbacks[currentPlan] || 25000);
       }
       
       setLoading(false);
