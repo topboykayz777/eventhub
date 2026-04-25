@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
@@ -20,24 +21,47 @@ serve(async (req) => {
     console.log("[paystack-webhook] Received event:", body.event)
 
     if (body.event === 'charge.success') {
-      const { event_id } = body.data.metadata
+      const { event_id, payment_type, guest_name, plan } = body.data.metadata
+      const amount = body.data.amount / 100 // Convert from kobo to Naira
       
-      console.log("[paystack-webhook] Updating event status:", event_id)
-      
-      const { error } = await supabase
-        .from('events')
-        .update({ 
-          is_paid: true,
-          status: 'Active' 
-        })
-        .eq('id', event_id)
+      if (payment_type === 'gift') {
+        console.log("[paystack-webhook] Recording gift for event:", event_id)
+        
+        // Record the gift in the budget_items table as income
+        const { error: ledgerError } = await supabase
+          .from('budget_items')
+          .insert({
+            event_id: event_id,
+            description: `Gift from ${guest_name || 'Anonymous Guest'}`,
+            amount: amount,
+            type: 'income'
+          })
 
-      if (error) throw error
-      
-      return new Response(JSON.stringify({ message: 'Success' }), { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      })
+        if (ledgerError) throw ledgerError
+        
+        return new Response(JSON.stringify({ message: 'Gift recorded' }), { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        })
+      } else {
+        // Handle standard event activation
+        console.log("[paystack-webhook] Activating event:", event_id)
+        
+        const { error } = await supabase
+          .from('events')
+          .update({ 
+            is_paid: true,
+            plan: plan || 'Basic'
+          })
+          .eq('id', event_id)
+
+        if (error) throw error
+        
+        return new Response(JSON.stringify({ message: 'Event activated' }), { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        })
+      }
     }
 
     return new Response(JSON.stringify({ message: 'Event ignored' }), { 

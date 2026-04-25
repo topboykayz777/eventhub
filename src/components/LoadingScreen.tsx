@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
 
 const facts = [
   "Did you know? You can scan guest QR codes directly from your phone's browser.",
@@ -11,16 +10,21 @@ const facts = [
   "Did you know? Your event page stays active for 5 days after the party ends.",
   "Did you know? Guests can leave 'Digital Toasts' that you can choose to show live.",
   "Did you know? You can export your guest list to CSV for your caterers and security.",
-  "Did you know? The 'Vibe List' lets you export all guest song requests for your DJ."
+  "Did you know? The 'Vibe List' lets you export all guest song requests for your DJ.",
+  "Did you know? You can now receive cash gifts directly through your event page!",
+  "Did you know? Every digital gift is automatically recorded in your Financial Ledger."
 ];
 
 const LoadingScreen = () => {
   const [factIndex, setFactIndex] = useState(0);
 
   useEffect(() => {
+    // Pick a random starting fact
+    setFactIndex(Math.floor(Math.random() * facts.length));
+    
     const interval = setInterval(() => {
       setFactIndex((prev) => (prev + 1) % facts.length);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
