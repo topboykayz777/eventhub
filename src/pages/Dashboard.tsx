@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2, HelpCircle, Quote, FileDown, EyeOff } from 'lucide-react';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2, HelpCircle, Quote, FileDown, EyeOff, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -29,21 +29,28 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
-  const { data: events = [], isLoading, refetch } = useQuery({
+  const { data: events = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['host-events'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      console.log("[Dashboard] Fetching events for user:", user.id);
       const { data, error } = await supabase
         .from('events')
         .select('*, rsvps(*), toasts(*)')
         .eq('host_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[Dashboard] Fetch error:", error);
+        throw error;
+      }
+      
+      console.log("[Dashboard] Events found:", data?.length || 0);
       return data || [];
-    }
+    },
+    retry: 1
   });
 
   useEffect(() => {
@@ -111,7 +118,27 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {isError && (
+          <div className="p-12 border border-red-500/20 bg-red-500/5 text-center mb-12">
+            <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mb-4">Failed to synchronize with the vault.</p>
+            <Button onClick={() => refetch()} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10">Retry Connection</Button>
+          </div>
+        )}
+
         <div className="space-y-12">
+          {events.length === 0 && !isLoading && !isError && (
+            <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem]">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-8">
+                <Calendar className="text-gray-600 w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-serif italic text-white mb-4">No Masterpieces Yet</h3>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mb-10">Your event portfolio is currently empty.</p>
+              <Link to="/create-event">
+                <Button className="bg-[#D4AF37] text-black rounded-none px-12 py-8 text-[10px] font-bold tracking-[0.2em] uppercase">Create Your First Event</Button>
+              </Link>
+            </div>
+          )}
+
           {events.map((event: any) => {
             const isExpanded = expandedEvents.has(event.id);
             return (
