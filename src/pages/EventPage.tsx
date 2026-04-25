@@ -133,7 +133,7 @@ const EventPage = () => {
       custom_fields: [
         { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
         { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvp?.guest_name || "Anonymous Guest" },
-        { display_name: "Type", variable_name: "payment_type", value: "gift" }
+        { display_name: "Payment Type", variable_name: "payment_type", value: "gift" }
       ]
     }
   };
@@ -195,7 +195,7 @@ const EventPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Hero Section - Cleaned up to show cover image */}
+      {/* Hero Section */}
       <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.1, opacity: 0 }} 
@@ -216,7 +216,7 @@ const EventPage = () => {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24">
         <div className="grid md:grid-cols-5 gap-12 md:gap-20">
           <div className="md:col-span-3 space-y-16 md:space-y-24">
-            {/* Logistics Card - Now includes Event Title */}
+            {/* Logistics Card */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
               whileInView={{ opacity: 1, y: 0 }} 
@@ -227,7 +227,6 @@ const EventPage = () => {
                 <Calendar className="w-4 h-4" /> The Particulars
               </h2>
               <div className="space-y-12">
-                {/* Event Title */}
                 <div className="flex items-start gap-8 group">
                   <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
                     <Sparkles className="text-[#D4AF37] w-6 h-6" />
@@ -238,7 +237,6 @@ const EventPage = () => {
                   </div>
                 </div>
 
-                {/* Venue */}
                 <div className="flex items-start gap-8 group">
                   <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
                     <MapPin className="text-[#D4AF37] w-6 h-6" />

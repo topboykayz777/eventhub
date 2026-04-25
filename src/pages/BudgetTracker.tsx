@@ -21,6 +21,22 @@ const BudgetTracker = () => {
 
   useEffect(() => {
     fetchBudget();
+
+    // Realtime Subscription
+    const channel = supabase
+      .channel(`budget-${id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${id}` },
+        () => {
+          fetchBudget();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   const fetchBudget = async () => {
@@ -50,7 +66,7 @@ const BudgetTracker = () => {
     else {
       showSuccess('Entry recorded in the ledger.');
       setNewItem({ description: '', amount: '', type: 'expense' });
-      fetchBudget();
+      // fetchBudget is called by the realtime listener
     }
   };
 
@@ -59,7 +75,7 @@ const BudgetTracker = () => {
     if (error) showError(error.message);
     else {
       showSuccess('Entry removed.');
-      fetchBudget();
+      // fetchBudget is called by the realtime listener
     }
   };
 

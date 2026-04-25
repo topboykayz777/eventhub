@@ -7,9 +7,10 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff, Coins } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import confetti from 'canvas-confetti';
 
 import EventCard from '@/components/dashboard/EventCard';
 import GuestList from '@/components/dashboard/GuestList';
@@ -20,12 +21,14 @@ import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
+  const [lastSpray, setLastSpray] = useState<any>(null);
 
   const { data: events = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['host-dashboard-data'],
@@ -53,6 +56,41 @@ const Dashboard = () => {
       return enriched;
     }
   });
+
+  // Realtime Subscription for Digital Spraying
+  useEffect(() => {
+    const channel = supabase
+      .channel('digital-spraying')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'budget_items' },
+        (payload) => {
+          const newItem = payload.new;
+          // Check if this item belongs to one of the host's events and is a gift
+          const hostEvent = events.find(e => e.id === newItem.event_id);
+          if (hostEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
+            // Trigger Animation
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#D4AF37', '#ffffff', '#F9E4B7']
+            });
+            
+            setLastSpray(newItem);
+            setTimeout(() => setLastSpray(null), 5000);
+            
+            // Refresh data
+            refetch();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [events, refetch]);
 
   useEffect(() => {
     if (events.length > 0 && expandedEvents.size === 0) {
@@ -97,6 +135,30 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
+      
+      {/* Digital Spray Notification Overlay */}
+      <AnimatePresence>
+        {lastSpray && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md px-6"
+          >
+            <div className="bg-[#D4AF37] text-black p-8 rounded-[2rem] shadow-2xl flex items-center gap-6 border-4 border-white/20">
+              <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center shrink-0">
+                <Coins className="w-8 h-8 animate-bounce" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1">New Digital Spray!</p>
+                <h4 className="text-2xl font-serif italic mb-1">₦{lastSpray.amount.toLocaleString()}</h4>
+                <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">{lastSpray.description}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-24">
           <div>

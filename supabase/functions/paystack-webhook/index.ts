@@ -21,18 +21,37 @@ serve(async (req) => {
     console.log("[paystack-webhook] Received event:", body.event)
 
     if (body.event === 'charge.success') {
-      const { event_id, payment_type, guest_name, plan } = body.data.metadata
+      // Paystack metadata can be flat or nested in custom_fields
+      const metadata = body.data.metadata || {}
+      
+      // Try to find event_id and payment_type in flat metadata or custom_fields
+      let event_id = metadata.event_id
+      let payment_type = metadata.payment_type
+      let guest_name = metadata.guest_name
+      let plan = metadata.plan
+
+      if (!event_id && metadata.custom_fields) {
+        const eventField = metadata.custom_fields.find(f => f.variable_name === 'event_id')
+        const typeField = metadata.custom_fields.find(f => f.variable_name === 'payment_type')
+        const nameField = metadata.custom_fields.find(f => f.variable_name === 'guest_name')
+        const planField = metadata.custom_fields.find(f => f.variable_name === 'plan')
+        
+        event_id = eventField?.value
+        payment_type = typeField?.value
+        guest_name = nameField?.value
+        plan = planField?.value
+      }
+
       const amount = body.data.amount / 100 // Convert from kobo to Naira
       
       if (payment_type === 'gift') {
         console.log("[paystack-webhook] Recording gift for event:", event_id)
         
-        // Record the gift in the budget_items table as income
         const { error: ledgerError } = await supabase
           .from('budget_items')
           .insert({
             event_id: event_id,
-            description: `Gift from ${guest_name || 'Anonymous Guest'}`,
+            description: `Digital Spray from ${guest_name || 'Anonymous Guest'}`,
             amount: amount,
             type: 'income'
           })
@@ -44,7 +63,6 @@ serve(async (req) => {
           status: 200 
         })
       } else {
-        // Handle standard event activation
         console.log("[paystack-webhook] Activating event:", event_id)
         
         const { error } = await supabase
