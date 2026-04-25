@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -29,6 +29,9 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [lastSpray, setLastSpray] = useState<any>(null);
+  
+  // Use a ref to keep track of events for the realtime listener without triggering re-renders
+  const eventsRef = useRef<any[]>([]);
 
   const { data: events = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['host-dashboard-data'],
@@ -53,20 +56,24 @@ const Dashboard = () => {
         return { ...event, rsvps: rsvps || [], toasts: toasts || [] };
       }));
 
+      eventsRef.current = enriched;
       return enriched;
     }
   });
 
   useEffect(() => {
+    // Stable Realtime listener
     const channel = supabase
-      .channel('digital-spraying')
+      .channel('dashboard-realtime')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
         (payload) => {
           const newItem = payload.new;
-          const hostEvent = events.find(e => e.id === newItem.event_id);
-          if (hostEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
+          // Check if this spray belongs to any of the host's events
+          const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
+          
+          if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
             confetti({
               particleCount: 150,
               spread: 70,
@@ -75,8 +82,10 @@ const Dashboard = () => {
             });
             
             setLastSpray(newItem);
-            setTimeout(() => setLastSpray(null), 5000);
-            refetch();
+            setTimeout(() => setLastSpray(null), 6000);
+            
+            // Invalidate query to refresh data
+            queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
           }
         }
       )
@@ -85,7 +94,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [events, refetch]);
+  }, [queryClient]); // Only depend on queryClient to keep the listener alive
 
   useEffect(() => {
     if (events.length > 0 && expandedEvents.size === 0) {
@@ -143,10 +152,10 @@ const Dashboard = () => {
               <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center shrink-0">
                 <Coins className="w-8 h-8 animate-bounce" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1">New Digital Spray!</p>
                 <h4 className="text-2xl font-serif italic mb-1">₦{lastSpray.amount.toLocaleString()}</h4>
-                <p className="text-[8px] font-bold uppercase tracking-widest opacity-60">{lastSpray.description}</p>
+                <p className="text-[8px] font-bold uppercase tracking-widest opacity-60 truncate">{lastSpray.description}</p>
               </div>
             </div>
           </motion.div>
