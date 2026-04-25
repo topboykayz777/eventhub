@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, CheckSquare, Square } from 'lucide-react';
+import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, CheckSquare, Square, Music, UserPlus, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface GuestListProps {
   rsvps: any[];
@@ -62,6 +63,25 @@ const GuestList = ({
     setIsAssigning(false);
   };
 
+  const getTableMates = (tableNum: string) => {
+    return rsvps.filter(r => r.table_number === tableNum);
+  };
+
+  const exportSongRequests = () => {
+    const requests = rsvps.filter(r => r.song_request).map(r => [r.guest_name, r.song_request]);
+    if (requests.length === 0) {
+      showError("No song requests found.");
+      return;
+    }
+    const csvContent = ["Guest,Song Request", ...requests.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "VibeList_SongRequests.csv");
+    link.click();
+    showSuccess("Vibe List exported for the DJ.");
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row gap-6">
@@ -74,19 +94,14 @@ const GuestList = ({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-        <div className="flex gap-4">
-          <Button 
-            variant="outline" 
-            onClick={onOpenScanner}
-            className="h-16 rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] px-8"
-          >
+        <div className="flex flex-wrap gap-4">
+          <Button variant="outline" onClick={onOpenScanner} className="h-16 rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] px-8">
             <ScanLine className="w-4 h-4 mr-2" /> Scan QR
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={onExportCSV}
-            className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8"
-          >
+          <Button variant="outline" onClick={exportSongRequests} className="h-16 rounded-none border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-[0.2em] px-8">
+            <Music className="w-4 h-4 mr-2" /> Vibe List
+          </Button>
+          <Button variant="outline" onClick={onExportCSV} className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8">
             <FileDown className="w-4 h-4 mr-2" /> Export CSV
           </Button>
         </div>
@@ -94,32 +109,14 @@ const GuestList = ({
 
       <AnimatePresence>
         {selectedIds.length > 0 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="bg-[#D4AF37] p-6 flex flex-col md:flex-row justify-between items-center gap-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="bg-[#D4AF37] p-6 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-4">
               <Users className="text-black w-5 h-5" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-black">
-                {selectedIds.length} Guests Selected
-              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-black">{selectedIds.length} Guests Selected</span>
             </div>
             <div className="flex gap-4 w-full md:w-auto">
-              <Input 
-                placeholder="Table #" 
-                className="bg-black/10 border-black/20 h-12 w-24 rounded-none text-black placeholder:text-black/40 text-[10px] font-bold uppercase"
-                value={tableNumber}
-                onChange={(e) => setTableNumber(e.target.value)}
-              />
-              <Button 
-                onClick={handleBulkSeating}
-                disabled={isAssigning}
-                className="bg-black text-white hover:bg-black/80 rounded-none h-12 px-8 text-[10px] font-bold uppercase tracking-widest"
-              >
-                Assign Seating
-              </Button>
+              <Input placeholder="Table #" className="bg-black/10 border-black/20 h-12 w-24 rounded-none text-black placeholder:text-black/40 text-[10px] font-bold uppercase" value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} />
+              <Button onClick={handleBulkSeating} disabled={isAssigning} className="bg-black text-white hover:bg-black/80 rounded-none h-12 px-8 text-[10px] font-bold uppercase tracking-widest">Assign Seating</Button>
             </div>
           </motion.div>
         )}
@@ -133,42 +130,54 @@ const GuestList = ({
           </button>
         </div>
 
-        {filteredRSVPs.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-white/5">
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">No guests found in the registry.</p>
-          </div>
-        ) : (
-          filteredRSVPs.map((rsvp: any) => (
-            <div key={rsvp.id} className={`flex justify-between items-center p-8 border transition-all group ${
-              selectedIds.includes(rsvp.id) ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30' : 'bg-white/5 border-white/5 hover:border-[#D4AF37]/30'
-            }`}>
-              <div className="flex items-center gap-6">
-                <button onClick={() => toggleSelect(rsvp.id)} className="text-[#D4AF37]">
-                  {selectedIds.includes(rsvp.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 opacity-20 group-hover:opacity-100" />}
-                </button>
-                <div>
-                  <p className="text-lg font-serif italic text-white mb-1">{rsvp.guest_name}</p>
-                  <div className="flex items-center gap-4">
-                    <p className="text-[8px] text-gray-500 font-bold uppercase tracking-[0.2em]">{rsvp.guest_phone}</p>
-                    {rsvp.table_number && (
-                      <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5">
-                        Table {rsvp.table_number}
-                      </span>
-                    )}
-                  </div>
+        {filteredRSVPs.map((rsvp: any) => (
+          <div key={rsvp.id} className={`flex justify-between items-center p-8 border transition-all group ${selectedIds.includes(rsvp.id) ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30' : 'bg-white/5 border-white/5 hover:border-[#D4AF37]/30'}`}>
+            <div className="flex items-center gap-6">
+              <button onClick={() => toggleSelect(rsvp.id)} className="text-[#D4AF37]">
+                {selectedIds.includes(rsvp.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 opacity-20 group-hover:opacity-100" />}
+              </button>
+              <div>
+                <p className="text-lg font-serif italic text-white mb-1">{rsvp.guest_name}</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <p className="text-[8px] text-gray-500 font-bold uppercase tracking-[0.2em]">{rsvp.guest_phone}</p>
+                  {rsvp.has_plus_one && <span className="text-[7px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1"><UserPlus size={10} /> +1</span>}
+                  {rsvp.song_request && <span className="text-[7px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1"><Music size={10} /> {rsvp.song_request}</span>}
+                  
+                  {rsvp.table_number && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 flex items-center gap-2 hover:bg-[#D4AF37]/20">
+                          Table {rsvp.table_number} <Info size={10} />
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-[#0f0f0f] border-white/10 text-white rounded-none">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-serif italic">Table {rsvp.table_number} Concierge</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-6 space-y-4">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Seated at this table:</p>
+                          <div className="grid gap-3">
+                            {getTableMates(rsvp.table_number).map(mate => (
+                              <div key={mate.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/5">
+                                <span className="text-sm font-light">{mate.guest_name}</span>
+                                {mate.checked_in && <CheckCircle2 size={14} className="text-green-500" />}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </div>
               </div>
-              
-              {/* Read-only status badge - Manual toggle disabled as requested */}
-              <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-600'}`}>
-                {rsvp.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                <span className="text-[8px] font-black uppercase tracking-[0.3em]">
-                  {rsvp.checked_in ? 'Verified' : 'Pending'}
-                </span>
-              </div>
             </div>
-          ))
-        )}
+            
+            <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-600'}`}>
+              {rsvp.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+              <span className="text-[8px] font-black uppercase tracking-[0.3em]">{rsvp.checked_in ? 'Verified' : 'Pending'}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

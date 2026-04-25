@@ -7,8 +7,10 @@ import Countdown from '@/components/Countdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon, Bookmark, Navigation } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, AlertTriangle, Megaphone, Table as TableIcon, Bookmark, Navigation, Music, UserPlus, Quote } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -18,12 +20,14 @@ const EventPage = () => {
   const { slug } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [rsvpData, setRsvpData] = useState({ name: '', phone: '' });
+  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false, plusOneName: '' });
+  const [toastContent, setToastContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingToast, setIsSubmittingToast] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
+  const [liveToasts, setLiveToasts] = useState<any[]>([]);
   const [isHost, setIsHost] = useState(false);
   
-  // Lightbox State
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
@@ -54,18 +58,25 @@ const EventPage = () => {
         
         const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
         if (savedRsvpId) {
-          const { data: rsvp, error: rsvpError } = await supabase
+          const { data: rsvp } = await supabase
             .from('rsvps')
             .select('*')
             .eq('id', savedRsvpId)
             .maybeSingle();
           
-          if (rsvp && !rsvpError) {
-            setSubmittedRsvp(rsvp);
-          }
+          if (rsvp) setSubmittedRsvp(rsvp);
         }
 
-        // Increment view count
+        // Fetch live toasts
+        const { data: toasts } = await supabase
+          .from('toasts')
+          .select('*')
+          .eq('event_id', data.id)
+          .eq('is_live', true)
+          .order('created_at', { ascending: false });
+        
+        setLiveToasts(toasts || []);
+
         if (data.is_paid) {
           await supabase.rpc('increment_view_count', { event_id: data.id });
         }
@@ -76,56 +87,6 @@ const EventPage = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (!slug) return;
-    
-    const eventChannel = supabase
-      .channel(`event-realtime-${slug}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'events',
-          filter: `slug=eq.${slug}`
-        },
-        (payload) => {
-          setEvent(payload.new);
-          if (payload.new.is_paid && !event?.is_paid) {
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(eventChannel); };
-  }, [slug, event?.is_paid]);
-
-  useEffect(() => {
-    if (submittedRsvp?.id) {
-      const rsvpChannel = supabase
-        .channel(`rsvp-realtime-${submittedRsvp.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'rsvps',
-            filter: `id=eq.${submittedRsvp.id}`
-          },
-          (payload) => {
-            setSubmittedRsvp(payload.new);
-            if (payload.old.table_number !== payload.new.table_number) {
-              showSuccess("Your seating has been updated!");
-            }
-          }
-        )
-        .subscribe();
-
-      return () => { supabase.removeChannel(rsvpChannel); };
-    }
-  }, [submittedRsvp?.id]);
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +103,10 @@ const EventPage = () => {
         .insert({
           event_id: event.id,
           guest_name: rsvpData.name,
-          guest_phone: rsvpData.phone
+          guest_phone: rsvpData.phone,
+          song_request: rsvpData.songRequest,
+          has_plus_one: rsvpData.hasPlusOne,
+          plus_one_name: rsvpData.plusOneName
         })
         .select('*')
         .single();
@@ -150,7 +114,6 @@ const EventPage = () => {
       if (error) throw error;
 
       localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
-      
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
       setSubmittedRsvp(data);
@@ -161,40 +124,37 @@ const EventPage = () => {
     }
   };
 
-  const isVideo = (url: string) => {
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
-    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  const handleToastSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!toastContent.trim() || !submittedRsvp) return;
+
+    setIsSubmittingToast(true);
+    try {
+      const { error } = await supabase.from('toasts').insert({
+        event_id: event.id,
+        guest_name: submittedRsvp.guest_name,
+        content: toastContent
+      });
+
+      if (error) throw error;
+      showSuccess("Your toast has been sent to the host's vault!");
+      setToastContent('');
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setIsSubmittingToast(false);
+    }
   };
 
-  const openLightbox = (index: number) => {
-    setCurrentMediaIndex(index);
-    setLightboxOpen(true);
+  const isEventActive = () => {
+    if (!event) return false;
+    const eventDate = new Date(event.event_date);
+    const now = new Date();
+    const fiveDaysAfter = new Date(eventDate.getTime() + (5 * 24 * 60 * 60 * 1000));
+    return now <= fiveDaysAfter;
   };
 
-  const getGoogleMapsUrl = (venue: string, mapUrl?: string) => {
-    if (mapUrl && mapUrl.trim().startsWith('http')) return mapUrl;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
-  };
-
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
-      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37] mb-4" />
-      <p className="text-[10px] font-bold tracking-[0.5em] uppercase animate-pulse">Accessing Invitation...</p>
-    </div>
-  );
-
-  if (!event) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-white p-6 text-center">
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md">
-        <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-8 opacity-50" />
-        <h1 className="text-4xl font-serif italic mb-4">Event Not Found</h1>
-        <p className="text-gray-500 mb-8 leading-relaxed">The link you followed may be broken.</p>
-        <Link to="/"><Button variant="ghost" className="text-gray-500 hover:text-white">Return Home</Button></Link>
-      </motion.div>
-    </div>
-  );
-
-  const theme = event.theme || 'modern';
+  const theme = event?.theme || 'modern';
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-black" },
     traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 shadow-xl", rsvpCard: "bg-[#D4AF37] text-black" },
@@ -212,44 +172,27 @@ const EventPage = () => {
 
   const config = themeConfigs[theme] || themeConfigs.modern;
 
+  if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
+      {/* Broadcast Message */}
       <AnimatePresence>
         {event.broadcast_message && (
-          <motion.div 
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            exit={{ y: -100 }}
-            className="fixed top-0 left-0 right-0 z-[100] bg-[#D4AF37] text-black py-3 md:py-4 px-6 md:px-8 flex items-center justify-center gap-3 md:gap-4 shadow-2xl"
-          >
-            <Megaphone className="w-4 h-4 md:w-5 md:h-5 animate-bounce" />
-            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">
-              {event.broadcast_message}
-            </span>
+          <motion.div initial={{ y: -100 }} animate={{ y: 0 }} exit={{ y: -100 }} className="fixed top-0 left-0 right-0 z-[100] bg-[#D4AF37] text-black py-4 px-8 flex items-center justify-center gap-4 shadow-2xl">
+            <Megaphone className="w-5 h-5 animate-bounce" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-center">{event.broadcast_message}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Hero Section */}
       <div className="relative h-[50vh] md:h-[75vh] w-full overflow-hidden">
-        <motion.img 
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.5 }}
-          src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-          className="w-full h-full object-cover brightness-90"
-          alt={event.event_name}
-        />
+        <motion.img initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.5 }} src={event.photo_url} className="w-full h-full object-cover brightness-90" alt={event.event_name} />
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
-        
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
-              <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[#D4AF37] text-[7px] md:text-[8px] font-bold tracking-[0.4em] md:tracking-[0.5em] uppercase">HD Masterpiece Live</span>
-            </div>
-            <h1 className="text-3xl sm:text-5xl md:text-8xl font-serif italic mb-6 md:mb-8 tracking-tight leading-[1.1] md:leading-[0.9]">
-              {event.event_name}
-            </h1>
+            <h1 className="text-3xl sm:text-5xl md:text-8xl font-serif italic mb-6 tracking-tight leading-[1.1]">{event.event_name}</h1>
             <div className="max-w-3xl mx-auto scale-90 md:scale-100">
               <Countdown targetDate={event.event_date} />
             </div>
@@ -260,68 +203,50 @@ const EventPage = () => {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20">
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           <div className="md:col-span-3 space-y-12 md:space-y-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border`}>
-              <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] mb-8 md:mb-12 flex items-center gap-4">
-                <Calendar className="w-3 h-3 md:w-4 md:h-4" /> The Particulars
+            {/* Particulars */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[2rem] border`}>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
+                <Calendar className="w-4 h-4" /> The Particulars
               </h2>
-              <div className="space-y-8 md:space-y-12">
-                <div className="flex items-start gap-4 md:gap-8 group">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
-                    <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
+              <div className="space-y-12">
+                <div className="flex items-start gap-8 group">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
+                    <MapPin className="text-[#D4AF37] w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">The Venue</p>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Venue</p>
                     <p className="text-base md:text-2xl font-light leading-relaxed mb-4">{event.venue}</p>
-                    <a 
-                      href={getGoogleMapsUrl(event.venue, event.venue_map_url)} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:opacity-70 transition-opacity"
-                    >
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue)}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:opacity-70">
                       <Navigation size={12} className="fill-current" /> Get Directions
                     </a>
                   </div>
                 </div>
-                {event.message && (
-                  <div className="flex items-start gap-4 md:gap-8 group">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
-                      <MessageSquare className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
-                    </div>
-                    <div>
-                      <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">Host's Message</p>
-                      <p className="text-base md:text-2xl font-serif italic leading-relaxed opacity-80">"{event.message}"</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </motion.div>
 
-            {event.gallery_urls && event.gallery_urls.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {/* Live Toasts Section */}
+            {liveToasts.length > 0 && (
+              <div className="space-y-8">
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4">
+                  <Quote className="w-4 h-4" /> Digital Toasts
+                </h2>
+                <div className="grid gap-6">
+                  {liveToasts.map((toast) => (
+                    <motion.div key={toast.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className={`${config.card} p-8 rounded-2xl border-l-4 border-l-[#D4AF37]`}>
+                      <p className="text-lg font-serif italic mb-4">"{toast.content}"</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">— {toast.guest_name}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Gallery */}
+            {event.gallery_urls?.length > 0 && (
+              <div className="grid grid-cols-2 gap-4">
                 {event.gallery_urls.map((url: string, i: number) => (
-                  <motion.div 
-                    key={i}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => openLightbox(i)}
-                    className="cursor-pointer relative group overflow-hidden rounded-xl md:rounded-2xl border border-white/10"
-                  >
-                    {isVideo(url) ? (
-                      <video 
-                        src={url} 
-                        autoPlay 
-                        muted 
-                        loop 
-                        playsInline 
-                        className="w-full aspect-square object-cover"
-                      />
-                    ) : (
-                      <img 
-                        src={url} 
-                        className="w-full aspect-square object-cover" 
-                        alt={`Gallery ${i}`} 
-                      />
-                    )}
+                  <motion.div key={i} whileHover={{ scale: 1.02 }} onClick={() => { setCurrentMediaIndex(i); setLightboxOpen(true); }} className="cursor-pointer relative group overflow-hidden rounded-2xl border border-white/10">
+                    <img src={url} className="w-full aspect-square object-cover" alt="" />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Sparkles className="text-white w-6 h-6" />
                     </div>
@@ -334,75 +259,77 @@ const EventPage = () => {
           <div className="md:col-span-2">
             <AnimatePresence mode="wait">
               {submittedRsvp ? (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 md:top-32 space-y-6 md:space-y-8">
-                  <div className="text-center mb-8 md:mb-12">
-                    <div className="bg-green-500/10 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-                      <CheckCircle2 className="text-green-500 w-6 h-6 md:w-8 md:h-8" />
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-8">
+                  <div className="text-center mb-12">
+                    <div className="bg-green-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle2 className="text-green-500 w-8 h-8" />
                     </div>
-                    <h2 className="text-xl md:text-2xl font-serif italic mb-2">You're on the list</h2>
-                    <p className="text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
+                    <h2 className="text-2xl font-serif italic mb-2">You're on the list</h2>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Save your elite pass below</p>
                   </div>
 
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-[#D4AF37] p-6 rounded-2xl text-black text-center shadow-xl"
-                  >
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Bookmark size={14} className="fill-current" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Live Companion</span>
+                  {/* Digital Toast Form */}
+                  <GlassCard className="p-8 border-white/10">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-6">Leave a Toast</h3>
+                    <form onSubmit={handleToastSubmit} className="space-y-4">
+                      <Textarea 
+                        placeholder="Write a message to the host..." 
+                        className="bg-white/5 border-white/10 rounded-none resize-none h-24 text-sm"
+                        value={toastContent}
+                        onChange={(e) => setToastContent(e.target.value)}
+                      />
+                      <Button type="submit" disabled={isSubmittingToast} className="w-full bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest py-6">
+                        {isSubmittingToast ? 'Sending...' : 'Send Toast'}
+                      </Button>
+                    </form>
+                  </GlassCard>
+
+                  {submittedRsvp.table_number && (
+                    <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-8 rounded-[2rem] text-center">
+                      <TableIcon className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+                      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Your Assigned Seating</p>
+                      <p className="text-4xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</p>
                     </div>
-                    <p className="text-[11px] font-bold leading-relaxed uppercase tracking-tight">
-                      Please **Keep this page open** or **Bookmark it** on your browser. 
-                      You will receive live updates, announcements, and your seating assignment here during the event.
-                    </p>
-                  </motion.div>
+                  )}
 
-                  <AnimatePresence mode="wait">
-                    {submittedRsvp.table_number && (
-                      <motion.div 
-                        key={submittedRsvp.table_number}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-center"
-                      >
-                        <TableIcon className="w-6 h-6 md:w-8 md:h-8 text-[#D4AF37] mx-auto mb-3 md:mb-4" />
-                        <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">Your Assigned Seating</p>
-                        <motion.p 
-                          key={submittedRsvp.table_number}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-3xl md:text-4xl font-serif italic text-[#D4AF37]"
-                        >
-                          Table {submittedRsvp.table_number}
-                        </motion.p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <DigitalInvite 
-                    event={event} 
-                    rsvpId={submittedRsvp.id} 
-                    guestName={submittedRsvp.guest_name}
-                  />
+                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} guestName={submittedRsvp.guest_name} />
+                  {submittedRsvp.has_plus_one && (
+                    <DigitalInvite event={event} rsvpId={`${submittedRsvp.id}-plus1`} guestName={`${submittedRsvp.guest_name}'s Guest`} />
+                  )}
                 </motion.div>
               ) : (
-                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-2xl sticky top-24 md:top-32 border border-black/5`}>
-                  <div className="flex items-center gap-3 mb-6 md:mb-8">
-                    <Sparkles className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
-                    <h2 className="text-xl md:text-3xl font-serif italic tracking-tight">The Registry</h2>
+                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[3rem] shadow-2xl sticky top-32 border border-black/5`}>
+                  <div className="flex items-center gap-3 mb-8">
+                    <Sparkles className="text-[#D4AF37] w-5 h-5" />
+                    <h2 className="text-3xl font-serif italic tracking-tight">The Registry</h2>
                   </div>
-                  <form onSubmit={handleRSVP} className="space-y-6 md:space-y-8">
-                    <div className="space-y-2 md:space-y-3">
-                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
-                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-base md:text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
+                  <form onSubmit={handleRSVP} className="space-y-8">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Full Name</Label>
+                      <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="e.g. Tunde Afolayan" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
                     </div>
-                    <div className="space-y-2 md:space-y-3">
-                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
-                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-base md:text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">WhatsApp Number</Label>
+                      <Input required className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="08012345678" value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
                     </div>
-                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-16 md:h-20 rounded-none text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.4em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95`}>
-                      {isSubmitting ? 'Processing...' : 'Confirm Attendance'}
+                    
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50 flex items-center gap-2">
+                        <Music className="w-3 h-3" /> Song Request
+                      </Label>
+                      <Input className="bg-black/5 border-none h-16 rounded-none text-lg px-6 font-light" placeholder="Artist - Song Title" value={rsvpData.songRequest} onChange={(e) => setRsvpData({ ...rsvpData, songRequest: e.target.value })} />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-black/5">
+                      <div className="flex items-center gap-3">
+                        <UserPlus className="w-4 h-4 opacity-50" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Plus One?</span>
+                      </div>
+                      <Switch checked={rsvpData.hasPlusOne} onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} />
+                    </div>
+
+                    <Button type="submit" disabled={isSubmitting || !isEventActive()} className={`w-full ${config.button} h-20 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl`}>
+                      {isSubmitting ? 'Processing...' : isEventActive() ? 'Confirm Attendance' : 'Registry Closed'}
                     </Button>
                   </form>
                 </motion.div>
@@ -412,15 +339,8 @@ const EventPage = () => {
         </div>
       </div>
 
-      {/* Lightbox Component */}
       {event.gallery_urls && (
-        <MediaLightbox 
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          mediaUrls={event.gallery_urls}
-          currentIndex={currentMediaIndex}
-          onNavigate={setCurrentMediaIndex}
-        />
+        <MediaLightbox isOpen={lightboxOpen} onClose={() => setLightboxOpen(false)} mediaUrls={event.gallery_urls} currentIndex={currentMediaIndex} onNavigate={setCurrentMediaIndex} />
       )}
     </div>
   );
