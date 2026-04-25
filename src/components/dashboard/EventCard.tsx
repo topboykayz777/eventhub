@@ -3,7 +3,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Edit } from 'lucide-react';
+import { Calendar, MapPin, Edit, Copy, Check } from 'lucide-react';
+import { showSuccess } from '@/utils/toast';
 
 interface EventCardProps {
   event: any;
@@ -12,6 +13,15 @@ interface EventCardProps {
 
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    const url = `${window.location.origin}/event/${event.slug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    showSuccess("RSVP Link copied to clipboard.");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="lg:col-span-4">
@@ -47,13 +57,21 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
       </div>
       
-      <div className="mt-6">
+      <div className="mt-6 grid grid-cols-2 gap-4">
         <Button 
           variant="outline" 
           onClick={() => navigate(`/edit-event/${event.id}`)} 
-          className="w-full rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6"
+          className="rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6"
         >
-          <Edit className="w-3 h-3 mr-2" /> Edit Event Details
+          <Edit className="w-3 h-3 mr-2" /> Edit Details
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={handleCopy}
+          className="rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6"
+        >
+          {copied ? <Check className="w-3 h-3 mr-2" /> : <Copy className="w-3 h-3 mr-2" />}
+          {copied ? 'Copied' : 'Copy Link'}
         </Button>
       </div>
     </div>

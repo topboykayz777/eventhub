@@ -1,10 +1,12 @@
 "use client";
 
+import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AnimatePresence } from 'framer-motion';
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -20,40 +22,57 @@ import VendorProfile from "./pages/VendorProfile";
 import VendorDashboard from "./pages/VendorDashboard";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
+import LoadingScreen from "./components/LoadingScreen";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter 
-        future={{ 
-          v7_startTransition: true, 
-          v7_relativeSplatPath: true 
-        }}
-      >
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/create-event" element={<CreateEvent />} />
-          <Route path="/edit-event/:id" element={<EditEvent />} />
-          <Route path="/payment/:id" element={<Payment />} />
-          <Route path="/event/:slug" element={<EventPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/vendor-dashboard" element={<VendorDashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/budget/:id" element={<BudgetTracker />} />
-          <Route path="/vendors" element={<VendorDirectory />} />
-          <Route path="/vendor/:id" element={<VendorProfile />} />
-          <Route path="/guide" element={<Guide />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial app load
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AnimatePresence>
+          {isAppLoading && <LoadingScreen />}
+        </AnimatePresence>
+        
+        <Toaster />
+        <Sonner />
+        <BrowserRouter 
+          future={{ 
+            v7_startTransition: true, 
+            v7_relativeSplatPath: true 
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/create-event" element={<CreateEvent />} />
+            <Route path="/edit-event/:id" element={<EditEvent />} />
+            <Route path="/payment/:id" element={<Payment />} />
+            <Route path="/event/:slug" element={<EventPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/budget/:id" element={<BudgetTracker />} />
+            <Route path="/vendors" element={<VendorDirectory />} />
+            <Route path="/vendor/:id" element={<VendorProfile />} />
+            <Route path="/guide" element={<Guide />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

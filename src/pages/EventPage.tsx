@@ -15,6 +15,7 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
 import MediaLightbox from '@/components/MediaLightbox';
+import GlassCard from '@/components/ui/GlassCard';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -176,12 +177,12 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
-      {/* Broadcast Message */}
+      {/* Host's Message Banner */}
       <AnimatePresence>
-        {event.broadcast_message && (
+        {event.message && (
           <motion.div initial={{ y: -100 }} animate={{ y: 0 }} exit={{ y: -100 }} className="fixed top-0 left-0 right-0 z-[100] bg-[#D4AF37] text-black py-4 px-8 flex items-center justify-center gap-4 shadow-2xl">
-            <Megaphone className="w-5 h-5 animate-bounce" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-center">{event.broadcast_message}</span>
+            <MessageSquare className="w-5 h-5 animate-bounce" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-center">{event.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
