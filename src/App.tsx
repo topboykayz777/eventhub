@@ -26,7 +26,15 @@ import VendorDashboard from "./pages/VendorDashboard";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Optimized QueryClient for speed
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AuthHandler = () => {
   const navigate = useNavigate();

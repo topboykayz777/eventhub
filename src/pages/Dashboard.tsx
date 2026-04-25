@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
 import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 
 import EventCard from '@/components/dashboard/EventCard';
 import GuestList from '@/components/dashboard/GuestList';
@@ -19,9 +20,6 @@ import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
@@ -29,18 +27,15 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    setError(null);
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+  const { data: events = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['host-dashboard-data'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
+        return [];
+      }
 
-    try {
-      // Fetch events
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
@@ -49,28 +44,21 @@ const Dashboard = () => {
 
       if (eventsError) throw eventsError;
 
-      // Fetch RSVPs and Toasts for each event
       const enriched = await Promise.all((eventsData || []).map(async (event) => {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
         const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
         return { ...event, rsvps: rsvps || [], toasts: toasts || [] };
       }));
 
-      setEvents(enriched);
-      if (enriched.length > 0 && expandedEvents.size === 0) {
-        setExpandedEvents(new Set([enriched[0].id]));
-      }
-    } catch (err: any) {
-      console.error("Dashboard fetch error:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      return enriched;
     }
-  };
+  });
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (events.length > 0 && expandedEvents.size === 0) {
+      setExpandedEvents(new Set([events[0].id]));
+    }
+  }, [events]);
 
   const toggleEventExpansion = (eventId: string) => {
     const newExpanded = new Set(expandedEvents);
@@ -84,7 +72,7 @@ const Dashboard = () => {
     if (error) showError(error.message);
     else {
       showSuccess(!currentStatus ? "Toast is now live!" : "Toast hidden.");
-      fetchDashboardData();
+      refetch();
     }
   };
 
@@ -97,10 +85,10 @@ const Dashboard = () => {
     
     const { error } = await supabase.from('rsvps').update({ checked_in: true }).eq('id', trimmedText);
     if (error) showError("Check-in failed.");
-    else { showSuccess(`Welcome, ${rsvp.guest_name}!`); fetchDashboardData(); }
+    else { showSuccess(`Welcome, ${rsvp.guest_name}!`); refetch(); }
   };
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
     </div>
@@ -116,22 +104,21 @@ const Dashboard = () => {
             <h1 className="text-4xl md:text-7xl font-serif italic text-white">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
           <div className="flex gap-4">
-            <Button variant="outline" onClick={fetchDashboardData} className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"><RefreshCw className="w-4 h-4" /></Button>
+            <Button variant="outline" onClick={() => refetch()} className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"><RefreshCw className="w-4 h-4" /></Button>
             <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10"><Plus className="w-4 h-4 mr-2" /> New Event</Button></Link>
           </div>
         </div>
 
-        {error && (
+        {isError && (
           <div className="p-12 border border-red-500/20 bg-red-500/5 text-center mb-12 rounded-[2rem]">
             <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-6" />
             <h3 className="text-xl font-serif italic text-white mb-2">Vault Connection Error</h3>
-            <p className="text-red-400 text-sm mb-6">{error}</p>
-            <Button onClick={fetchDashboardData} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Retry Connection</Button>
+            <Button onClick={() => refetch()} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Retry Connection</Button>
           </div>
         )}
 
         <div className="space-y-12">
-          {events.length === 0 && !loading && !error && (
+          {events.length === 0 && !isLoading && !isError && (
             <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem]">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-8">
                 <Calendar className="text-gray-600 w-8 h-8" />
@@ -183,7 +170,7 @@ const Dashboard = () => {
                               </TabsList>
                               
                               <TabsContent value="guests">
-                                <GuestList rsvps={event.rsvps || []} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => {}} onToggleCheckIn={() => fetchDashboardData()} />
+                                <GuestList rsvps={event.rsvps || []} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => {}} onToggleCheckIn={() => refetch()} />
                               </TabsContent>
 
                               <TabsContent value="toasts">
