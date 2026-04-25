@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu, X, HelpCircle } from 'lucide-react';
+import { LogOut, User, Menu, X, LayoutDashboard, UserCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -60,12 +60,17 @@ const Navbar = () => {
             ))}
             
             {session ? (
-              <button 
-                onClick={handleLogout}
-                className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
-              >
-                Logout
-              </button>
+              <div className="flex items-center gap-8">
+                <Link to="/profile" className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
+                  <UserCircle size={16} /> Profile
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <div className="flex items-center gap-8">
                 <Link to="/login" className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[#D4AF37] transition-colors">Sign In</Link>

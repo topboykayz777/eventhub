@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Phone, Mail, Shield, Camera, ArrowLeft, Landmark, CreditCard, Wallet } from 'lucide-react';
+import { User, Phone, Mail, Shield, Camera, ArrowLeft, Landmark, CreditCard, Wallet, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +16,6 @@ const Profile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState({
     full_name: '',
     email: '',
@@ -46,20 +45,21 @@ const Profile = () => {
 
     if (error) {
       showError(error.message);
-      setLoading(false);
-      return;
     }
 
     if (data) {
       setProfile({
         full_name: data.full_name || '',
-        email: data.email || '',
+        email: user.email || '',
         phone: data.phone || '',
         profile_image_url: data.profile_image_url || '',
         bank_name: data.bank_name || '',
         account_number: data.account_number || '',
         account_name: data.account_name || ''
       });
+    } else {
+      // If no profile exists, initialize with user email
+      setProfile(prev => ({ ...prev, email: user.email || '' }));
     }
     setLoading(false);
   };
@@ -73,14 +73,15 @@ const Profile = () => {
 
     const { error } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: user.id,
         full_name: profile.full_name,
         phone: profile.phone,
         bank_name: profile.bank_name,
         account_number: profile.account_number,
-        account_name: profile.account_name
-      })
-      .eq('id', user.id);
+        account_name: profile.account_name,
+        updated_at: new Date().toISOString()
+      });
 
     if (error) showError(error.message);
     else showSuccess('Your profile and settlement details have been updated.');
@@ -89,7 +90,7 @@ const Profile = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
-      <div className="w-12 h-12 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
     </div>
   );
 
@@ -123,8 +124,8 @@ const Profile = () => {
                     )}
                   </div>
                 </div>
-                <h3 className="text-xl font-serif italic mb-2">{profile.full_name || 'Elite Host'}</h3>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Verified Member</p>
+                <h3 className="text-xl font-serif italic mb-2">{profile.full_name || 'Elite Member'}</h3>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Verified Account</p>
               </GlassCard>
             </div>
 
@@ -166,7 +167,7 @@ const Profile = () => {
                   <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Settlement Details (Digital Spraying)</h2>
                 </div>
                 <p className="text-[11px] text-gray-500 mb-10 leading-relaxed">
-                  Provide your bank details to receive cash gifts from your guests. These details are kept private and used only for automated settlements via Paystack.
+                  Provide your bank details to receive cash gifts from your guests. These details are used for automated settlements via Paystack.
                 </p>
                 <div className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
@@ -206,7 +207,7 @@ const Profile = () => {
                 disabled={saving}
                 className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
               >
-                {saving ? 'Updating...' : 'Save All Changes'}
+                {saving ? <Loader2 className="animate-spin" /> : 'Save All Changes'}
               </Button>
             </div>
           </div>
