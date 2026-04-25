@@ -1,2 +1,2 @@
--- This ensures the database 'broadcasts' every new spray to the dashboard
-alter publication supabase_realtime add table budget_items;
+-- Run this in your Supabase SQL Editor to make sure the Dashboard 'hears' every new spray
+ALTER PUBLICATION supabase_realtime ADD TABLE budget_items;
