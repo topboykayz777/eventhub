@@ -5,10 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from 'framer-motion';
-import { supabase } from "@/integrations/supabase/client";
-
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -31,57 +29,32 @@ import SecurityLock from "./components/SecurityLock";
 
 const queryClient = new QueryClient();
 
-// Component to handle loading state on route changes
-const NavigationLoader = () => {
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
+const App = () => {
+  const [isAppLoading, setIsAppLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 1500);
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 2500);
     return () => clearTimeout(timer);
-  }, [location.pathname]);
-
-  return (
-    <AnimatePresence>
-      {loading && <LoadingScreen />}
-    </AnimatePresence>
-  );
-};
-
-// Component to handle Supabase Auth Events (like Password Recovery)
-const AuthHandler = () => {
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        // Force navigation to reset password page when recovery link is clicked
-        window.location.href = '/reset-password';
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
-  return null;
-};
-
-const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SecurityLock />
+        <AnimatePresence>
+          {isAppLoading && <LoadingScreen />}
+        </AnimatePresence>
+        
+        <Toaster />
+        <Sonner />
         <BrowserRouter 
           future={{ 
             v7_startTransition: true, 
             v7_relativeSplatPath: true 
           }}
         >
-          <AuthHandler />
-          <NavigationLoader />
-          
-          <Toaster />
-          <Sonner />
-          
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
