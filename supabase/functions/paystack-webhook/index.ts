@@ -22,33 +22,44 @@ serve(async (req) => {
 
     if (body.event === 'charge.success') {
       const data = body.data
-      const metadata = data.metadata || {}
       
-      // Robust metadata extraction
-      let event_id = metadata.event_id
-      let payment_type = metadata.payment_type
-      let guest_name = metadata.guest_name
-      let plan = metadata.plan
+      // THE FIX: Paystack often sends metadata as a string. We must parse it.
+      let metadata = data.metadata;
+      if (typeof metadata === 'string') {
+        try {
+          metadata = JSON.parse(metadata);
+        } catch (e) {
+          console.error("[paystack-webhook] Failed to parse metadata string", e);
+          metadata = {};
+        }
+      }
+      
+      metadata = metadata || {};
+      
+      // Extract IDs from all possible locations
+      let event_id = metadata.event_id;
+      let payment_type = metadata.payment_type;
+      let guest_name = metadata.guest_name;
+      let plan = metadata.plan;
 
-      // Fallback for standard Paystack custom fields
+      // Fallback for standard Paystack custom fields array
       if (!event_id && metadata.custom_fields) {
-        const eventField = metadata.custom_fields.find(f => f.variable_name === 'event_id')
-        const typeField = metadata.custom_fields.find(f => f.variable_name === 'payment_type')
-        const nameField = metadata.custom_fields.find(f => f.variable_name === 'guest_name')
-        const planField = metadata.custom_fields.find(f => f.variable_name === 'plan')
+        const eventField = metadata.custom_fields.find(f => f.variable_name === 'event_id');
+        const typeField = metadata.custom_fields.find(f => f.variable_name === 'payment_type');
+        const nameField = metadata.custom_fields.find(f => f.variable_name === 'guest_name');
+        const planField = metadata.custom_fields.find(f => f.variable_name === 'plan');
         
-        event_id = eventField?.value
-        payment_type = typeField?.value
-        guest_name = nameField?.value
-        plan = planField?.value
+        event_id = eventField?.value;
+        payment_type = typeField?.value;
+        guest_name = nameField?.value;
+        plan = planField?.value;
       }
 
-      const amount = data.amount / 100 
+      const amount = data.amount / 100;
       
       if (payment_type === 'gift' && event_id) {
-        console.log(`[paystack-webhook] Recording gift of ₦${amount} for event: ${event_id}`)
+        console.log(`[paystack-webhook] SUCCESS: Recording gift of ₦${amount} for event: ${event_id}`);
         
-        // This logs it in the financial ledger automatically
         const { error: ledgerError } = await supabase
           .from('budget_items')
           .insert({
@@ -56,43 +67,42 @@ serve(async (req) => {
             description: `Digital Spray from ${guest_name || 'Anonymous Guest'}`,
             amount: amount,
             type: 'income'
-          })
+          });
 
-        if (ledgerError) throw ledgerError
+        if (ledgerError) throw ledgerError;
         
-        return new Response(JSON.stringify({ message: 'Gift recorded in ledger' }), { 
+        return new Response(JSON.stringify({ message: 'Gift recorded' }), { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
-        })
+        });
       } else if (event_id) {
-        console.log(`[paystack-webhook] Activating event: ${event_id}`)
+        console.log(`[paystack-webhook] SUCCESS: Activating event: ${event_id}`);
         
         const { error } = await supabase
           .from('events')
-          .update({ 
-            is_paid: true,
-            plan: plan || 'Basic'
-          })
-          .eq('id', event_id)
+          .update({ is_paid: true, plan: plan || 'Basic' })
+          .eq('id', event_id);
 
-        if (error) throw error
+        if (error) throw error;
         
         return new Response(JSON.stringify({ message: 'Event activated' }), { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
-        })
+        });
+      } else {
+        console.error("[paystack-webhook] ERROR: No event_id found in metadata", metadata);
       }
     }
 
-    return new Response(JSON.stringify({ message: 'Event processed' }), { 
+    return new Response(JSON.stringify({ message: 'Processed' }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200 
-    })
+    });
   } catch (error) {
-    console.error("[paystack-webhook] Critical Error:", error.message)
+    console.error("[paystack-webhook] CRITICAL ERROR:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400 
-    })
+    });
   }
 })

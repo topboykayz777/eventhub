@@ -1,2 +1,2 @@
--- Enable Realtime for the budget_items table so the dashboard can 'hear' new sprays
+-- This ensures the database 'broadcasts' every new spray to the dashboard
 alter publication supabase_realtime add table budget_items;
