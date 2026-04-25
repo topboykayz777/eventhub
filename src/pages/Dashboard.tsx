@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2, HelpCircle, Quote, FileDown, EyeOff, Calendar } from 'lucide-react';
+import { User, Sparkles, Users, CheckCircle2, Eye, TrendingUp, Loader2, RefreshCw, Plus, ChevronDown, ChevronUp, Settings2, HelpCircle, Quote, FileDown, EyeOff, Calendar, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -33,24 +33,21 @@ const Dashboard = () => {
     queryKey: ['host-events'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        navigate('/login');
+        return [];
+      }
 
-      console.log("[Dashboard] Fetching events for user:", user.id);
+      // Fetch events with their RSVPs and Toasts
       const { data, error } = await supabase
         .from('events')
         .select('*, rsvps(*), toasts(*)')
         .eq('host_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("[Dashboard] Fetch error:", error);
-        throw error;
-      }
-      
-      console.log("[Dashboard] Events found:", data?.length || 0);
+      if (error) throw error;
       return data || [];
-    },
-    retry: 1
+    }
   });
 
   useEffect(() => {
@@ -63,20 +60,9 @@ const Dashboard = () => {
     const { error } = await supabase.from('toasts').update({ is_live: !currentStatus }).eq('id', toastId);
     if (error) showError(error.message);
     else {
-      showSuccess(!currentStatus ? "Toast is now live on the event page!" : "Toast hidden.");
+      showSuccess(!currentStatus ? "Toast is now live!" : "Toast hidden.");
       refetch();
     }
-  };
-
-  const exportToasts = (event: any) => {
-    const rows = event.toasts.map((t: any) => [t.guest_name, t.content, t.is_live ? 'Live' : 'Hidden']);
-    const csvContent = ["Guest,Message,Status", ...rows.map(e => e.join(","))].join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `${event.event_name}_DigitalToasts.csv`);
-    link.click();
-    showSuccess("Toasts exported to CSV.");
   };
 
   const toggleEventExpansion = (eventId: string) => {
@@ -89,7 +75,7 @@ const Dashboard = () => {
   const handleQRScan = async (scannedText: string) => {
     const trimmedText = scannedText.trim();
     if (trimmedText.startsWith('http')) {
-      showError("This is the general Invite Link. Please scan a Guest's unique Elite Pass.");
+      showError("Please scan a Guest's unique Elite Pass QR code.");
       return;
     }
     const { data: rsvp } = await supabase.from('rsvps').select('*, events(id, event_name)').eq('id', trimmedText).maybeSingle();
@@ -101,7 +87,11 @@ const Dashboard = () => {
     else { showSuccess(`Welcome, ${rsvp.guest_name}!`); refetch(); }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  if (isLoading) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
+      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white overflow-x-hidden">
@@ -119,9 +109,10 @@ const Dashboard = () => {
         </div>
 
         {isError && (
-          <div className="p-12 border border-red-500/20 bg-red-500/5 text-center mb-12">
-            <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mb-4">Failed to synchronize with the vault.</p>
-            <Button onClick={() => refetch()} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10">Retry Connection</Button>
+          <div className="p-12 border border-red-500/20 bg-red-500/5 text-center mb-12 rounded-[2rem]">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-6" />
+            <h3 className="text-xl font-serif italic text-white mb-2">Vault Connection Error</h3>
+            <Button onClick={() => refetch()} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-none px-12 py-6 text-[10px] font-bold uppercase tracking-widest">Retry Connection</Button>
           </div>
         )}
 
@@ -142,7 +133,7 @@ const Dashboard = () => {
           {events.map((event: any) => {
             const isExpanded = expandedEvents.has(event.id);
             return (
-              <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="border border-white/5 bg-white/[0.02] overflow-hidden">
+              <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="border border-white/5 bg-white/[0.02] overflow-hidden rounded-[2rem]">
                 <div onClick={() => toggleEventExpansion(event.id)} className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 cursor-pointer hover:bg-white/[0.04] transition-colors group">
                   <div className="flex items-center gap-6 w-full md:w-auto">
                     <div className="w-16 h-20 md:w-20 md:h-24 border border-white/10 overflow-hidden shrink-0">
@@ -183,16 +174,12 @@ const Dashboard = () => {
 
                               <TabsContent value="toasts">
                                 <div className="space-y-6">
-                                  <div className="flex justify-between items-center mb-8">
-                                    <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Guest Messages Vault</h3>
-                                    <Button variant="outline" onClick={() => exportToasts(event)} className="border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-widest"><FileDown className="w-4 h-4 mr-2" /> Export Toasts</Button>
-                                  </div>
-                                  {event.toasts?.length === 0 ? (
-                                    <div className="text-center py-20 border border-dashed border-white/5 text-gray-500 text-[10px] font-bold uppercase tracking-widest">No toasts recorded yet.</div>
+                                  {!event.toasts || event.toasts.length === 0 ? (
+                                    <div className="text-center py-20 border border-dashed border-white/5 text-gray-500 text-[10px] font-bold uppercase tracking-widest rounded-[2rem]">No toasts recorded yet.</div>
                                   ) : (
                                     <div className="grid gap-4">
                                       {event.toasts.map((toast: any) => (
-                                        <div key={toast.id} className="p-6 bg-white/5 border border-white/5 flex justify-between items-center group">
+                                        <div key={toast.id} className="p-6 bg-white/5 border border-white/5 flex justify-between items-center group rounded-xl">
                                           <div>
                                             <p className="text-sm font-light italic mb-2">"{toast.content}"</p>
                                             <p className="text-[8px] font-bold uppercase tracking-widest text-[#D4AF37]">— {toast.guest_name}</p>
