@@ -30,8 +30,8 @@ const Dashboard = () => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [lastSpray, setLastSpray] = useState<any>(null);
   
-  // CRITICAL: Use a ref to keep track of events so the listener always has the latest list
   const eventsRef = useRef<any[]>([]);
+  const hasCheckedMissedSprays = useRef(false);
 
   const { data: events = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['host-dashboard-data'],
@@ -53,6 +53,26 @@ const Dashboard = () => {
       const enriched = await Promise.all((eventsData || []).map(async (event) => {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
         const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
+        
+        // Check for missed sprays (sprays that happened in the last 30 minutes)
+        if (!hasCheckedMissedSprays.current) {
+          const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+          const { data: recentSprays } = await supabase
+            .from('budget_items')
+            .select('*')
+            .eq('event_id', event.id)
+            .eq('type', 'income')
+            .ilike('description', '%Digital Spray%')
+            .gt('created_at', thirtyMinsAgo)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (recentSprays && recentSprays.length > 0) {
+            setTimeout(() => triggerSprayAnimation(recentSprays[0]), 2000);
+            hasCheckedMissedSprays.current = true;
+          }
+        }
+
         return { ...event, rsvps: rsvps || [], toasts: toasts || [] };
       }));
 
@@ -62,7 +82,6 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Stable Realtime listener - only created ONCE
     const channel = supabase
       .channel('dashboard-realtime')
       .on(
@@ -70,7 +89,6 @@ const Dashboard = () => {
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
         (payload) => {
           const newItem = payload.new;
-          // Check if this spray belongs to any of the host's events using the REF
           const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
           
           if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
@@ -95,16 +113,7 @@ const Dashboard = () => {
     });
     
     setLastSpray(spray);
-    setTimeout(() => setLastSpray(null), 6000);
-  };
-
-  const testSpray = () => {
-    if (events.length === 0) return;
-    triggerSprayAnimation({
-      amount: 50000,
-      description: "Digital Spray from Test Guest (Demo)"
-    });
-    showSuccess("Test animation triggered!");
+    setTimeout(() => setLastSpray(null), 8000);
   };
 
   useEffect(() => {
@@ -180,9 +189,6 @@ const Dashboard = () => {
             <h1 className="text-4xl md:text-7xl font-serif italic text-white">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
           <div className="flex gap-4">
-            <Button variant="outline" onClick={testSpray} className="border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] rounded-none px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
-              <Play className="w-4 h-4 mr-2" /> Test Spray
-            </Button>
             <Button variant="outline" onClick={() => refetch()} className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"><RefreshCw className="w-4 h-4" /></Button>
             <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10"><Plus className="w-4 h-4 mr-2" /> New Event</Button></Link>
           </div>

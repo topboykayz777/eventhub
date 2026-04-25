@@ -24,13 +24,13 @@ serve(async (req) => {
       const data = body.data
       const metadata = data.metadata || {}
       
-      // Paystack can send metadata in different formats. We check all of them.
+      // Robust metadata extraction
       let event_id = metadata.event_id
       let payment_type = metadata.payment_type
       let guest_name = metadata.guest_name
       let plan = metadata.plan
 
-      // Fallback: Check inside custom_fields array (standard Paystack format)
+      // Fallback for standard Paystack custom fields
       if (!event_id && metadata.custom_fields) {
         const eventField = metadata.custom_fields.find(f => f.variable_name === 'event_id')
         const typeField = metadata.custom_fields.find(f => f.variable_name === 'payment_type')
@@ -48,6 +48,7 @@ serve(async (req) => {
       if (payment_type === 'gift' && event_id) {
         console.log(`[paystack-webhook] Recording gift of ₦${amount} for event: ${event_id}`)
         
+        // This logs it in the financial ledger automatically
         const { error: ledgerError } = await supabase
           .from('budget_items')
           .insert({
@@ -59,12 +60,12 @@ serve(async (req) => {
 
         if (ledgerError) throw ledgerError
         
-        return new Response(JSON.stringify({ message: 'Gift recorded successfully' }), { 
+        return new Response(JSON.stringify({ message: 'Gift recorded in ledger' }), { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
         })
       } else if (event_id) {
-        console.log(`[paystack-webhook] Activating event: ${event_id} with plan: ${plan}`)
+        console.log(`[paystack-webhook] Activating event: ${event_id}`)
         
         const { error } = await supabase
           .from('events')
@@ -76,14 +77,14 @@ serve(async (req) => {
 
         if (error) throw error
         
-        return new Response(JSON.stringify({ message: 'Event activated successfully' }), { 
+        return new Response(JSON.stringify({ message: 'Event activated' }), { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
         })
       }
     }
 
-    return new Response(JSON.stringify({ message: 'Event processed but no action taken' }), { 
+    return new Response(JSON.stringify({ message: 'Event processed' }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200 
     })
