@@ -21,10 +21,8 @@ serve(async (req) => {
     console.log("[paystack-webhook] Received event:", body.event)
 
     if (body.event === 'charge.success') {
-      // Paystack metadata can be flat or nested in custom_fields
       const metadata = body.data.metadata || {}
       
-      // Try to find event_id and payment_type in flat metadata or custom_fields
       let event_id = metadata.event_id
       let payment_type = metadata.payment_type
       let guest_name = metadata.guest_name
@@ -42,7 +40,7 @@ serve(async (req) => {
         plan = planField?.value
       }
 
-      const amount = body.data.amount / 100 // Convert from kobo to Naira
+      const amount = body.data.amount / 100 
       
       if (payment_type === 'gift') {
         console.log("[paystack-webhook] Recording gift for event:", event_id)

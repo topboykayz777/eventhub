@@ -57,7 +57,6 @@ const Dashboard = () => {
     }
   });
 
-  // Realtime Subscription for Digital Spraying
   useEffect(() => {
     const channel = supabase
       .channel('digital-spraying')
@@ -66,10 +65,8 @@ const Dashboard = () => {
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
         (payload) => {
           const newItem = payload.new;
-          // Check if this item belongs to one of the host's events and is a gift
           const hostEvent = events.find(e => e.id === newItem.event_id);
           if (hostEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
-            // Trigger Animation
             confetti({
               particleCount: 150,
               spread: 70,
@@ -79,8 +76,6 @@ const Dashboard = () => {
             
             setLastSpray(newItem);
             setTimeout(() => setLastSpray(null), 5000);
-            
-            // Refresh data
             refetch();
           }
         }
@@ -136,7 +131,6 @@ const Dashboard = () => {
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
       
-      {/* Digital Spray Notification Overlay */}
       <AnimatePresence>
         {lastSpray && (
           <motion.div 

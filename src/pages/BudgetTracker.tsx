@@ -22,7 +22,6 @@ const BudgetTracker = () => {
   useEffect(() => {
     fetchBudget();
 
-    // Realtime Subscription
     const channel = supabase
       .channel(`budget-${id}`)
       .on(
@@ -66,7 +65,6 @@ const BudgetTracker = () => {
     else {
       showSuccess('Entry recorded in the ledger.');
       setNewItem({ description: '', amount: '', type: 'expense' });
-      // fetchBudget is called by the realtime listener
     }
   };
 
@@ -75,7 +73,6 @@ const BudgetTracker = () => {
     if (error) showError(error.message);
     else {
       showSuccess('Entry removed.');
-      // fetchBudget is called by the realtime listener
     }
   };
 
@@ -89,7 +86,6 @@ const BudgetTracker = () => {
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
       
-      {/* Background Blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
       </div>
@@ -109,7 +105,6 @@ const BudgetTracker = () => {
           </div>
         </div>
 
-        {/* Summary Cards */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           <GlassCard className="p-10 border-white/5" hover={false}>
             <div className="flex items-center gap-4 mb-6">
@@ -142,7 +137,6 @@ const BudgetTracker = () => {
           </GlassCard>
         </div>
 
-        {/* Add Entry Form */}
         <GlassCard className="p-10 mb-16 border-white/5">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-8">Record New Transaction</h2>
           <form onSubmit={addItem} className="grid md:grid-cols-4 gap-6">
@@ -180,7 +174,6 @@ const BudgetTracker = () => {
           </form>
         </GlassCard>
 
-        {/* Transactions Table */}
         <div className="space-y-4">
           <div className="flex justify-between items-center px-8 mb-6">
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Recent Transactions</span>
