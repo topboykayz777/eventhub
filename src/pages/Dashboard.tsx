@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff, Coins } from 'lucide-react';
+import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff, Coins, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
@@ -30,7 +30,7 @@ const Dashboard = () => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [lastSpray, setLastSpray] = useState<any>(null);
   
-  // Use a ref to keep track of events for the realtime listener without triggering re-renders
+  // CRITICAL: Use a ref to keep track of events so the listener always has the latest list
   const eventsRef = useRef<any[]>([]);
 
   const { data: events = [], isLoading, isError, refetch } = useQuery({
@@ -62,7 +62,7 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Stable Realtime listener
+    // Stable Realtime listener - only created ONCE
     const channel = supabase
       .channel('dashboard-realtime')
       .on(
@@ -70,21 +70,11 @@ const Dashboard = () => {
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
         (payload) => {
           const newItem = payload.new;
-          // Check if this spray belongs to any of the host's events
+          // Check if this spray belongs to any of the host's events using the REF
           const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
           
           if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
-            confetti({
-              particleCount: 150,
-              spread: 70,
-              origin: { y: 0.6 },
-              colors: ['#D4AF37', '#ffffff', '#F9E4B7']
-            });
-            
-            setLastSpray(newItem);
-            setTimeout(() => setLastSpray(null), 6000);
-            
-            // Invalidate query to refresh data
+            triggerSprayAnimation(newItem);
             queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
           }
         }
@@ -94,7 +84,28 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]); // Only depend on queryClient to keep the listener alive
+  }, [queryClient]);
+
+  const triggerSprayAnimation = (spray: any) => {
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#D4AF37', '#ffffff', '#F9E4B7']
+    });
+    
+    setLastSpray(spray);
+    setTimeout(() => setLastSpray(null), 6000);
+  };
+
+  const testSpray = () => {
+    if (events.length === 0) return;
+    triggerSprayAnimation({
+      amount: 50000,
+      description: "Digital Spray from Test Guest (Demo)"
+    });
+    showSuccess("Test animation triggered!");
+  };
 
   useEffect(() => {
     if (events.length > 0 && expandedEvents.size === 0) {
@@ -169,6 +180,9 @@ const Dashboard = () => {
             <h1 className="text-4xl md:text-7xl font-serif italic text-white">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
           <div className="flex gap-4">
+            <Button variant="outline" onClick={testSpray} className="border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] rounded-none px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
+              <Play className="w-4 h-4 mr-2" /> Test Spray
+            </Button>
             <Button variant="outline" onClick={() => refetch()} className="border-white/10 bg-white/5 text-white rounded-none px-6 py-6"><RefreshCw className="w-4 h-4" /></Button>
             <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold tracking-[0.2em] uppercase shadow-xl shadow-[#D4AF37]/10"><Plus className="w-4 h-4 mr-2" /> New Event</Button></Link>
           </div>

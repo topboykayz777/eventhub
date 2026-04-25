@@ -130,6 +130,10 @@ const EventPage = () => {
     amount: parseInt(giftAmount) * 100,
     publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
     metadata: {
+      // Double-layering metadata for robustness
+      event_id: event?.id,
+      payment_type: "gift",
+      guest_name: submittedRsvp?.guest_name || "Anonymous Guest",
       custom_fields: [
         { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
         { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvp?.guest_name || "Anonymous Guest" },
