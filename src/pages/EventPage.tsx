@@ -50,14 +50,12 @@ const EventPage = () => {
       if (data) {
         setEvent(data);
         
-        // Check for existing RSVP in local storage
         const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
         if (savedRsvpId) {
           const { data: rsvp } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
           if (rsvp) setSubmittedRsvp(rsvp);
         }
 
-        // Fetch live toasts
         const { data: toasts } = await supabase
           .from('toasts')
           .select('*')
@@ -66,7 +64,6 @@ const EventPage = () => {
           .order('created_at', { ascending: false });
         setLiveToasts(toasts || []);
 
-        // Increment view count
         if (data.is_paid) {
           await supabase.rpc('increment_view_count', { event_id: data.id });
         }
@@ -127,7 +124,6 @@ const EventPage = () => {
     }
   };
 
-  // Paystack Config for Gifts
   const paystackConfig = {
     reference: (new Date()).getTime().toString(),
     email: submittedRsvp?.guest_phone ? `${submittedRsvp.guest_phone}@eventhub.ng` : "guest@eventhub.ng",
@@ -199,7 +195,7 @@ const EventPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Hero Section */}
+      {/* Hero Section - Cleaned up to show cover image */}
       <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.1, opacity: 0 }} 
@@ -211,14 +207,7 @@ const EventPage = () => {
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl sm:text-6xl md:text-9xl font-serif italic mb-8 tracking-tight leading-[1.1]"
-          >
-            {event.event_name}
-          </motion.h1>
-          <div className="max-w-3xl mx-auto scale-90 md:scale-100">
+          <div className="max-w-3xl mx-auto scale-90 md:scale-100 mb-8">
             <Countdown targetDate={event.event_date} />
           </div>
         </div>
@@ -227,7 +216,7 @@ const EventPage = () => {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24">
         <div className="grid md:grid-cols-5 gap-12 md:gap-20">
           <div className="md:col-span-3 space-y-16 md:space-y-24">
-            {/* Logistics Card */}
+            {/* Logistics Card - Now includes Event Title */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
               whileInView={{ opacity: 1, y: 0 }} 
@@ -238,6 +227,18 @@ const EventPage = () => {
                 <Calendar className="w-4 h-4" /> The Particulars
               </h2>
               <div className="space-y-12">
+                {/* Event Title */}
+                <div className="flex items-start gap-8 group">
+                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
+                    <Sparkles className="text-[#D4AF37] w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Celebration</p>
+                    <h1 className="text-3xl md:text-5xl font-serif italic leading-tight">{event.event_name}</h1>
+                  </div>
+                </div>
+
+                {/* Venue */}
                 <div className="flex items-start gap-8 group">
                   <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
                     <MapPin className="text-[#D4AF37] w-6 h-6" />
