@@ -22,8 +22,6 @@ import EditEvent from "./pages/EditEvent";
 import BudgetTracker from "./pages/BudgetTracker";
 import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
-import VendorDashboard from "./pages/VendorDashboard";
-import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 
 // Optimized QueryClient for speed
@@ -76,12 +74,10 @@ const App = () => {
             <Route path="/payment/:id" element={<Payment />} />
             <Route path="/event/:slug" element={<EventPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/budget/:id" element={<BudgetTracker />} />
             <Route path="/vendors" element={<VendorDirectory />} />
             <Route path="/vendor/:id" element={<VendorProfile />} />
-            <Route path="/guide" element={<Guide />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

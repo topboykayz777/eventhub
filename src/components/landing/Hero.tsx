@@ -25,7 +25,7 @@ const Hero = () => {
           transition={{ duration: 1, ease: "easeOut" }}
         >
           <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-6 md:mb-8 block">
-            Established in Excellence
+            The Professional Orchestration Suite
           </span>
           
           <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif italic text-white mb-8 md:mb-10 leading-tight tracking-tight">
@@ -34,26 +34,26 @@ const Hero = () => {
           </h1>
           
           <p className="text-base md:text-xl text-gray-400 mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
-            Nigeria's most exclusive digital platform for weddings, galas, and high-society events. 
-            Where tradition meets modern elegance.
+            Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
+            Orchestrate weddings, galas, and elite events with precision.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8">
             <Link to="/create-event" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[10px] px-12 py-8 rounded-none font-bold tracking-[0.3em] uppercase transition-all duration-500 hover:px-16">
-                Create Your Event
+                Start Orchestrating
               </Button>
             </Link>
             <Link to="/vendors" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 text-[10px] px-12 py-8 rounded-none font-bold tracking-[0.3em] uppercase">
-                The Directory
+                Curated Directory
               </Button>
             </Link>
           </div>
         </motion.div>
       </div>
 
-      {/* Bottom Decorative Line - Hidden on small screens to save space */}
+      {/* Bottom Decorative Line */}
       <div className="hidden md:block absolute bottom-12 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-[#D4AF37] to-transparent" />
     </section>
   );

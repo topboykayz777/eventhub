@@ -46,15 +46,15 @@ const Index = () => {
     "applicationCategory": "BusinessApplication",
     "offers": {
       "@type": "AggregateOffer",
-      "lowPrice": "10000",
-      "highPrice": "20000",
+      "lowPrice": "25000",
+      "highPrice": "150000",
       "priceCurrency": "NGN"
     },
     "areaServed": {
       "@type": "Country",
       "name": "Nigeria"
     },
-    "description": "Luxury event management platform for weddings, galas, and high-society events in Nigeria."
+    "description": "Premium event orchestration suite for professional planners and high-society hosts in Nigeria."
   };
 
   return (
@@ -71,10 +71,10 @@ const Index = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-16">
               {[
-                { label: 'Events Curated', value: '12,000+' },
-                { label: 'Guests Welcomed', value: '500k+' },
+                { label: 'Events Orchestrated', value: '12,000+' },
+                { label: 'Guests Managed', value: '500k+' },
                 { label: 'Moments Captured', value: '1M+' },
-                { label: 'Satisfaction', value: '100%' }
+                { label: 'Planner Satisfaction', value: '100%' }
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
@@ -96,21 +96,25 @@ const Index = () => {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-center gap-24">
               <div className="md:w-1/2">
-                <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-8 block">The Experience</span>
+                <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-8 block">The Concierge Suite</span>
                 <h2 className="text-5xl md:text-7xl font-serif italic text-white mb-10 leading-tight">
-                  Elegance in <br /> Every Detail
+                  Precision in <br /> Every Detail
                 </h2>
                 <p className="text-xl text-gray-400 mb-12 leading-relaxed font-light tracking-wide">
-                  We believe that every celebration is a masterpiece. Our platform provides the canvas for you to design an experience that reflects your unique style and heritage.
+                  We provide the digital command center for Nigeria's most prestigious events. From real-time budget tracking to automated guest communication, our suite is designed for the professional planner.
                 </p>
                 <div className="space-y-10">
                   <div className="flex items-center gap-8 group">
                     <div className="w-16 h-px bg-[#D4AF37]/30 group-hover:w-24 transition-all duration-700" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-300">Bespoke RSVP Management</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-300">Automated WhatsApp Communication</p>
                   </div>
                   <div className="flex items-center gap-8 group">
                     <div className="w-16 h-px bg-[#D4AF37]/30 group-hover:w-24 transition-all duration-700" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-300">Curated Vendor Directory</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-300">Real-time Financial Ledger</p>
+                  </div>
+                  <div className="flex items-center gap-8 group">
+                    <div className="w-16 h-px bg-[#D4AF37]/30 group-hover:w-24 transition-all duration-700" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-300">Digital Access Control & QR Scanning</p>
                   </div>
                 </div>
               </div>
@@ -137,14 +141,14 @@ const Index = () => {
           <div className="absolute inset-0 bg-[#D4AF37]/5 blur-[150px] rounded-full -translate-y-1/2" />
           <div className="max-w-4xl mx-auto relative z-10">
             <h2 className="text-5xl md:text-8xl font-serif italic text-white mb-12 leading-tight">
-              Begin Your <br /> <span className="text-[#D4AF37]">Legacy</span>
+              Master Your <br /> <span className="text-[#D4AF37]">Craft</span>
             </h2>
             <p className="text-lg text-gray-400 mb-16 font-light tracking-[0.5em] uppercase">
-              Join the elite hosts of Nigeria.
+              The definitive tool for the modern event professional.
             </p>
             <Link to="/create-event">
               <Button className="bg-[#D4AF37] text-black px-20 py-10 rounded-none text-[10px] font-bold tracking-[0.5em] uppercase hover:bg-[#B8860B] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20">
-                Start Your Journey
+                Begin Orchestration
               </Button>
             </Link>
           </div>
@@ -158,7 +162,7 @@ const Index = () => {
               Event Hub <span className="text-[#D4AF37]">NG</span>
             </div>
             <p className="text-gray-500 max-w-md text-base leading-relaxed font-light tracking-wide">
-              The definitive platform for luxury event management in Nigeria. Curating excellence since 2026.
+              The definitive orchestration suite for luxury event management in Nigeria. Curating excellence since 2026.
             </p>
           </div>
           <div>

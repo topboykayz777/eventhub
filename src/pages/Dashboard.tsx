@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, Coins, CheckCircle2, Clock } from 'lucide-react';
+import { RefreshCw, Plus, Loader2, Coins, CheckCircle2, Clock, LayoutDashboard, Users, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
@@ -103,14 +103,12 @@ const Dashboard = () => {
   }, [queryClient]);
 
   const handleQRScan = async (scannedText: string) => {
-    // Extract UUID if the scanned text is a URL
     let rsvpId = scannedText;
     if (scannedText.includes('/')) {
       const parts = scannedText.split('/');
       rsvpId = parts[parts.length - 1];
     }
 
-    // Validate UUID format (basic check)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(rsvpId)) {
       showError("Invalid pass format.");
@@ -158,8 +156,8 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-24">
           <div>
-            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Host Command Center</span>
-            <h1 className="text-4xl md:text-7xl font-serif italic">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Planner Command Center</span>
+            <h1 className="text-4xl md:text-7xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
           </div>
           <div className="flex gap-4 w-full md:w-auto">
             <Button 
@@ -223,12 +221,33 @@ const Dashboard = () => {
                       <div className="grid lg:grid-cols-12 gap-12">
                         <EventCard event={event} onCopyLink={() => {}} />
                         <div className="lg:col-span-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                            <div className="bg-white/5 border border-white/5 p-8 rounded-none">
+                              <div className="flex items-center gap-4 mb-4">
+                                <Users className="text-[#D4AF37] w-5 h-5" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Guest Engagement</span>
+                              </div>
+                              <div className="text-3xl font-serif italic">{event.rsvps.length} RSVPs</div>
+                            </div>
+                            <div className="bg-white/5 border border-white/5 p-8 rounded-none">
+                              <div className="flex items-center gap-4 mb-4">
+                                <Sparkles className="text-[#D4AF37] w-5 h-5" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</span>
+                              </div>
+                              <div className="text-3xl font-serif italic">{event.plan} Suite</div>
+                            </div>
+                          </div>
+                          
                           <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
-                          <Tabs defaultValue="guests" className="mt-12">
+                          
+                          <Tabs defaultValue="tools" className="mt-12">
                             <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-12 mb-12 rounded-none">
-                              <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-widest">Guest List</TabsTrigger>
                               <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-widest">Concierge Tools</TabsTrigger>
+                              <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-widest">Guest List</TabsTrigger>
                             </TabsList>
+                            <TabsContent value="tools">
+                              <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
+                            </TabsContent>
                             <TabsContent value="guests">
                               <GuestList 
                                 rsvps={event.rsvps} 
@@ -239,9 +258,6 @@ const Dashboard = () => {
                                 onToggleCheckIn={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })} 
                                 onUpdate={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })}
                               />
-                            </TabsContent>
-                            <TabsContent value="tools">
-                              <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
                           </Tabs>
                         </div>

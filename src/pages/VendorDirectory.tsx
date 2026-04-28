@@ -142,7 +142,7 @@ const VendorDirectory = () => {
             The <span className="text-[#D4AF37]">Directory</span>
           </motion.h1>
           <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide px-4">
-            A curated selection of Nigeria's most prestigious event professionals, from master caterers to world-class venues.
+            A curated selection of Nigeria's most prestigious event professionals, handpicked for the discerning planner.
           </p>
         </div>
 
