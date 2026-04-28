@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, CheckSquare, Square, Music, UserPlus, Info } from 'lucide-react';
+import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, CheckSquare, Square, Music, UserPlus, Info, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ interface GuestListProps {
   onOpenScanner: () => void;
   onExportCSV: () => void;
   onToggleCheckIn: (rsvpId: string, currentStatus: boolean) => void;
+  onUpdate?: () => void;
 }
 
 const GuestList = ({ 
@@ -23,7 +24,8 @@ const GuestList = ({
   searchQuery, 
   onSearchChange, 
   onOpenScanner, 
-  onExportCSV
+  onExportCSV,
+  onUpdate
 }: GuestListProps) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [tableNumber, setTableNumber] = useState('');
@@ -46,21 +48,29 @@ const GuestList = ({
   };
 
   const handleBulkSeating = async () => {
-    if (!tableNumber || selectedIds.length === 0) return;
+    if (!tableNumber || selectedIds.length === 0) {
+      showError("Please enter a table number and select guests.");
+      return;
+    }
     setIsAssigning(true);
 
-    const { error } = await supabase
-      .from('rsvps')
-      .update({ table_number: tableNumber })
-      .in('id', selectedIds);
+    try {
+      const { error } = await supabase
+        .from('rsvps')
+        .update({ table_number: tableNumber })
+        .in('id', selectedIds);
 
-    if (error) showError(error.message);
-    else {
+      if (error) throw error;
+
       showSuccess(`Assigned ${selectedIds.length} guests to Table ${tableNumber}`);
       setSelectedIds([]);
       setTableNumber('');
+      if (onUpdate) onUpdate();
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setIsAssigning(false);
     }
-    setIsAssigning(false);
   };
 
   const getTableMates = (tableNum: string) => {
@@ -115,8 +125,19 @@ const GuestList = ({
               <span className="text-[10px] font-black uppercase tracking-widest text-black">{selectedIds.length} Guests Selected</span>
             </div>
             <div className="flex gap-4 w-full md:w-auto">
-              <Input placeholder="Table #" className="bg-black/10 border-black/20 h-12 w-24 rounded-none text-black placeholder:text-black/40 text-[10px] font-bold uppercase" value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} />
-              <Button onClick={handleBulkSeating} disabled={isAssigning} className="bg-black text-white hover:bg-black/80 rounded-none h-12 px-8 text-[10px] font-bold uppercase tracking-widest">Assign Seating</Button>
+              <Input 
+                placeholder="Table #" 
+                className="bg-black/10 border-black/20 h-12 w-24 rounded-none text-black placeholder:text-black/40 text-[10px] font-bold uppercase" 
+                value={tableNumber} 
+                onChange={(e) => setTableNumber(e.target.value)} 
+              />
+              <Button 
+                onClick={handleBulkSeating} 
+                disabled={isAssigning} 
+                className="bg-black text-white hover:bg-black/80 rounded-none h-12 px-8 text-[10px] font-bold uppercase tracking-widest"
+              >
+                {isAssigning ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Assign Seating'}
+              </Button>
             </div>
           </motion.div>
         )}

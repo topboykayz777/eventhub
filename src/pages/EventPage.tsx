@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Navigation, Music, UserPlus, Quote, Wallet, Coins, Image as ImageIcon, Heart, Camera, Share2, Award } from 'lucide-react';
+import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Navigation, Music, UserPlus, Quote, Wallet, Coins, Image as ImageIcon, Heart, Camera, Share2, Award, ExternalLink } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -112,7 +112,6 @@ const EventPage = () => {
   if (loading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
   if (!event) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white">Event not found.</div>;
 
-  // Mark as over only 24 hours after the event date
   const isEventOver = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
@@ -134,7 +133,6 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
-      {/* Hero Section */}
       <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.1, opacity: 0 }} 
@@ -163,7 +161,6 @@ const EventPage = () => {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24">
         <div className="grid md:grid-cols-5 gap-12 md:gap-20">
           <div className="md:col-span-3 space-y-16 md:space-y-24">
-            {/* Event Details */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[3rem] border`}>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4"><Calendar className="w-4 h-4" /> The Particulars</h2>
               <div className="space-y-12">
@@ -179,12 +176,21 @@ const EventPage = () => {
                   <div>
                     <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Venue</p>
                     <p className="text-xl md:text-3xl font-light leading-relaxed mb-4">{event.venue}</p>
+                    {event.venue_map_url && (
+                      <a 
+                        href={event.venue_map_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline"
+                      >
+                        <Navigation size={12} /> View on Google Maps <ExternalLink size={10} />
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Host Message */}
             {event.message && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
                 <Quote className="absolute -top-8 -left-8 w-16 h-16 text-[#D4AF37]/10" />
@@ -194,7 +200,6 @@ const EventPage = () => {
               </motion.div>
             )}
 
-            {/* Memory Wall / Gallery */}
             {event.gallery_urls && event.gallery_urls.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                 <div className="flex justify-between items-end mb-12">
@@ -249,7 +254,6 @@ const EventPage = () => {
                 <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} guestName={submittedRsvp.guest_name} />
                   
-                  {/* Digital Spraying for RSVP'd guests */}
                   <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
                     <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4"><Coins className="w-4 h-4" /> Digital Spraying</h2>
                     <div className="space-y-6">

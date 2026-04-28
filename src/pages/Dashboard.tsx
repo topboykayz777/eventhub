@@ -57,7 +57,7 @@ const Dashboard = () => {
       eventsRef.current = enriched;
       return enriched;
     },
-    refetchInterval: 10000, // Fallback polling every 10s
+    refetchInterval: 10000,
   });
 
   const handleManualRefresh = async () => {
@@ -68,7 +68,6 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Listen for new budget items (Digital Sprays)
     const channel = supabase
       .channel('dashboard-realtime')
       .on(
@@ -76,11 +75,9 @@ const Dashboard = () => {
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
         (payload) => {
           const newItem = payload.new;
-          // Check if this spray belongs to any of the user's events
           const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
           
           if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
-            console.log("[Dashboard] Real-time spray detected!", newItem);
             confetti({ 
               particleCount: 150, 
               spread: 70, 
@@ -89,7 +86,6 @@ const Dashboard = () => {
             });
             setLastSpray(newItem);
             setTimeout(() => setLastSpray(null), 8000);
-            // Force refresh the data
             queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
           }
         }
@@ -98,13 +94,10 @@ const Dashboard = () => {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'rsvps' },
         () => {
-          console.log("[Dashboard] Real-time RSVP detected!");
           queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
         }
       )
-      .subscribe((status) => {
-        console.log("[Dashboard] Realtime Status:", status);
-      });
+      .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
@@ -213,7 +206,15 @@ const Dashboard = () => {
                               <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-widest">Concierge Tools</TabsTrigger>
                             </TabsList>
                             <TabsContent value="guests">
-                              <GuestList rsvps={event.rsvps} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => {}} onToggleCheckIn={() => refetch()} />
+                              <GuestList 
+                                rsvps={event.rsvps} 
+                                searchQuery={searchQuery} 
+                                onSearchChange={setSearchQuery} 
+                                onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
+                                onExportCSV={() => {}} 
+                                onToggleCheckIn={() => refetch()} 
+                                onUpdate={() => refetch()}
+                              />
                             </TabsContent>
                             <TabsContent value="tools">
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
