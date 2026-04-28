@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useEffect, useRef, useState } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
+import { Loader2, Camera, CameraOff } from 'lucide-react';
 
 interface QRScannerProps {
   onScanSuccess: (decodedText: string) => void;
@@ -9,54 +10,83 @@ interface QRScannerProps {
 }
 
 const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const qrCodeInstance = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-        showTorchButtonIfSupported: true
-      },
-      /* verbose= */ false
-    );
-
-    scanner.render(
-      (decodedText) => {
-        onScanSuccess(decodedText);
-      },
-      (error) => {
-        // Ignore "NotFoundException" as it's just the scanner searching every frame
-        if (error?.includes("NotFoundException")) {
-          return;
+    const startScanner = async () => {
+      try {
+        // Ensure any previous instance is cleared
+        if (qrCodeInstance.current) {
+          await qrCodeInstance.current.stop().catch(() => {});
         }
-        
-        // Only pass real errors (like camera access denied) to the parent
-        if (onScanError) onScanError(error);
-      }
-    );
 
-    scannerRef.current = scanner;
+        const html5QrCode = new Html5Qrcode("qr-reader-container");
+        qrCodeInstance.current = html5QrCode;
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          (decodedText) => {
+            // Success! Stop the camera and send the data
+            html5QrCode.stop().then(() => {
+              onScanSuccess(decodedText);
+            }).catch(err => console.error("Stop error", err));
+          },
+          () => {
+            // Ignore "Not Found" errors during scanning
+          }
+        );
+        
+        setIsCameraReady(true);
+      } catch (err: any) {
+        console.error("Scanner Start Error:", err);
+        setError(err.message || "Could not access camera.");
+        if (onScanError) onScanError(err.message);
+      }
+    };
+
+    // Small delay to ensure the DOM element is ready
+    const timer = setTimeout(startScanner, 500);
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(error => {
-          console.error("Failed to clear scanner", error);
-        });
+      clearTimeout(timer);
+      if (qrCodeInstance.current && qrCodeInstance.current.isScanning) {
+        qrCodeInstance.current.stop().catch(err => console.error("Cleanup error", err));
       }
     };
   }, [onScanSuccess, onScanError]);
 
   return (
-    <div className="w-full max-w-md mx-auto overflow-hidden rounded-3xl border-4 border-[#D4AF37]/20 bg-black">
-      <div id="qr-reader" className="w-full" />
-      <div className="p-4 bg-[#1a1a2e] text-center">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
-          Align QR code within the frame
-        </p>
-      </div>
+    <div className="w-full max-w-md mx-auto overflow-hidden rounded-[2.5rem] border-4 border-[#D4AF37]/20 bg-black relative aspect-square">
+      <div id="qr-reader-container" className="w-full h-full" />
+      
+      {!isCameraReady && !error && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-10">
+          <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37] mb-4" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Initializing Lens...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-10 p-8 text-center">
+          <CameraOff className="w-12 h-12 text-red-500 mb-4" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white mb-2">Camera Access Denied</p>
+          <p className="text-[8px] text-gray-500 uppercase tracking-widest">{error}</p>
+        </div>
+      )}
+
+      {isCameraReady && (
+        <div className="absolute bottom-6 left-0 right-0 text-center z-10">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Lens Active</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

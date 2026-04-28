@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BudgetTracker = () => {
@@ -22,16 +22,25 @@ const BudgetTracker = () => {
   useEffect(() => {
     fetchBudget();
 
+    // Robust Real-time Subscription
     const channel = supabase
-      .channel(`budget-${id}`)
+      .channel(`budget-realtime-${id}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${id}` },
-        () => {
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'budget_items', 
+          filter: `event_id=eq.${id}` 
+        },
+        (payload) => {
+          console.log("[BudgetTracker] Real-time update received:", payload.eventType);
           fetchBudget();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("[BudgetTracker] Real-time status:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -80,7 +89,11 @@ const BudgetTracker = () => {
   const totalExpense = items.filter(i => i.type === 'expense').reduce((acc, i) => acc + i.amount, 0);
   const balance = totalIncome - totalExpense;
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">Loading Ledger...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
+      <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white">
