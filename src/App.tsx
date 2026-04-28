@@ -48,6 +48,29 @@ const AuthHandler = () => {
   return null;
 };
 
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/create-event" element={<CreateEvent />} />
+      <Route path="/payment/:id" element={<Payment />} />
+      <Route path="/event/:slug" element={<EventPage />} />
+      <Route path="/vibe/:slug" element={<VibeScreen />} />
+      <Route path="/spray/:slug" element={<SprayPage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/budget/:id" element={<BudgetTracker />} />
+      <Route path="/vendors" element={<VendorDirectory />} />
+      <Route path="/vendor/:id" element={<VendorProfile />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -56,25 +79,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthHandler />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/create-event" element={<CreateEvent />} />
-            <Route path="/edit-event/:id" element={<EditEvent />} />
-            <Route path="/payment/:id" element={<Payment />} />
-            <Route path="/event/:slug" element={<EventPage />} />
-            <Route path="/vibe/:slug" element={<VibeScreen />} />
-            <Route path="/spray/:slug" element={<SprayPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/budget/:id" element={<BudgetTracker />} />
-            <Route path="/vendors" element={<VendorDirectory />} />
-            <Route path="/vendor/:id" element={<VendorProfile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
