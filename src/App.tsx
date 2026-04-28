@@ -22,13 +22,13 @@ import EditEvent from "./pages/EditEvent";
 import BudgetTracker from "./pages/BudgetTracker";
 import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
+import VibeScreen from "./pages/VibeScreen";
 import NotFound from "./pages/NotFound";
 
-// Optimized QueryClient for speed
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+      staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: false,
     },
   },
@@ -36,17 +36,14 @@ const queryClient = new QueryClient({
 
 const AuthHandler = () => {
   const navigate = useNavigate();
-
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         navigate('/reset-password');
       }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
-
   return null;
 };
 
@@ -56,12 +53,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter 
-          future={{ 
-            v7_startTransition: true, 
-            v7_relativeSplatPath: true 
-          }}
-        >
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthHandler />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -73,6 +65,7 @@ const App = () => {
             <Route path="/edit-event/:id" element={<EditEvent />} />
             <Route path="/payment/:id" element={<Payment />} />
             <Route path="/event/:slug" element={<EventPage />} />
+            <Route path="/vibe/:slug" element={<VibeScreen />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/budget/:id" element={<BudgetTracker />} />
