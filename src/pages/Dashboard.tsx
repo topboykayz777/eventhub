@@ -29,6 +29,7 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [lastSpray, setLastSpray] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const eventsRef = useRef<any[]>([]);
 
@@ -49,7 +50,6 @@ const Dashboard = () => {
       const enriched = await Promise.all((eventsData || []).map(async (event) => {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
         const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
-        // Mark as completed only 24 hours after the event date
         const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
         return { ...event, rsvps: rsvps || [], toasts: toasts || [], isCompleted };
       }));
@@ -57,12 +57,20 @@ const Dashboard = () => {
       eventsRef.current = enriched;
       return enriched;
     },
-    refetchInterval: 5000,
+    refetchInterval: 10000, // Fallback polling every 10s
   });
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setTimeout(() => setIsRefreshing(false), 1000);
+    showSuccess("Dashboard Synchronized.");
+  };
+
   useEffect(() => {
+    // Listen for new budget items (Digital Sprays)
     const channel = supabase
-      .channel('ledger-realtime')
+      .channel('dashboard-realtime')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
@@ -71,11 +79,23 @@ const Dashboard = () => {
           const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
           
           if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff'] });
+            confetti({ 
+              particleCount: 150, 
+              spread: 70, 
+              origin: { y: 0.6 }, 
+              colors: ['#D4AF37', '#ffffff', '#F9E4B7'] 
+            });
             setLastSpray(newItem);
             setTimeout(() => setLastSpray(null), 8000);
             queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'rsvps' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
         }
       )
       .subscribe();
@@ -99,7 +119,9 @@ const Dashboard = () => {
         {lastSpray && (
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md px-6">
             <div className="bg-[#D4AF37] text-black p-8 rounded-[2rem] shadow-2xl flex items-center gap-6 border-4 border-white/20">
-              <Coins className="w-12 h-12 animate-bounce" />
+              <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center shrink-0">
+                <Coins className="w-8 h-8 animate-bounce" />
+              </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest mb-1">New Digital Spray!</p>
                 <h4 className="text-2xl font-serif italic">₦{lastSpray.amount.toLocaleString()}</h4>
@@ -111,12 +133,25 @@ const Dashboard = () => {
       </AnimatePresence>
 
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
-        <div className="flex justify-between items-end mb-24">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-24">
           <div>
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Host Command Center</span>
             <h1 className="text-4xl md:text-7xl font-serif italic">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
           </div>
-          <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest"><Plus className="w-4 h-4 mr-2" /> New Event</Button></Link>
+          <div className="flex gap-4 w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              onClick={handleManualRefresh}
+              className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync
+            </Button>
+            <Link to="/create-event" className="flex-1 md:flex-none">
+              <Button className="w-full bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest">
+                <Plus className="w-4 h-4 mr-2" /> New Event
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="space-y-12">
