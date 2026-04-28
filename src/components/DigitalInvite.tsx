@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck, Flower2, Waves, Sun, Moon, PenTool, Clock, User } from 'lucide-react';
+import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck, Flower2, Waves, Sun, Moon, PenTool, User } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
 import { QRCodeSVG } from 'qrcode.react';
@@ -77,6 +77,8 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
 
   const config = themeConfigs[theme] || themeConfigs.modern;
   const Icon = config.icon;
+  
+  // Ensure the QR code value is the UUID for scanning
   const qrValue = rsvpId || `${window.location.origin}/event/${event.slug?.trim()}`;
 
   return (
@@ -87,7 +89,6 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
         ref={cardRef}
         className={`relative aspect-[4/6] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.glow}`}
       >
-        {/* Background Image - Now in full color */}
         <div className="absolute inset-0 z-0">
           <img 
             src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
@@ -98,7 +99,6 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
         </div>
         
         <div className="relative z-10 h-full flex flex-col p-8 text-center">
-          {/* Header Badge */}
           <div className="flex justify-between items-center mb-6">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10`}>
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -107,7 +107,6 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
             <ShieldCheck size={16} className={config.accent} />
           </div>
 
-          {/* Title Section */}
           <div className="mb-6">
             <div className={`inline-flex p-4 rounded-2xl bg-white/5 backdrop-blur-md mb-4 ${config.accent}`}>
               <Icon size={24} />
@@ -120,12 +119,19 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
             </h2>
           </div>
 
-          {/* QR Section */}
           <div className="flex-grow flex flex-col justify-center items-center">
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
               <div className="relative bg-white p-5 rounded-[2rem] shadow-2xl border-4 border-black/5">
-                <QRCodeSVG value={qrValue} size={130} level="H" />
+                {/* High contrast QR code for better scanning */}
+                <QRCodeSVG 
+                  value={qrValue} 
+                  size={140} 
+                  level="H" 
+                  includeMargin={false}
+                  fgColor="#000000"
+                  bgColor="#FFFFFF"
+                />
               </div>
               {isPass && (
                 <p className={`mt-4 text-[9px] font-black uppercase tracking-[0.3em] ${theme === 'elegant' || theme === 'vintage' ? 'text-black' : 'text-white'}`}>
@@ -135,7 +141,6 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
             </div>
           </div>
 
-          {/* Info Section */}
           <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
             {isPass && guestName && (
               <div className="flex items-center justify-center gap-2">

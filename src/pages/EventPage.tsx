@@ -7,10 +7,9 @@ import Countdown from '@/components/Countdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, MessageSquare, Sparkles, CheckCircle2, Loader2, Navigation, Music, UserPlus, Quote, Wallet, Coins, Image as ImageIcon, Heart, Camera, Share2, Award, ExternalLink } from 'lucide-react';
+import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, Award, ExternalLink, Bookmark, Info, Users, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -25,6 +24,7 @@ const EventPage = () => {
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
+  const [tableMates, setTableMates] = useState<any[]>([]);
   const [giftAmount, setGiftAmount] = useState('');
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -48,7 +48,12 @@ const EventPage = () => {
         const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
         if (savedRsvpId) {
           const { data: rsvp } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
-          if (rsvp) setSubmittedRsvp(rsvp);
+          if (rsvp) {
+            setSubmittedRsvp(rsvp);
+            if (rsvp.table_number) {
+              fetchTableMates(data.id, rsvp.table_number);
+            }
+          }
         }
       }
     } catch (err: any) {
@@ -56,6 +61,15 @@ const EventPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTableMates = async (eventId: string, tableNum: string) => {
+    const { data } = await supabase
+      .from('rsvps')
+      .select('guest_name, checked_in')
+      .eq('event_id', eventId)
+      .eq('table_number', tableNum);
+    setTableMates(data || []);
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
@@ -252,8 +266,43 @@ const EventPage = () => {
                 </motion.div>
               ) : submittedRsvp ? (
                 <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-4">
+                      <Bookmark size={12} className="text-[#D4AF37]" />
+                      <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Instruction</span>
+                    </div>
+                    <p className="text-[11px] font-medium leading-relaxed opacity-70">
+                      Please <span className="text-[#D4AF37]">Bookmark</span> this page or <span className="text-[#D4AF37]">Add to Home Screen</span>. This is your live portal for event updates and your entry pass.
+                    </p>
+                  </div>
+
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} guestName={submittedRsvp.guest_name} />
                   
+                  {submittedRsvp.table_number && (
+                    <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
+                      <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4"><Users className="w-4 h-4" /> Table Concierge</h2>
+                        <span className="text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</span>
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-[9px] font-bold uppercase tracking-widest opacity-50 mb-4">Your Table Mates</p>
+                        <div className="grid gap-3">
+                          {tableMates.map((mate, i) => (
+                            <div key={i} className="flex justify-between items-center p-4 bg-white/5 border border-white/5 rounded-xl">
+                              <span className="text-sm font-light">{mate.guest_name}</span>
+                              {mate.checked_in && (
+                                <div className="flex items-center gap-2 text-green-500">
+                                  <span className="text-[7px] font-black uppercase tracking-widest">Seated</span>
+                                  <CheckCircle2 size={12} />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </GlassCard>
+                  )}
+
                   <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
                     <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4"><Coins className="w-4 h-4" /> Digital Spraying</h2>
                     <div className="space-y-6">

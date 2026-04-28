@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff, Coins, CheckCircle2, Clock } from 'lucide-react';
+import { RefreshCw, Plus, Loader2, Coins, CheckCircle2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
@@ -33,7 +33,7 @@ const Dashboard = () => {
   
   const eventsRef = useRef<any[]>([]);
 
-  const { data: events = [], isLoading, isError, refetch } = useQuery({
+  const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ['host-dashboard-data'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -57,7 +57,7 @@ const Dashboard = () => {
       eventsRef.current = enriched;
       return enriched;
     },
-    refetchInterval: 15000, // Slightly increased interval to rely more on real-time
+    refetchInterval: 15000,
   });
 
   const handleManualRefresh = async () => {
@@ -92,9 +92,8 @@ const Dashboard = () => {
       )
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'rsvps' }, // Listen for ALL changes (INSERT, UPDATE, DELETE)
+        { event: '*', schema: 'public', table: 'rsvps' },
         () => {
-          console.log("[Dashboard] RSVP change detected, invalidating queries...");
           queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
         }
       )
@@ -103,11 +102,32 @@ const Dashboard = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  const handleQRScan = async (id: string) => {
-    const { error } = await supabase.from('rsvps').update({ checked_in: true }).eq('id', id);
-    if (error) showError("Invalid pass.");
-    else { 
-      showSuccess("Guest checked in."); 
+  const handleQRScan = async (scannedText: string) => {
+    // Extract UUID if the scanned text is a URL
+    let rsvpId = scannedText;
+    if (scannedText.includes('/')) {
+      const parts = scannedText.split('/');
+      rsvpId = parts[parts.length - 1];
+    }
+
+    // Validate UUID format (basic check)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(rsvpId)) {
+      showError("Invalid pass format.");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('rsvps')
+      .update({ checked_in: true })
+      .eq('id', rsvpId)
+      .select('guest_name')
+      .maybeSingle();
+
+    if (error || !data) {
+      showError("Pass not found or invalid.");
+    } else { 
+      showSuccess(`${data.guest_name} verified and checked in.`); 
       queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
     }
   };
