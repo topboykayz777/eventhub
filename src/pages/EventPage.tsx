@@ -23,15 +23,9 @@ const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false });
-  const [toastContent, setToastContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmittingToast, setIsSubmittingToast] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
-  const [liveToasts, setLiveToasts] = useState<any[]>([]);
   const [giftAmount, setGiftAmount] = useState('');
-  
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
   useEffect(() => {
     if (slug) fetchEvent();
@@ -49,23 +43,10 @@ const EventPage = () => {
 
       if (data) {
         setEvent(data);
-        
         const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
         if (savedRsvpId) {
           const { data: rsvp } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
           if (rsvp) setSubmittedRsvp(rsvp);
-        }
-
-        const { data: toasts } = await supabase
-          .from('toasts')
-          .select('*')
-          .eq('event_id', data.id)
-          .eq('is_live', true)
-          .order('created_at', { ascending: false });
-        setLiveToasts(toasts || []);
-
-        if (data.is_paid) {
-          await supabase.rpc('increment_view_count', { event_id: data.id });
         }
       }
     } catch (err: any) {
@@ -104,22 +85,11 @@ const EventPage = () => {
     }
   };
 
-  const handleGiftSuccess = async () => {
-    // THE EASY FIX: Save the gift directly from the guest's browser
-    const amount = parseInt(giftAmount);
-    const { error } = await supabase.from('budget_items').insert({
-      event_id: event.id,
-      description: `Digital Spray from ${submittedRsvp?.guest_name || 'Anonymous Guest'}`,
-      amount: amount,
-      type: 'income'
-    });
-
-    if (error) {
-      console.error("Failed to record gift:", error);
-    }
-
+  const handleGiftSuccess = () => {
+    // The webhook handles the database update now.
+    // We just show the celebration to the guest.
     confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff'] });
-    showSuccess(`You just sprayed ₦${amount.toLocaleString()}!`);
+    showSuccess(`Thank you for spraying! The host has been notified.`);
     setGiftAmount('');
   };
 
@@ -128,6 +98,13 @@ const EventPage = () => {
     email: submittedRsvp?.guest_phone ? `${submittedRsvp.guest_phone}@eventhub.ng` : "guest@eventhub.ng",
     amount: parseInt(giftAmount) * 100,
     publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
+    metadata: {
+      custom_fields: [
+        { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
+        { display_name: "Payment Type", variable_name: "payment_type", value: "gift" },
+        { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvp?.guest_name || "Anonymous" }
+      ]
+    }
   };
 
   const initializeGiftPayment = usePaystackPayment(paystackConfig);
@@ -194,7 +171,18 @@ const EventPage = () => {
                   <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-2xl">₦</span>
                   <Input type="number" placeholder="Enter Amount" className="h-20 pl-14 bg-white/5 border-white/10 rounded-none text-2xl font-light" value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} />
                 </div>
-                <Button onClick={() => initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} })} className={`h-20 px-12 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}>Spray the Host</Button>
+                <Button 
+                  onClick={() => {
+                    if (!giftAmount || parseInt(giftAmount) < 100) {
+                      showError("Minimum spray is ₦100");
+                      return;
+                    }
+                    initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
+                  }} 
+                  className={`h-20 px-12 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
+                >
+                  Spray the Host
+                </Button>
               </div>
             </motion.div>
           </div>
