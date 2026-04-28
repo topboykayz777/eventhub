@@ -4,13 +4,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, UserCheck, Sparkles, Heart, Crown, Music, QrCode, Users } from 'lucide-react';
+import { Coins, UserCheck, Sparkles, Users, QrCode, Clock } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import confetti from 'canvas-confetti';
 
 interface VibeNotification {
   id: string;
-  type: 'spray' | 'checkin' | 'rsvp' | 'song';
+  type: 'spray' | 'checkin' | 'rsvp';
   title: string;
   detail: string;
   amount?: number;
@@ -23,7 +23,7 @@ const VibeScreen = () => {
   const [notifications, setNotifications] = useState<VibeNotification[]>([]);
   const [stats, setStats] = useState({ rsvps: 0, checkedIn: 0, totalSprayed: 0 });
 
-  const fetchEventAndStats = useCallback(async () => {
+  const fetchInitialData = useCallback(async () => {
     if (!slug) return;
     
     const { data: eventData } = await supabase
@@ -45,13 +45,62 @@ const VibeScreen = () => {
         totalSprayed: budget?.reduce((acc, curr) => acc + curr.amount, 0) || 0
       });
 
-      setupRealtime(eventData.id);
+      // Setup Real-time
+      const channel = supabase
+        .channel(`vibe-live-${eventData.id}`)
+        .on(
+          'postgres_changes', 
+          { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, 
+          (payload) => {
+            if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+              const guestName = payload.new.description.replace('Digital Spray from ', '');
+              addNotification({ 
+                type: 'spray', 
+                title: 'Digital Spray Received!', 
+                detail: `${guestName} just sprayed the host`, 
+                amount: payload.new.amount 
+              });
+              setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
+            }
+          }
+        )
+        .on(
+          'postgres_changes', 
+          { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, 
+          (payload) => {
+            if (payload.new.checked_in && !payload.old.checked_in) {
+              addNotification({ 
+                type: 'checkin', 
+                title: 'Guest Arrival', 
+                detail: `${payload.new.guest_name} just checked in!` 
+              });
+              setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` },
+          (payload) => {
+            addNotification({
+              type: 'rsvp',
+              title: 'New RSVP',
+              detail: `${payload.new.guest_name} is joining the guest list`
+            });
+            setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [slug]);
 
   useEffect(() => {
-    fetchEventAndStats();
-  }, [fetchEventAndStats]);
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   const addNotification = (notif: Omit<VibeNotification, 'id' | 'timestamp'>) => {
     const id = Math.random().toString(36).substring(7);
@@ -69,121 +118,48 @@ const VibeScreen = () => {
       });
     }
 
-    // Auto-remove after 15 seconds to keep the screen clean
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 15000);
   };
 
-  const setupRealtime = (eventId: string) => {
-    const channel = supabase
-      .channel(`vibe-live-${eventId}`)
-      .on(
-        'postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventId}` }, 
-        (payload) => {
-          if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
-            addNotification({ 
-              type: 'spray', 
-              title: 'New Digital Spray!', 
-              detail: payload.new.description, 
-              amount: payload.new.amount 
-            });
-            setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
-          }
-        }
-      )
-      .on(
-        'postgres_changes', 
-        { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventId}` }, 
-        (payload) => {
-          if (payload.new.checked_in && !payload.old.checked_in) {
-            addNotification({ 
-              type: 'checkin', 
-              title: 'Guest Verified', 
-              detail: `${payload.new.guest_name} has arrived` 
-            });
-            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventId}` },
-        (payload) => {
-          addNotification({
-            type: 'rsvp',
-            title: 'New RSVP',
-            detail: `${payload.new.guest_name} is joining the celebration`
-          });
-          setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
-        }
-      )
-      .subscribe();
+  if (!event) return <div className="min-h-screen bg-black flex items-center justify-center text-[#D4AF37] font-serif italic text-2xl">Initializing Vibe...</div>;
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  if (!event) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <motion.div 
-        animate={{ opacity: [0.4, 1, 0.4] }} 
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-[#D4AF37] font-serif italic text-2xl tracking-widest"
-      >
-        Initializing Vibe...
-      </motion.div>
-    </div>
-  );
-
-  const eventUrl = `${window.location.origin}/event/${event.slug}`;
+  // QR code leads directly to the Spray Page
+  const sprayUrl = `${window.location.origin}/spray/${event.slug}`;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col p-12 md:p-20 relative">
-      {/* Cinematic Background */}
       <div className="absolute inset-0 z-0">
         <motion.img 
-          initial={{ scale: 1.2 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 30, repeat: Infinity }}
           src={event.photo_url} 
-          className="w-full h-full object-cover opacity-20 blur-2xl" 
+          className="w-full h-full object-cover opacity-20 blur-3xl" 
           alt="" 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-90" />
       </div>
 
-      {/* Header Section */}
       <div className="relative z-10 flex justify-between items-start mb-20">
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }}>
           <span className="text-[#D4AF37] text-[12px] font-bold tracking-[0.8em] uppercase mb-6 block">Live Celebration Feed</span>
           <h1 className="text-6xl md:text-8xl font-serif italic leading-tight mb-4">{event.event_name}</h1>
           <div className="h-1 w-48 bg-gradient-to-r from-[#D4AF37] to-transparent" />
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="hidden md:flex flex-col items-end gap-6"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-end gap-6">
           <div className="bg-white p-4 rounded-[2rem] shadow-2xl border-4 border-[#D4AF37]/20">
-            <QRCodeSVG value={eventUrl} size={180} level="H" />
+            <QRCodeSVG value={sprayUrl} size={200} level="H" />
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37] mb-2">Scan to RSVP & Spray</p>
-            <p className="text-gray-500 font-mono text-xs">{eventUrl.replace('https://', '')}</p>
+            <p className="text-[12px] font-black uppercase tracking-[0.4em] text-[#D4AF37] mb-2">Scan to Spray the Host</p>
+            <p className="text-gray-500 font-mono text-xs">{sprayUrl.replace('https://', '')}</p>
           </div>
         </motion.div>
       </div>
 
-      {/* Main Content Area */}
       <div className="relative z-10 flex-grow grid md:grid-cols-12 gap-20 items-center">
-        {/* Notifications Column */}
         <div className="md:col-span-8 space-y-8">
           <AnimatePresence mode="popLayout">
             {notifications.map((n) => (
@@ -199,7 +175,7 @@ const VibeScreen = () => {
                   <div className={`w-24 h-24 rounded-full flex items-center justify-center shrink-0 ${
                     n.type === 'spray' ? 'bg-[#D4AF37] text-black' : 'bg-white/10 text-[#D4AF37]'
                   }`}>
-                    {n.type === 'spray' ? <Coins size={40} /> : n.type === 'checkin' ? <UserCheck size={40} /> : <Users size={40} />}
+                    {n.type === 'spray' ? <Coins size={40} /> : <UserCheck size={40} />}
                   </div>
                   <div className="text-left">
                     <p className="text-[#D4AF37] text-[12px] font-black uppercase tracking-[0.5em] mb-2">{n.title}</p>
@@ -207,31 +183,22 @@ const VibeScreen = () => {
                   </div>
                 </div>
                 {n.amount && (
-                  <motion.div 
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="text-5xl md:text-7xl font-serif italic text-[#D4AF37] pr-6"
-                  >
+                  <div className="text-5xl md:text-7xl font-serif italic text-[#D4AF37] pr-6">
                     ₦{n.amount.toLocaleString()}
-                  </motion.div>
+                  </div>
                 )}
               </motion.div>
             ))}
           </AnimatePresence>
 
           {notifications.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              className="h-64 flex flex-col items-center justify-center text-center border border-dashed border-white/10 rounded-[3.5rem]"
-            >
+            <div className="h-64 flex flex-col items-center justify-center text-center border border-dashed border-white/10 rounded-[3.5rem]">
               <Sparkles className="text-gray-800 w-12 h-12 mb-6" />
               <p className="text-gray-600 text-xl font-light tracking-[0.4em] uppercase">Waiting for the next big moment...</p>
-            </motion.div>
+            </div>
           )}
         </div>
 
-        {/* Stats Column */}
         <div className="md:col-span-4 space-y-8">
           <div className="glass-premium p-10 rounded-[3rem] border border-white/5">
             <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-6">Total Digital Sprays</p>
@@ -244,18 +211,9 @@ const VibeScreen = () => {
               <span className="text-gray-600 text-xl font-light">/ {stats.rsvps} Verified</span>
             </div>
           </div>
-          
-          {/* Mobile QR */}
-          <div className="md:hidden flex flex-col items-center gap-6 pt-8">
-            <div className="bg-white p-4 rounded-[2rem]">
-              <QRCodeSVG value={eventUrl} size={140} />
-            </div>
-            <p className="text-[8px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Scan to Join the Celebration</p>
-          </div>
         </div>
       </div>
 
-      {/* Footer Branding */}
       <div className="relative z-10 mt-auto pt-12 flex justify-between items-end border-t border-white/5">
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 border border-[#D4AF37] flex items-center justify-center rotate-45">

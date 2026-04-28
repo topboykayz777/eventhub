@@ -23,6 +23,7 @@ import BudgetTracker from "./pages/BudgetTracker";
 import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
 import VibeScreen from "./pages/VibeScreen";
+import SprayPage from "./pages/SprayPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -66,6 +67,7 @@ const App = () => {
             <Route path="/payment/:id" element={<Payment />} />
             <Route path="/event/:slug" element={<EventPage />} />
             <Route path="/vibe/:slug" element={<VibeScreen />} />
+            <Route path="/spray/:slug" element={<SprayPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/budget/:id" element={<BudgetTracker />} />
