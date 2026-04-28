@@ -76,9 +76,11 @@ const Dashboard = () => {
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
         (payload) => {
           const newItem = payload.new;
+          // Check if this spray belongs to any of the user's events
           const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
           
           if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
+            console.log("[Dashboard] Real-time spray detected!", newItem);
             confetti({ 
               particleCount: 150, 
               spread: 70, 
@@ -87,6 +89,7 @@ const Dashboard = () => {
             });
             setLastSpray(newItem);
             setTimeout(() => setLastSpray(null), 8000);
+            // Force refresh the data
             queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
           }
         }
@@ -95,10 +98,13 @@ const Dashboard = () => {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'rsvps' },
         () => {
+          console.log("[Dashboard] Real-time RSVP detected!");
           queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("[Dashboard] Realtime Status:", status);
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
