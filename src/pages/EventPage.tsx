@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, Award, ExternalLink, Bookmark, Info, Users, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, ExternalLink, Bookmark, Users, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -147,7 +147,7 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
-      <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden">
+      <div className="relative h-[50vh] md:h-[85vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.1, opacity: 0 }} 
           animate={{ scale: 1, opacity: 1 }} 
@@ -158,46 +158,46 @@ const EventPage = () => {
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-16 max-w-6xl mx-auto text-center">
           {!isEventOver ? (
-            <div className="max-w-3xl mx-auto scale-90 md:scale-100 mb-8">
+            <div className="max-w-3xl mx-auto scale-75 md:scale-100 mb-4 md:mb-8">
               <Countdown targetDate={event.event_date} />
             </div>
           ) : (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
-              <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">The Celebration has Concluded</span>
-              <h1 className="text-4xl md:text-7xl font-serif italic mb-4">Thank You for <br /> <span className="text-[#D4AF37]">Celebrating</span> With Us</h1>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 md:mb-12">
+              <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-2 md:mb-4 block">The Celebration has Concluded</span>
+              <h1 className="text-2xl md:text-7xl font-serif italic mb-2 md:mb-4">Thank You for <br /> <span className="text-[#D4AF37]">Celebrating</span> With Us</h1>
             </motion.div>
           )}
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24">
-        <div className="grid md:grid-cols-5 gap-12 md:gap-20">
-          <div className="md:col-span-3 space-y-16 md:space-y-24">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[3rem] border`}>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4"><Calendar className="w-4 h-4" /> The Particulars</h2>
-              <div className="space-y-12">
-                <div className="flex items-start gap-8 group">
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><Sparkles className="text-[#D4AF37] w-6 h-6" /></div>
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-20">
+          <div className="md:col-span-3 space-y-12 md:space-y-24">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-6 md:p-16 rounded-[2rem] md:rounded-[3rem] border`}>
+              <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] mb-8 md:mb-12 flex items-center gap-3 md:gap-4"><Calendar className="w-3 h-3 md:w-4 md:h-4" /> The Particulars</h2>
+              <div className="space-y-8 md:space-y-12">
+                <div className="flex items-start gap-4 md:gap-8 group">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><Sparkles className="text-[#D4AF37] w-4 h-4 md:w-6 md:h-6" /></div>
                   <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Celebration</p>
-                    <h1 className="text-3xl md:text-5xl font-serif italic leading-tight">{event.event_name}</h1>
+                    <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">The Celebration</p>
+                    <h1 className="text-xl md:text-5xl font-serif italic leading-tight">{event.event_name}</h1>
                   </div>
                 </div>
-                <div className="flex items-start gap-8 group">
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><MapPin className="text-[#D4AF37] w-6 h-6" /></div>
+                <div className="flex items-start gap-4 md:gap-8 group">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><MapPin className="text-[#D4AF37] w-4 h-4 md:w-6 md:h-6" /></div>
                   <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Venue</p>
-                    <p className="text-xl md:text-3xl font-light leading-relaxed mb-4">{event.venue}</p>
+                    <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-500 mb-1 md:mb-2">The Venue</p>
+                    <p className="text-lg md:text-3xl font-light leading-relaxed mb-2 md:mb-4">{event.venue}</p>
                     {event.venue_map_url && (
                       <a 
                         href={event.venue_map_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline"
+                        className="inline-flex items-center gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline"
                       >
-                        <Navigation size={12} /> View on Google Maps <ExternalLink size={10} />
+                        <Navigation size={10} /> View on Google Maps <ExternalLink size={8} />
                       </a>
                     )}
                   </div>
@@ -207,8 +207,8 @@ const EventPage = () => {
 
             {event.message && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
-                <Quote className="absolute -top-8 -left-8 w-16 h-16 text-[#D4AF37]/10" />
-                <div className={`${config.card} p-10 md:p-16 rounded-[3rem] border italic text-xl md:text-3xl font-light leading-relaxed text-center`}>
+                <Quote className="absolute -top-4 -left-4 md:-top-8 md:-left-8 w-8 h-8 md:w-16 md:h-16 text-[#D4AF37]/10" />
+                <div className={`${config.card} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border italic text-lg md:text-3xl font-light leading-relaxed text-center`}>
                   "{event.message}"
                 </div>
               </motion.div>
@@ -216,20 +216,20 @@ const EventPage = () => {
 
             {event.gallery_urls && event.gallery_urls.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                <div className="flex justify-between items-end mb-12">
+                <div className="flex justify-between items-end mb-8 md:mb-12">
                   <div>
-                    <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase mb-2 block">The Memory Wall</span>
-                    <h2 className="text-3xl md:text-5xl font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h2>
+                    <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.4em] uppercase mb-1 md:mb-2 block">The Memory Wall</span>
+                    <h2 className="text-2xl md:text-5xl font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h2>
                   </div>
-                  <ImageIcon className="text-gray-600 w-8 h-8" />
+                  <ImageIcon className="text-gray-600 w-6 h-6 md:w-8 md:h-8" />
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
                   {event.gallery_urls.map((url: string, i: number) => (
                     <motion.div 
                       key={i} 
                       whileHover={{ scale: 1.02 }}
                       onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }}
-                      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group"
+                      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group rounded-xl md:rounded-none"
                     >
                       <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
                     </motion.div>
@@ -242,58 +242,58 @@ const EventPage = () => {
           <div className="md:col-span-2">
             <AnimatePresence mode="wait">
               {isEventOver ? (
-                <motion.div key="post-event" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
-                  <GlassCard className={`${config.card} p-10 md:p-16 rounded-[3.5rem] border text-center`}>
-                    <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8">
-                      <Heart className="text-[#D4AF37] w-10 h-10 fill-current" />
+                <motion.div key="post-event" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 md:top-32 space-y-8 md:space-y-10">
+                  <GlassCard className={`${config.card} p-8 md:p-16 rounded-[2rem] md:rounded-[3.5rem] border text-center`}>
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 md:mb-8">
+                      <Heart className="text-[#D4AF37] w-8 h-8 md:w-10 md:h-10 fill-current" />
                     </div>
-                    <h3 className="text-2xl font-serif italic mb-6">A Legacy of Love</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-10">
+                    <h3 className="text-xl md:text-2xl font-serif italic mb-4 md:mb-6">A Legacy of Love</h3>
+                    <p className="text-gray-500 text-xs md:text-sm leading-relaxed mb-8 md:mb-10">
                       The celebration has concluded, but the memories remain. Thank you to everyone who joined us and made this day unforgettable.
                     </p>
-                    <div className="pt-8 border-t border-white/5">
-                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-600 mb-4">Share the Memories</p>
+                    <div className="pt-6 md:pt-8 border-t border-white/5">
+                      <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-600 mb-4">Share the Memories</p>
                       <div className="flex justify-center gap-4">
-                        <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
-                          <Share2 size={18} />
+                        <Button variant="outline" className="rounded-full w-10 h-10 md:w-12 md:h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
+                          <Share2 size={16} />
                         </Button>
-                        <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
-                          <Camera size={18} />
+                        <Button variant="outline" className="rounded-full w-10 h-10 md:w-12 md:h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
+                          <Camera size={16} />
                         </Button>
                       </div>
                     </div>
                   </GlassCard>
                 </motion.div>
               ) : submittedRsvp ? (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
-                  <div className="text-center mb-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-4">
-                      <Bookmark size={12} className="text-[#D4AF37]" />
-                      <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Instruction</span>
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 md:top-32 space-y-8 md:space-y-10">
+                  <div className="text-center mb-4 md:mb-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-3 md:mb-4">
+                      <Bookmark size={10} className="text-[#D4AF37]" />
+                      <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Instruction</span>
                     </div>
-                    <p className="text-[11px] font-medium leading-relaxed opacity-70">
-                      Please <span className="text-[#D4AF37]">Bookmark</span> this page or <span className="text-[#D4AF37]">Add to Home Screen</span>. This is your live portal for event updates and your entry pass.
+                    <p className="text-[9px] md:text-[11px] font-medium leading-relaxed opacity-70 px-4">
+                      Please <span className="text-[#D4AF37]">Bookmark</span> this page. This is your live portal for event updates and your entry pass.
                     </p>
                   </div>
 
                   <DigitalInvite event={event} rsvpId={submittedRsvp.id} guestName={submittedRsvp.guest_name} />
                   
                   {submittedRsvp.table_number && (
-                    <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
-                      <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4"><Users className="w-4 h-4" /> Table Concierge</h2>
-                        <span className="text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</span>
+                    <GlassCard className={`${config.card} p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border`}>
+                      <div className="flex items-center justify-between mb-6 md:mb-8">
+                        <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] flex items-center gap-3 md:gap-4"><Users className="w-3 h-3 md:w-4 md:h-4" /> Table Concierge</h2>
+                        <span className="text-lg md:text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</span>
                       </div>
-                      <div className="space-y-4">
-                        <p className="text-[9px] font-bold uppercase tracking-widest opacity-50 mb-4">Your Table Mates</p>
-                        <div className="grid gap-3">
+                      <div className="space-y-3 md:space-y-4">
+                        <p className="text-[7px] md:text-[9px] font-bold uppercase tracking-widest opacity-50 mb-2 md:mb-4">Your Table Mates</p>
+                        <div className="grid gap-2 md:gap-3">
                           {tableMates.map((mate, i) => (
-                            <div key={i} className="flex justify-between items-center p-4 bg-white/5 border border-white/5 rounded-xl">
-                              <span className="text-sm font-light">{mate.guest_name}</span>
+                            <div key={i} className="flex justify-between items-center p-3 md:p-4 bg-white/5 border border-white/5 rounded-xl">
+                              <span className="text-xs md:text-sm font-light">{mate.guest_name}</span>
                               {mate.checked_in && (
-                                <div className="flex items-center gap-2 text-green-500">
-                                  <span className="text-[7px] font-black uppercase tracking-widest">Seated</span>
-                                  <CheckCircle2 size={12} />
+                                <div className="flex items-center gap-1 md:gap-2 text-green-500">
+                                  <span className="text-[6px] md:text-[7px] font-black uppercase tracking-widest">Seated</span>
+                                  <CheckCircle2 className="w-2.5 h-2.5 md:w-3 md:h-3" />
                                 </div>
                               )}
                             </div>
@@ -303,12 +303,12 @@ const EventPage = () => {
                     </GlassCard>
                   )}
 
-                  <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
-                    <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4"><Coins className="w-4 h-4" /> Digital Spraying</h2>
-                    <div className="space-y-6">
+                  <GlassCard className={`${config.card} p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border`}>
+                    <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] mb-6 md:mb-8 flex items-center gap-3 md:gap-4"><Coins className="w-3 h-3 md:w-4 md:h-4" /> Digital Spraying</h2>
+                    <div className="space-y-4 md:space-y-6">
                       <div className="relative">
-                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-xl">₦</span>
-                        <Input type="number" placeholder="Amount" className="h-16 pl-12 bg-white/5 border-white/10 rounded-none text-lg font-light" value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} />
+                        <span className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-lg md:text-xl">₦</span>
+                        <Input type="number" placeholder="Amount" className="h-14 md:h-16 pl-10 md:pl-12 bg-white/5 border-white/10 rounded-none text-lg font-light" value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} />
                       </div>
                       <Button 
                         onClick={() => {
@@ -318,7 +318,7 @@ const EventPage = () => {
                           }
                           initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
                         }} 
-                        className={`w-full h-16 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
+                        className={`w-full h-14 md:h-16 rounded-none text-[8px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase ${config.button}`}
                       >
                         Spray the Host
                       </Button>
@@ -326,26 +326,26 @@ const EventPage = () => {
                   </GlassCard>
                 </motion.div>
               ) : (
-                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-10 md:p-16 rounded-[3.5rem] shadow-2xl sticky top-32 border border-black/5`}>
-                  <h2 className="text-4xl font-serif italic tracking-tight mb-10">The Registry</h2>
-                  <form onSubmit={handleRSVP} className="space-y-10">
-                    <div className="space-y-2">
-                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Full Name</Label>
-                      <Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="e.g. Chidi Benson" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
+                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-8 md:p-16 rounded-[2rem] md:rounded-[3.5rem] shadow-2xl sticky top-24 md:top-32 border border-black/5`}>
+                  <h2 className="text-3xl md:text-4xl font-serif italic tracking-tight mb-8 md:mb-10">The Registry</h2>
+                  <form onSubmit={handleRSVP} className="space-y-8 md:space-y-10">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest opacity-50">Full Name</Label>
+                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg md:text-xl px-4 md:px-6" placeholder="e.g. Chidi Benson" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">WhatsApp Number</Label>
-                      <Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="080..." value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest opacity-50">WhatsApp Number</Label>
+                      <Input required className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg md:text-xl px-4 md:px-6" placeholder="080..." value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Song Request (Optional)</Label>
-                      <Input className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="Your favorite vibe..." value={rsvpData.songRequest} onChange={(e) => setRsvpData({ ...rsvpData, songRequest: e.target.value })} />
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest opacity-50">Song Request (Optional)</Label>
+                      <Input className="bg-black/5 border-none h-14 md:h-16 rounded-none text-lg md:text-xl px-4 md:px-6" placeholder="Your favorite vibe..." value={rsvpData.songRequest} onChange={(e) => setRsvpData({ ...rsvpData, songRequest: e.target.value })} />
                     </div>
-                    <div className="flex items-center justify-between p-6 bg-black/5">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest">Bringing a Plus One?</Label>
+                    <div className="flex items-center justify-between p-4 md:p-6 bg-black/5">
+                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Bringing a Plus One?</Label>
                       <Switch checked={rsvpData.hasPlusOne} onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} />
                     </div>
-                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-24 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl`}>
+                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-20 md:h-24 rounded-none text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.4em] uppercase shadow-2xl`}>
                       {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Attendance'}
                     </Button>
                   </form>
