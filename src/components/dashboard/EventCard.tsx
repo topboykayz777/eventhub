@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Edit, Copy, Check } from 'lucide-react';
+import { Calendar, MapPin, Edit, Copy, Check, CheckCircle2 } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 interface EventCardProps {
@@ -14,6 +14,7 @@ interface EventCardProps {
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
   const [copied, setCopied] = React.useState(false);
+  const isCompleted = new Date(event.event_date) < new Date();
 
   const handleCopy = () => {
     const url = `${window.location.origin}/event/${event.slug}`;
@@ -28,13 +29,17 @@ const EventCard = ({ event }: EventCardProps) => {
       <div className="relative aspect-[4/5] overflow-hidden border border-white/10 group">
         <img 
           src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
+          className={`w-full h-full object-cover ${isCompleted ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
           alt={event.event_name}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
         
         <div className="absolute top-6 right-6 flex flex-col gap-2 items-end">
-          {event.is_paid ? (
+          {isCompleted ? (
+            <span className="bg-gray-500 text-white text-[8px] font-black px-3 py-1 uppercase tracking-widest flex items-center gap-1">
+              <CheckCircle2 size={10} /> Completed
+            </span>
+          ) : event.is_paid ? (
             <span className="bg-green-500 text-black text-[8px] font-black px-3 py-1 uppercase tracking-widest">Live</span>
           ) : (
             <Link to={`/payment/${event.id}`}>

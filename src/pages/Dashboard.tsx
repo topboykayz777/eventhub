@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff, Coins } from 'lucide-react';
+import { RefreshCw, Plus, ChevronUp, Settings2, Calendar, AlertTriangle, Loader2, Eye, EyeOff, Coins, CheckCircle2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
@@ -49,18 +49,17 @@ const Dashboard = () => {
       const enriched = await Promise.all((eventsData || []).map(async (event) => {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
         const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
-        return { ...event, rsvps: rsvps || [], toasts: toasts || [] };
+        const isCompleted = new Date(event.event_date) < new Date();
+        return { ...event, rsvps: rsvps || [], toasts: toasts || [], isCompleted };
       }));
 
       eventsRef.current = enriched;
       return enriched;
     },
-    // THE EASY FIX: Auto-refresh every 3 seconds
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
 
   useEffect(() => {
-    // Keep the Realtime listener as a backup for "instant" feel
     const channel = supabase
       .channel('ledger-realtime')
       .on(
@@ -112,22 +111,46 @@ const Dashboard = () => {
 
       <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
         <div className="flex justify-between items-end mb-24">
-          <h1 className="text-4xl md:text-7xl font-serif italic">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
+          <div>
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Host Command Center</span>
+            <h1 className="text-4xl md:text-7xl font-serif italic">Your <span className="text-[#D4AF37]">Celebrations</span></h1>
+          </div>
           <Link to="/create-event"><Button className="bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest"><Plus className="w-4 h-4 mr-2" /> New Event</Button></Link>
         </div>
 
         <div className="space-y-12">
           {events.map((event: any) => (
-            <div key={event.id} className="border border-white/5 bg-white/[0.02] rounded-[2rem] overflow-hidden">
+            <div key={event.id} className={`border ${event.isCompleted ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] overflow-hidden transition-all`}>
               <div onClick={() => {
                 const newExpanded = new Set(expandedEvents);
                 if (newExpanded.has(event.id)) newExpanded.delete(event.id);
                 else newExpanded.add(event.id);
                 setExpandedEvents(newExpanded);
-              }} className="p-10 flex justify-between items-center cursor-pointer hover:bg-white/[0.04]">
-                <div className="flex items-center gap-6">
-                  <img src={event.photo_url} className="w-20 h-24 object-cover border border-white/10" alt="" />
-                  <h2 className="text-3xl font-serif italic">{event.event_name}</h2>
+              }} className="p-10 flex justify-between items-center cursor-pointer hover:bg-white/[0.05]">
+                <div className="flex items-center gap-8">
+                  <div className="relative">
+                    <img src={event.photo_url} className={`w-20 h-24 object-cover border border-white/10 ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+                    {event.isCompleted && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <CheckCircle2 className="text-white w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-4 mb-2">
+                      <h2 className={`text-3xl font-serif italic ${event.isCompleted ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
+                      {event.isCompleted ? (
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-gray-800 text-gray-400 px-2 py-1 rounded">Completed</span>
+                      ) : (
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded flex items-center gap-1">
+                          <Clock size={10} /> Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                      {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </p>
+                  </div>
                 </div>
                 <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest">
                   {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
@@ -162,6 +185,12 @@ const Dashboard = () => {
               </AnimatePresence>
             </div>
           ))}
+          
+          {events.length === 0 && (
+            <div className="text-center py-40 border border-dashed border-white/10 rounded-[3rem]">
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
+            </div>
+          )}
         </div>
       </div>
       <QRScannerOverlay isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleQRScan} />
