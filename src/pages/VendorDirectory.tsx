@@ -1,256 +1,261 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '@/components/ui/GlassCard';
-import { Search, MapPin, Phone, Instagram, Star, ArrowRight, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Search, MapPin, Star, ArrowRight, Briefcase, ShieldCheck, Award, CheckCircle2, Loader2, Sparkles, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { showSuccess } from '@/utils/toast';
+import { showSuccess, showError } from '@/utils/toast';
 
-const categories = ["All", "Catering", "Decor", "Photography", "Music", "Venues"];
-
-const DEFAULT_VENDORS = [
-  {
-    id: 'v1',
-    name: 'The Gourmet Atelier',
-    category: 'Catering',
-    location: 'Victoria Island, Lagos',
-    photo_url: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80',
-    phone: '08012345678',
-    instagram: '@gourmet_atelier',
-    is_featured: true
-  },
-  {
-    id: 'v2',
-    name: 'Royal Blooms Decor',
-    category: 'Decor',
-    location: 'Maitama, Abuja',
-    photo_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80',
-    phone: '08023456789',
-    instagram: '@royalblooms',
-    is_featured: true
-  },
-  {
-    id: 'v3',
-    name: 'Lumina Studios',
-    category: 'Photography',
-    location: 'Lekki Phase 1, Lagos',
-    photo_url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80',
-    phone: '08034567890',
-    instagram: '@lumina_studios',
-    is_featured: true
-  },
-  {
-    id: 'v4',
-    name: 'The Grand Ballroom',
-    category: 'Venues',
-    location: 'Ikeja, Lagos',
-    photo_url: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80',
-    phone: '08045678901',
-    instagram: '@grandballroom_ng',
-    is_featured: false
-  },
-  {
-    id: 'v5',
-    name: 'Vibe Masters DJ',
-    category: 'Music',
-    location: 'Port Harcourt',
-    photo_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80',
-    phone: '08056789012',
-    instagram: '@vibemasters_dj',
-    is_featured: false
-  },
-  {
-    id: 'v6',
-    name: 'Silk & Satin Events',
-    category: 'Decor',
-    location: 'Enugu',
-    photo_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80',
-    phone: '08067890123',
-    instagram: '@silksatin_events',
-    is_featured: false
-  }
-];
+const categories = ["Catering", "Decor", "Photography", "Music", "Venues", "Planning"];
 
 const VendorDirectory = () => {
-  const [vendors, setVendors] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [shortlisted, setShortlisted] = useState<string[]>([]);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    location: '',
+    phone: '',
+    instagram: ''
+  });
 
-  useEffect(() => {
-    fetchVendors();
-  }, []);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const fetchVendors = async () => {
     try {
-      const { data, error } = await supabase
-        .from('vendors')
-        .select('*')
-        .order('is_featured', { ascending: false });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showError("Please sign in to register as a vendor.");
+        return;
+      }
+
+      const { error } = await supabase.from('vendors').insert({
+        ...formData,
+        user_id: user.id,
+        is_featured: false
+      });
 
       if (error) throw error;
-      setVendors(data && data.length > 0 ? data : DEFAULT_VENDORS);
-    } catch (err) {
-      setVendors(DEFAULT_VENDORS);
+
+      showSuccess("Application submitted. Our curators will review your portfolio.");
+      setIsRegistering(false);
+      setFormData({ name: '', category: '', location: '', phone: '', instagram: '' });
+    } catch (err: any) {
+      showError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleShortlist = (vendorId: string) => {
-    if (shortlisted.includes(vendorId)) {
-      setShortlisted(prev => prev.filter(id => id !== vendorId));
-      showSuccess("Removed from your shortlist");
-    } else {
-      setShortlisted(prev => [...prev, vendorId]);
-      showSuccess("Added to your shortlist");
-    }
-  };
-
-  const filteredVendors = vendors.filter(v => {
-    const matchesSearch = v.name.toLowerCase().includes(search.toLowerCase()) ||
-                         v.category.toLowerCase().includes(search.toLowerCase()) ||
-                         v.location.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || v.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
-
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#050505] text-white">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
-        <div className="text-center mb-12 md:mb-20">
-          <motion.span 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-4 md:mb-8 block"
-          >
-            The Elite Concierge
-          </motion.span>
-          <motion.h1 
+      <div className="relative py-24 md:py-40 px-6 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 grayscale" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
+
+        <div className="max-w-7xl mx-auto relative z-10 text-center">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-8xl font-serif italic text-white mb-6 md:mb-10 leading-tight tracking-tight"
+            transition={{ duration: 0.8 }}
           >
-            The <span className="text-[#D4AF37]">Directory</span>
-          </motion.h1>
-          <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide px-4">
-            A curated selection of Nigeria's most prestigious event professionals, handpicked for the discerning planner.
-          </p>
-        </div>
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-8 block">The Elite Network</span>
+            <h1 className="text-5xl md:text-8xl font-serif italic mb-10 leading-tight">
+              Join the <span className="text-[#D4AF37]">Atelier</span>
+            </h1>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-16">
+              We are curating Nigeria's most prestigious directory of event professionals. 
+              Register your brand to connect with high-society hosts and elite planners.
+            </p>
 
-        <div className="mb-16 md:mb-24 space-y-8 md:space-y-12">
-          <div className="relative max-w-3xl mx-auto px-2 md:px-0">
-            <Search className="absolute left-6 md:left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-5 h-5" />
-            <Input 
-              className="pl-14 md:pl-16 h-16 md:h-20 rounded-none bg-white/5 border-white/10 text-lg md:text-xl font-light tracking-wide focus:border-[#D4AF37]/50 transition-all"
-              placeholder="Search by name, category, or location..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-3 md:gap-6 px-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] px-4 md:px-8 py-3 md:py-4 border transition-all duration-500 ${
-                  activeCategory === cat 
-                    ? 'bg-[#D4AF37] text-black border-[#D4AF37]' 
-                    : 'bg-transparent text-gray-500 border-white/10 hover:border-[#D4AF37]/30 hover:text-white'
-                }`}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+              <Button 
+                onClick={() => setIsRegistering(true)}
+                className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500"
               >
-                {cat}
-              </button>
+                Apply for Membership
+              </Button>
+              <div className="flex items-center gap-4 text-gray-500">
+                <ShieldCheck className="text-[#D4AF37] w-5 h-5" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Vetted Professionals Only</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      <section className="py-32 px-6 bg-[#080808]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-16">
+            {[
+              { 
+                title: "Direct Access", 
+                desc: "Connect directly with hosts planning high-budget weddings and galas.",
+                icon: Briefcase 
+              },
+              { 
+                title: "Elite Branding", 
+                desc: "Position your brand alongside Nigeria's most respected event vendors.",
+                icon: Award 
+              },
+              { 
+                title: "Seamless Inquiries", 
+                desc: "Receive structured inquiries linked directly to active event dashboards.",
+                icon: Sparkles 
+              }
+            ].map((feature, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8">
+                  <feature.icon className="text-[#D4AF37] w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-serif italic mb-4">{feature.title}</h3>
+                <p className="text-gray-500 text-sm font-light leading-relaxed">{feature.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
+      </section>
 
-        {loading ? (
-          <div className="text-center py-20 text-gray-500 tracking-[0.3em] uppercase text-[10px] font-bold animate-pulse">
-            Curating Excellence...
+      <section className="py-40 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-24">
+            <h2 className="text-4xl font-serif italic mb-4">Directory Preview</h2>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Launching Q3 2026</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 px-2 md:px-0">
-            <AnimatePresence mode="popLayout">
-              {filteredVendors.length > 0 ? (
-                filteredVendors.map((vendor, index) => (
-                  <GlassCard key={vendor.id} delay={index * 0.05} className="group relative flex flex-col h-full">
-                    <div className="h-64 md:h-72 bg-gray-900 relative overflow-hidden">
-                      <img 
-                        src={vendor.photo_url} 
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
-                        alt={vendor.name}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
-                      
-                      <button 
-                        onClick={() => toggleShortlist(vendor.id)}
-                        className="absolute top-4 left-4 md:top-6 md:left-6 z-20 p-2 md:p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
-                      >
-                        {shortlisted.includes(vendor.id) ? <BookmarkCheck className="w-4 h-4 md:w-5 md:h-5" /> : <Bookmark className="w-4 h-4 md:w-5 md:h-5" />}
-                      </button>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 opacity-20 blur-sm pointer-events-none">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass-premium p-10 rounded-[3rem] border border-white/5 h-96" />
+            ))}
+          </div>
+          
+          <div className="absolute inset-0 flex items-center justify-center z-20">
+            <div className="text-center bg-[#050505]/80 backdrop-blur-xl p-16 border border-[#D4AF37]/20 rounded-[4rem]">
+              <h3 className="text-3xl font-serif italic mb-6">Be Among the First</h3>
+              <p className="text-gray-400 text-sm mb-10 max-w-xs mx-auto">Our directory is currently in private beta. Register now to secure your spot in the public launch.</p>
+              <Button 
+                onClick={() => setIsRegistering(true)}
+                variant="outline" 
+                className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest"
+              >
+                Register Brand
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                      {vendor.is_featured && (
-                        <div className="absolute top-4 right-4 md:top-6 md:right-6 bg-[#D4AF37] text-black px-3 md:px-4 py-1 text-[7px] md:text-[8px] font-black tracking-[0.2em] uppercase flex items-center gap-2 z-20">
-                          <Star className="w-3 h-3 fill-current" /> Elite Partner
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-6 md:p-10 flex flex-col flex-grow">
-                      <div className="flex justify-between items-start mb-4 md:mb-6">
-                        <div>
-                          <h3 className="text-xl md:text-2xl font-serif italic text-white mb-1 md:mb-2">{vendor.name}</h3>
-                          <div className="flex items-center gap-2 text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em]">
-                            <MapPin className="w-3 h-3 text-[#D4AF37]" /> {vendor.location}
-                          </div>
-                        </div>
-                        <span className="text-[7px] md:text-[8px] font-black tracking-[0.1em] md:tracking-[0.2em] uppercase text-[#D4AF37] border border-[#D4AF37]/30 px-2 md:px-3 py-1 shrink-0">
-                          {vendor.category}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mb-6 md:mb-8 mt-auto">
-                        <button 
-                          className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
-                          onClick={() => window.open(`tel:${vendor.phone}`)}
-                        >
-                          <Phone className="w-3 h-3" /> Call
-                        </button>
-                        <button 
-                          className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] text-gray-400 hover:text-[#D4AF37] transition-colors flex items-center gap-2"
-                          onClick={() => window.open(`https://instagram.com/${vendor.instagram?.replace('@', '')}`)}
-                        >
-                          <Instagram className="w-3 h-3" /> Instagram
-                        </button>
-                      </div>
+      <AnimatePresence>
+        {isRegistering && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-2xl w-full bg-[#0f0f0f] border border-white/10 p-12 rounded-[3rem] shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setIsRegistering(false)}
+                className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
 
-                      <Link to={`/vendor/${vendor.id}`}>
-                        <Button className="w-full bg-white/5 hover:bg-[#D4AF37] hover:text-black text-white border border-white/10 rounded-none py-5 md:py-6 text-[8px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase transition-all duration-500">
-                          View Portfolio <ArrowRight className="w-3 h-3 ml-2" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </GlassCard>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-20 border border-dashed border-white/10">
-                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">No professionals found in this category.</p>
+              <div className="text-center mb-12">
+                <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Vendor Application</span>
+                <h2 className="text-3xl font-serif italic">Brand Registration</h2>
+              </div>
+
+              <form onSubmit={handleRegister} className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Brand Name</Label>
+                    <Input 
+                      required 
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Category</Label>
+                    <Select onValueChange={(v) => setFormData({ ...formData, category: v })}>
+                      <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              )}
-            </AnimatePresence>
-          </div>
+
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Primary Location</Label>
+                  <Input 
+                    required 
+                    placeholder="e.g. Victoria Island, Lagos"
+                    className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">WhatsApp Number</Label>
+                    <Input 
+                      required 
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Instagram Handle</Label>
+                    <Input 
+                      placeholder="@yourbrand"
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+                >
+                  {loading ? <Loader2 className="animate-spin" /> : 'Submit Application'}
+                </Button>
+              </form>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };
