@@ -57,19 +57,19 @@ const Dashboard = () => {
       eventsRef.current = enriched;
       return enriched;
     },
-    refetchInterval: 10000,
+    refetchInterval: 15000, // Slightly increased interval to rely more on real-time
   });
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    await refetch();
+    await queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
     setTimeout(() => setIsRefreshing(false), 1000);
     showSuccess("Dashboard Synchronized.");
   };
 
   useEffect(() => {
     const channel = supabase
-      .channel('dashboard-realtime')
+      .channel('dashboard-realtime-v2')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'budget_items' },
@@ -92,8 +92,9 @@ const Dashboard = () => {
       )
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'rsvps' },
+        { event: '*', schema: 'public', table: 'rsvps' }, // Listen for ALL changes (INSERT, UPDATE, DELETE)
         () => {
+          console.log("[Dashboard] RSVP change detected, invalidating queries...");
           queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
         }
       )
@@ -105,7 +106,10 @@ const Dashboard = () => {
   const handleQRScan = async (id: string) => {
     const { error } = await supabase.from('rsvps').update({ checked_in: true }).eq('id', id);
     if (error) showError("Invalid pass.");
-    else { showSuccess("Guest checked in."); refetch(); }
+    else { 
+      showSuccess("Guest checked in."); 
+      queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+    }
   };
 
   if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
@@ -212,8 +216,8 @@ const Dashboard = () => {
                                 onSearchChange={setSearchQuery} 
                                 onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
                                 onExportCSV={() => {}} 
-                                onToggleCheckIn={() => refetch()} 
-                                onUpdate={() => refetch()}
+                                onToggleCheckIn={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })} 
+                                onUpdate={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })}
                               />
                             </TabsContent>
                             <TabsContent value="tools">
