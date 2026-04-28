@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { showSuccess, showError } from '@/utils/toast';
 
 interface QRScannerProps {
   onScanSuccess: (decodedText: string) => void;
@@ -18,7 +17,8 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
       { 
         fps: 10, 
         qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
+        aspectRatio: 1.0,
+        showTorchButtonIfSupported: true
       },
       /* verbose= */ false
     );
@@ -26,9 +26,14 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
     scanner.render(
       (decodedText) => {
         onScanSuccess(decodedText);
-        // We don't stop the scanner here so the host can scan multiple guests quickly
       },
       (error) => {
+        // Ignore "NotFoundException" as it's just the scanner searching every frame
+        if (error?.includes("NotFoundException")) {
+          return;
+        }
+        
+        // Only pass real errors (like camera access denied) to the parent
         if (onScanError) onScanError(error);
       }
     );
