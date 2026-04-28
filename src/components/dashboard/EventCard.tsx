@@ -14,7 +14,8 @@ interface EventCardProps {
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
   const [copied, setCopied] = React.useState(false);
-  const isCompleted = new Date(event.event_date) < new Date();
+  // Mark as completed only 24 hours after the event date
+  const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
 
   const handleCopy = () => {
     const url = `${window.location.origin}/event/${event.slug}`;

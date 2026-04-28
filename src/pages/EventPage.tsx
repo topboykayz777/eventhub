@@ -112,7 +112,8 @@ const EventPage = () => {
   if (loading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
   if (!event) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white">Event not found.</div>;
 
-  const isEventOver = new Date(event.event_date) < new Date();
+  // Mark as over only 24 hours after the event date
+  const isEventOver = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-black" },

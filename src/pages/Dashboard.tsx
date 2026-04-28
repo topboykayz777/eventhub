@@ -49,7 +49,8 @@ const Dashboard = () => {
       const enriched = await Promise.all((eventsData || []).map(async (event) => {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
         const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
-        const isCompleted = new Date(event.event_date) < new Date();
+        // Mark as completed only 24 hours after the event date
+        const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
         return { ...event, rsvps: rsvps || [], toasts: toasts || [], isCompleted };
       }));
 
