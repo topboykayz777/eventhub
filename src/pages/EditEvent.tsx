@@ -65,6 +65,12 @@ const EditEvent = () => {
     
     const file = e.target.files[0];
 
+    // Restrict to images only
+    if (!file.type.startsWith('image/')) {
+      showError("Only image files are supported on this page.");
+      return;
+    }
+
     if (file.size > 10 * 1024 * 1024) {
       showError("File is too large. Maximum size is 10MB.");
       return;
@@ -266,7 +272,7 @@ const EditEvent = () => {
                   <Label htmlFor="cover-upload" className="cursor-pointer h-32 w-full flex-1 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
                     {uploading ? <Loader2 className="w-5 h-5 animate-spin text-[#D4AF37]" /> : <Upload className="w-5 h-5 text-gray-600" />}
                     <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Change Cover Portrait</span>
-                    <input id="cover-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e)} />
+                    <input id="cover-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e)} />
                   </Label>
                 </div>
               </div>
@@ -305,11 +311,11 @@ const EditEvent = () => {
                     <Label htmlFor="gallery-upload" className="cursor-pointer aspect-square border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
                       <Upload className="w-4 h-4 text-gray-600" />
                       <span className="text-[7px] font-bold uppercase tracking-[0.1em] text-gray-500">Add Media</span>
-                      <input id="gallery-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
+                      <input id="gallery-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
                     </Label>
                   )}
                 </div>
-                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 10MB per file. Images and Videos supported.</p>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 10MB per file. Images supported.</p>
               </div>
             </div>
           </GlassCard>
