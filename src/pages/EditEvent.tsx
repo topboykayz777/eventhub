@@ -19,7 +19,6 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [eventPlan, setEventPlan] = useState('Basic');
   const [formData, setFormData] = useState({
     eventName: '',
     eventDate: '',
@@ -47,7 +46,6 @@ const EditEvent = () => {
       return;
     }
 
-    setEventPlan(data.plan || 'Basic');
     setFormData({
       eventName: data.event_name,
       eventDate: data.event_date,
@@ -65,7 +63,7 @@ const EditEvent = () => {
     
     const file = e.target.files[0];
 
-    // Restrict to images only
+    // Restrict to images only (as requested)
     if (!file.type.startsWith('image/')) {
       showError("Only image files are supported on this page.");
       return;
@@ -74,14 +72,6 @@ const EditEvent = () => {
     if (file.size > 10 * 1024 * 1024) {
       showError("File is too large. Maximum size is 10MB.");
       return;
-    }
-
-    if (isGallery) {
-      const limit = eventPlan === 'Pro' ? 50 : eventPlan === 'Standard' ? 10 : 0;
-      if ((formData.gallery_urls?.length || 0) >= limit) {
-        showError(`Your ${eventPlan} plan is limited to ${limit} gallery items. Upgrade for more.`);
-        return;
-      }
     }
 
     const fileExt = file.name.split('.').pop();
@@ -143,21 +133,6 @@ const EditEvent = () => {
       setSaving(false);
     }
   };
-
-  const themes = [
-    { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
-    { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
-    { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
-    { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
-    { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
-    { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
-    { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
-    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
-    { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
-    { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
-    { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
-    { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool }
-  ];
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
@@ -289,9 +264,9 @@ const EditEvent = () => {
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Media Gallery ({eventPlan})</Label>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">
-                    {(formData.gallery_urls?.length || 0)} / {eventPlan === 'Pro' ? '50' : eventPlan === 'Standard' ? '10' : '0'} Items
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Media Gallery</Label>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-[#D4AF37]">
+                    {(formData.gallery_urls?.length || 0)} Items
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -307,13 +282,11 @@ const EditEvent = () => {
                       </button>
                     </div>
                   ))}
-                  {(eventPlan === 'Standard' || eventPlan === 'Pro') && (
-                    <Label htmlFor="gallery-upload" className="cursor-pointer aspect-square border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
-                      <Upload className="w-4 h-4 text-gray-600" />
-                      <span className="text-[7px] font-bold uppercase tracking-[0.1em] text-gray-500">Add Media</span>
-                      <input id="gallery-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
-                    </Label>
-                  )}
+                  <Label htmlFor="gallery-upload" className="cursor-pointer aspect-square border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
+                    <Upload className="w-4 h-4 text-gray-600" />
+                    <span className="text-[7px] font-bold uppercase tracking-[0.1em] text-gray-500">Add Media</span>
+                    <input id="gallery-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
+                  </Label>
                 </div>
                 <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 10MB per file. Images supported.</p>
               </div>
@@ -329,7 +302,20 @@ const EditEvent = () => {
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-              {themes.map((t) => (
+              {[
+                { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
+                { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
+                { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
+                { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
+                { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
+                { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
+                { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
+                { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
+                { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
+                { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
+                { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
+                { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool }
+              ].map((t) => (
                 <button
                   key={t.id}
                   type="button"
