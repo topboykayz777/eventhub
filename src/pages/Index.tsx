@@ -145,6 +145,7 @@ const Index = () => {
             <ul className="space-y-3 md:space-y-4 lg:space-y-6 text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">
               <li><Link to="/create-event" className="hover:text-white transition-colors">Create</Link></li>
               <li><Link to="/vendors" className="hover:text-white transition-colors">Directory</Link></li>
+              <li><Link to="/faq" className="hover:text-white transition-colors">FAQ & Guide</Link></li>
               <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>
           </div>
