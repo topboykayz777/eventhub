@@ -1,19 +1,22 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const Hero = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   return (
     <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden bg-[#0f0f0f]">
-      {/* Background Image with Slow Zoom */}
+      {/* Background Image with Slow Zoom and Optimization */}
       <div className="absolute inset-0 overflow-hidden">
         <img 
-          src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
-          className="w-full h-full object-cover opacity-30 md:opacity-40 animate-slow-zoom"
+          src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1920" 
+          className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${isLoaded ? 'opacity-30 md:opacity-40' : 'opacity-0'} animate-slow-zoom`}
           alt="Luxury Event"
+          onLoad={() => setIsLoaded(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f0f] via-transparent to-[#0f0f0f]" />
       </div>

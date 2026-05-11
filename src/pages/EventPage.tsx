@@ -29,6 +29,7 @@ const EventPage = () => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -172,11 +173,12 @@ const EventPage = () => {
       <div className="relative h-[50vh] min-h-[400px] md:h-[60vh] md:min-h-[500px] lg:h-[85vh] w-full overflow-hidden">
         <motion.img 
           initial={{ scale: 1.1, opacity: 0 }} 
-          animate={{ scale: 1, opacity: 1 }} 
+          animate={{ scale: 1, opacity: heroLoaded ? 1 : 0 }} 
           transition={{ duration: 1.5 }} 
           src={event.photo_url} 
-          className={`w-full h-full object-cover ${isEventOver ? 'grayscale' : 'brightness-75'}`} 
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${isEventOver ? 'grayscale' : 'brightness-75'}`} 
           alt="" 
+          onLoad={() => setHeroLoaded(true)}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
@@ -263,7 +265,7 @@ const EventPage = () => {
                       onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }}
                       className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group rounded-lg md:rounded-none"
                     >
-                      <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                      <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" loading="lazy" />
                     </motion.div>
                   ))}
                 </div>
