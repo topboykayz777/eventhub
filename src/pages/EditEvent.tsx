@@ -101,7 +101,8 @@ const EditEvent = () => {
     const newUrls: string[] = [];
 
     try {
-      for (const file of files) {const fileName = `gallery-${Math.random()}.${file.name.split(".").pop()}`;
+      for (const file of files) {
+        const fileName = `gallery-${Math.random()}.${file.name.split(".").pop()}`;
         const { error: uploadError } = await supabase.storage
           .from("event-photos")
           .upload(fileName, file);
@@ -138,7 +139,7 @@ const EditEvent = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("events")
         .update({
           event_name: event.event_name,
@@ -149,13 +150,11 @@ const EditEvent = () => {
           photo_url: event.photo_url,
           gallery_urls: event.gallery_urls
         })
-        .eq("id", id)
-        .select()
-        .single();
+        .eq("id", id);
 
       if (error) throw error;
       showSuccess("Event masterpiece updated.");
-      navigate(`/event/${data.slug}`);
+      navigate('/dashboard');
     } catch (err: any) {
       showError(err.message);
     } finally {
