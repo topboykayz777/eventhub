@@ -37,8 +37,7 @@ const EditEvent = () => {
     venue: "",
     message: "",
     theme: "modern",
-    photo_url: "",
-    gallery_urls: [] as string[]
+    photo_url: ""
   });
 
   const [uploading, setUploading] = useState(false);
@@ -65,33 +64,22 @@ const EditEvent = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
     setUploading(true);
-    try {
-      const file = e.target.files[0];
-      const fileName = `${Math.random()}.${file.name.split(".").pop()}`;
-      const { error: uploadError } = await supabase.storage
-        .from("event-photos")
-        .upload(fileName, file);
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-photos")
-        .getPublicUrl(fileName);
-
-      setEvent(prev => ({ ...prev, photo_url: publicUrl }));
-
-      const newGallery = [...event.gallery_urls, publicUrl];
-      await supabase
-        .from("events")
-        .update({ gallery_urls: newGallery })
-        .eq("id", id)
-        .select();
-
-      showSuccess("Cover image added to gallery.");
-    } catch (err: any) {
-      showError(err.message ?? "Upload failed");
-    } finally {
+    const file = e.target.files[0];
+    const fileName = `${Math.random()}.${file.name.split(".").pop()}`;
+    const { error: uploadError } = await supabase.storage
+      .from("event-photos")
+      .upload(fileName, file);
+    if (uploadError) {
+      showError(uploadError.message);
       setUploading(false);
+      return;
     }
+    const { data: { publicUrl } } = supabase.storage
+      .from("event-photos")
+      .getPublicUrl(fileName);
+    setEvent(prev => ({ ...prev, photo_url: publicUrl }));
+    showSuccess("Cover image updated.");
+    setUploading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,8 +94,7 @@ const EditEvent = () => {
           venue: event.venue,
           message: event.message,
           theme: event.theme,
-          photo_url: event.photo_url,
-          gallery_urls: event.gallery_urls
+          photo_url: event.photo_url
         })
         .eq("id", id)
         .select()
@@ -117,7 +104,7 @@ const EditEvent = () => {
       showSuccess("Event updated successfully.");
       navigate(`/event/${data.slug}`);
     } catch (err: any) {
-      showError(err.message ?? "Save failed");
+      showError(err.message);
     } finally {
       setLoading(false);
     }
@@ -142,10 +129,15 @@ const EditEvent = () => {
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
       <div className="max-w-5xl mx-auto py-12 px-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <div className="text-center mb-10">
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase mb-2">Edit Event</span>
-            <h1 className="text-4xl md:text-6xl font-serif italic mb-4">Customize Your Celebration</h1>
+            <h1 className="text-4xl md:text-6xl font-serif italic mb-4">
+              Customize Your Celebration
+            </h1>
           </div>
 
           {loading ? (
@@ -188,7 +180,7 @@ const EditEvent = () => {
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host’s Message</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host&apos;s Message</Label>
                 <textarea
                   placeholder="A personal note to your guests..."
                   className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light resize-none"
@@ -212,9 +204,7 @@ const EditEvent = () => {
                       }`}
                     >
                       <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2">
-                        <ImageIcon className={`w-6 h-6 ${
-                          event.theme === theme.id ? "text-[#D4AF37]" : "text-gray-400"
-                        }`} />
+                        <ImageIcon className={`w-6 h-6 ${event.theme === theme.id ? "text-[#D4AF37]" : "text-gray-400"}`} />
                       </div>
                       <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-400">{theme.label}</span>
                       <div className={`absolute top-0 right-0 w-8 h-8 ${theme.color} opacity-20 -mr-2 -mt-2 rounded-full`} />
@@ -224,7 +214,7 @@ const EditEvent = () => {
               </div>
 
               <div className="space-y-6">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait / Gallery</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait</Label>
                 {event.photo_url ? (
                   <div className="relative aspect-video w-full overflow-hidden border border-white/10 rounded-[2rem]">
                     <img src={event.photo_url} className="w-full h-full object-cover" alt="Preview" />
@@ -241,9 +231,7 @@ const EditEvent = () => {
                     <Label htmlFor="photo-upload" className="cursor-pointer">
                       <div className="h-32 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-4 hover:border-[#D4AF37]/30 bg-white/5">
                         <Upload className="text-gray-600 w-10 h-10" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                          Upload High‑Resolution Portrait(s)
-                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Upload High-Resolution Portrait</span>
                       </div>
                     </Label>
                     <Input
