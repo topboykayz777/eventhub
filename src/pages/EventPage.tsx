@@ -21,9 +21,9 @@ const EventPage = () => {
   const { slug } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false });
+  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false, plusOneName: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
+  const [submittedRsvps, setSubmittedRsvps] = useState<any[]>([]);
   const [tableMates, setTableMates] = useState<any[]>([]);
   const [giftAmount, setGiftAmount] = useState('');
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -54,13 +54,15 @@ const EventPage = () => {
 
       if (data) {
         setEvent(data);
-        const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
-        if (savedRsvpId) {
-          const { data: rsvp } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
-          if (rsvp) {
-            setSubmittedRsvp(rsvp);
-            if (rsvp.table_number) {
-              fetchTableMates(data.id, rsvp.table_number);
+        const savedRsvpIds = localStorage.getItem(`eventhub_rsvps_${data.id}`);
+        if (savedRsvpIds) {
+          const ids = JSON.parse(savedRsvpIds);
+          const { data: rsvps } = await supabase.from('rsvps').select('*').in('id', ids);
+          if (rsvps && rsvps.length > 0) {
+            setSubmittedRsvps(rsvps);
+            const firstWithTable = rsvps.find(r => r.table_number);
+            if (firstWithTable) {
+              fetchTableMates(data.id, firstWithTable.table_number);
             }
           }
         }
@@ -87,22 +89,43 @@ const EventPage = () => {
       showError("This event is currently pending activation.");
       return;
     }
+    
+    if (rsvpData.hasPlusOne && !rsvpData.plusOneName) {
+      showError("Please provide your plus one's name.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.from('rsvps').insert({
-        event_id: event.id,
-        guest_name: rsvpData.name,
-        guest_phone: rsvpData.phone,
-        song_request: rsvpData.songRequest,
-        has_plus_one: rsvpData.hasPlusOne
-      }).select('*').single();
+      const rsvpEntries = [
+        {
+          event_id: event.id,
+          guest_name: rsvpData.name,
+          guest_phone: rsvpData.phone,
+          song_request: rsvpData.songRequest,
+          has_plus_one: rsvpData.hasPlusOne
+        }
+      ];
+
+      if (rsvpData.hasPlusOne) {
+        rsvpEntries.push({
+          event_id: event.id,
+          guest_name: rsvpData.plusOneName,
+          guest_phone: rsvpData.phone, // Use same phone for contact
+          song_request: rsvpData.songRequest,
+          has_plus_one: false // The plus one doesn't have their own plus one
+        });
+      }
+
+      const { data, error } = await supabase.from('rsvps').insert(rsvpEntries).select('*');
 
       if (error) throw error;
 
-      localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
+      const ids = data.map(r => r.id);
+      localStorage.setItem(`eventhub_rsvps_${event.id}`, JSON.stringify(ids));
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
-      setSubmittedRsvp(data);
+      setSubmittedRsvps(data);
     } catch (err: any) {
       showError(err.message);
     } finally {
@@ -118,14 +141,14 @@ const EventPage = () => {
 
   const paystackConfig = {
     reference: (new Date()).getTime().toString(),
-    email: submittedRsvp?.guest_phone ? `${submittedRsvp.guest_phone}@eventhub.ng` : "guest@eventhub.ng",
+    email: submittedRsvps[0]?.guest_phone ? `${submittedRsvps[0].guest_phone}@eventhub.ng` : "guest@eventhub.ng",
     amount: parseInt(giftAmount) * 100,
     publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
     metadata: {
       custom_fields: [
         { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
         { display_name: "Payment Type", variable_name: "payment_type", value: "gift" },
-        { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvp?.guest_name || "Anonymous" }
+        { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvps[0]?.guest_name || "Anonymous" }
       ]
     }
   };
@@ -300,7 +323,7 @@ const EventPage = () => {
                     </div>
                   </GlassCard>
                 </motion.div>
-              ) : submittedRsvp ? (
+              ) : submittedRsvps.length > 0 ? (
                 <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 lg:top-32 space-y-6 md:space-y-8 lg:space-y-10">
                   <div className="text-center mb-4 md:mb-6">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-3 md:mb-4">
@@ -308,19 +331,23 @@ const EventPage = () => {
                       <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Instruction</span>
                     </div>
                     <p className="text-[9px] md:text-[11px] font-medium leading-relaxed opacity-70 px-4">
-                      Please <span className="text-[#D4AF37]">Bookmark</span> this page. This is your live portal for event updates and your entry pass.
+                      Please <span className="text-[#D4AF37]">Bookmark</span> this page. These are your live entry passes.
                     </p>
                   </div>
 
-                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} guestName={submittedRsvp.guest_name} />
+                  <div className="space-y-8">
+                    {submittedRsvps.map((rsvp) => (
+                      <DigitalInvite key={rsvp.id} event={event} rsvpId={rsvp.id} guestName={rsvp.guest_name} />
+                    ))}
+                  </div>
                   
-                  {submittedRsvp.table_number && (
+                  {submittedRsvps.some(r => r.table_number) && (
                     <GlassCard className={`${config.card} p-4 md:p-6 lg:p-10 rounded-2xl md:rounded-[1.5rem] lg:rounded-[2.5rem] border`}>
                       <div className="flex items-center justify-between mb-4 md:mb-6 lg:mb-8">
                         <h2 className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] flex items-center gap-2 md:gap-4">
                           <Users className="w-3 h-3 md:w-4 md:h-4" /> Table Concierge
                         </h2>
-                        <span className="text-lg md:text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</span>
+                        <span className="text-lg md:text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvps.find(r => r.table_number)?.table_number}</span>
                       </div>
                       <div className="space-y-2 md:space-y-3 lg:space-y-4">
                         <p className="text-[7px] md:text-[9px] font-bold uppercase tracking-widest opacity-50 mb-2">Your Table Mates</p>
@@ -411,6 +438,27 @@ const EventPage = () => {
                         onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} 
                       />
                     </div>
+                    
+                    <AnimatePresence>
+                      {rsvpData.hasPlusOne && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }} 
+                          animate={{ opacity: 1, height: 'auto' }} 
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-1.5 md:space-y-2 overflow-hidden"
+                        >
+                          <Label className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest opacity-50">Plus One's Name</Label>
+                          <Input 
+                            required 
+                            className="bg-black/5 border-none h-12 md:h-14 lg:h-16 rounded-none text-base md:text-lg lg:text-xl px-4 md:px-6" 
+                            placeholder="e.g. Amaka Benson" 
+                            value={rsvpData.plusOneName} 
+                            onChange={(e) => setRsvpData({ ...rsvpData, plusOneName: e.target.value })} 
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <Button 
                       type="submit" 
                       disabled={isSubmitting} 
