@@ -21,16 +21,16 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-6"
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 overflow-y-auto"
         >
-          <div className="max-w-md w-full">
-            <div className="flex justify-between items-center mb-12">
-              <h3 className="text-2xl font-serif italic text-white">Guest Check-in</h3>
+          <div className="max-w-md w-full my-auto">
+            <div className="flex justify-between items-center mb-8 md:mb-12">
+              <h3 className="text-xl md:text-2xl font-serif italic text-white">Guest Check-in</h3>
               <button 
                 onClick={onClose}
-                className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
             
@@ -41,12 +41,12 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
               }} 
             />
             
-            <div className="mt-12 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-4">Manual Entry</p>
+            <div className="mt-8 md:mt-12 text-center">
+              <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-4">Manual Entry</p>
               <div className="flex gap-4">
                 <Input 
                   placeholder="Enter RSVP ID" 
-                  className="bg-white/5 border-white/10 rounded-none h-14 text-[10px] font-bold uppercase tracking-[0.2em]"
+                  className="bg-white/5 border-white/10 rounded-none h-12 md:h-14 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em]"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       onScan(e.currentTarget.value);
@@ -54,7 +54,7 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
                     }
                   }}
                 />
-                <Button className="bg-[#D4AF37] text-black rounded-none h-14 px-8 text-[10px] font-bold uppercase tracking-[0.2em]">
+                <Button className="bg-[#D4AF37] text-black rounded-none h-12 md:h-14 px-6 md:px-8 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em]">
                   Verify
                 </Button>
               </div>
