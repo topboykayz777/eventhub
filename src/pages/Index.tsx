@@ -98,6 +98,7 @@ const Index = () => {
                   <img 
                     src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80" 
                     alt="Elegant Event" 
+                    loading="lazy"
                     className="w-full h-[250px] md:h-[400px] lg:h-[600px] object-cover grayscale hover:grayscale-0 transition-all duration-1000"
                   />
                 </div>
@@ -144,7 +145,6 @@ const Index = () => {
             <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-4 md:mb-6 lg:mb-10">Navigation</h4>
             <ul className="space-y-3 md:space-y-4 lg:space-y-6 text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">
               <li><Link to="/create-event" className="hover:text-white transition-colors">Create</Link></li>
-              <li><Link to="/vendors" className="hover:text-white transition-colors">Directory</Link></li>
               <li><Link to="/faq" className="hover:text-white transition-colors">FAQ & Guide</Link></li>
               <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>

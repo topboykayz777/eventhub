@@ -30,6 +30,7 @@ const EventCard = ({ event }: EventCardProps) => {
       <div className="relative aspect-[4/5] overflow-hidden border border-white/10 group">
         <img 
           src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
+          loading="lazy"
           className={`w-full h-full object-cover ${isCompleted ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
           alt={event.event_name}
         />

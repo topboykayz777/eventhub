@@ -92,6 +92,7 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
         <div className="absolute inset-0 z-0">
           <img 
             src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
+            loading="lazy"
             className="w-full h-full object-cover"
             alt="Background"
           />

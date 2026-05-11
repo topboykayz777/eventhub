@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError, showSuccess } from '@/utils/toast';
 import { motion } from 'framer-motion';
-import { User, Briefcase, Check, Mail, Lock, ArrowRight } from 'lucide-react';
+import { User, Briefcase, Check, Mail, Lock, ArrowRight, Clock } from 'lucide-react';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,6 +22,11 @@ const Signup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (role === 'vendor') {
+      showError("Vendor registration is coming soon. We are currently vetting partners.");
+      return;
+    }
+
     if (password !== confirmPassword) {
       showError("Passwords do not match.");
       return;
@@ -29,8 +34,6 @@ const Signup = () => {
 
     setLoading(true);
 
-    // Sign up the user. The database trigger 'handle_new_user' will 
-    // automatically create the profile record in the background.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -45,8 +48,6 @@ const Signup = () => {
       showError(error.message);
     } else if (data.user) {
       showSuccess("Verification email sent. Please check your inbox to activate your account.");
-      // We don't navigate immediately because the user needs to confirm their email
-      // to establish an 'authenticated' session for RLS.
     }
     
     setLoading(false);
@@ -83,6 +84,11 @@ const Signup = () => {
               onClick={() => setRole('vendor')}
               className={`relative p-6 border transition-all text-left group ${role === 'vendor' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-white/5 hover:border-white/20'}`}
             >
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37] flex items-center gap-1">
+                  <Clock size={10} /> Coming Soon
+                </span>
+              </div>
               <Briefcase className={`mb-4 ${role === 'vendor' ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
               <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Vendor</p>
               <p className="text-[8px] text-gray-500 uppercase">List Services</p>
@@ -138,7 +144,7 @@ const Signup = () => {
 
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || role === 'vendor'}
               className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
             >
               {loading ? 'Creating Account...' : 'Create Account'} <ArrowRight className="ml-2 w-4 h-4" />

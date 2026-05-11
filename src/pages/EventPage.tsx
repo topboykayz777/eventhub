@@ -176,6 +176,7 @@ const EventPage = () => {
           animate={{ scale: 1, opacity: heroLoaded ? 1 : 0 }} 
           transition={{ duration: 1.5 }} 
           src={event.photo_url} 
+          loading="lazy"
           className={`w-full h-full object-cover transition-opacity duration-1000 ${isEventOver ? 'grayscale' : 'brightness-75'}`} 
           alt="" 
           onLoad={() => setHeroLoaded(true)}
@@ -265,7 +266,7 @@ const EventPage = () => {
                       onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }}
                       className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group rounded-lg md:rounded-none"
                     >
-                      <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" loading="lazy" />
+                      <img src={url} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
                     </motion.div>
                   ))}
                 </div>

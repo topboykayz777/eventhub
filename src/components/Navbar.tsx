@@ -5,19 +5,31 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Menu, X, UserCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    
+    // Listen for auth state changes to update UI in real-time
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
+        queryClient.invalidateQueries({ queryKey: ['session'] });
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      subscription.unsubscribe();
+    };
+  }, [queryClient]);
 
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -29,12 +41,14 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    // Immediately update the cache to reflect logout
+    queryClient.setQueryData(['session'], null);
     setIsMenuOpen(false);
     navigate('/');
   };
 
+  // Removed 'Directory' from navLinks as per Fix 3
   const navLinks = [
-    { name: 'Directory', path: '/vendors' },
     ...(session ? [{ name: 'Dashboard', path: '/dashboard' }] : []),
   ];
 
