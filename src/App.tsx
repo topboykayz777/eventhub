@@ -1,9 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Index from '@/pages/Index';
-import Dashboard from '@/pages/Dashboard';
-import Login from '@/pages/Login';
-import NotFound from '@/pages/NotFound';
-import EditEvent from '@/pages/EditEvent';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Index from "@/pages/Index";
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
+import NotFound from "@/pages/NotFound";
+import EditEvent from "@/pages/EditEvent";
 
 function App() {
   return (
