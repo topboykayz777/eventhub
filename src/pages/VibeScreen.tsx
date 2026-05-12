@@ -3,13 +3,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, UserCheck, Sparkles, Users, Clock, Loader2, Megaphone, Camera, Timer } from 'lucide-react';
+import { Coins, UserCheck, Sparkles, Users, Clock, Loader2, Megaphone, Camera, Timer, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import confetti from 'canvas-confetti';
 
 interface Activity {
   id: string;
-  type: 'spray' | 'rsvp';
+  type: 'spray' | 'checkin' | 'rsvp';
   title: string;
   subtitle: string;
   amount?: number;
@@ -21,20 +21,28 @@ const VibeScreen = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [stats, setStats] = useState({ rsvps: 0, sprays: 0 });
+  const [stats, setStats] = useState({ rsvps: 0, sprays: 0, checkins: 0 });
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [hostMessage, setHostMessage] = useState<string | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [tickerGuests, setTickerGuests] = useState<string[]>([]);
 
   const addActivity = useCallback((activity: Omit<Activity, 'timestamp'>) => {
     const newActivity = { ...activity, timestamp: Date.now() };
+    
     if (activity.type === 'spray') {
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff'] });
+      confetti({ 
+        particleCount: 150, 
+        spread: 70, 
+        origin: { y: 0.6 }, 
+        colors: ['#D4AF37', '#ffffff', '#F9E4B7'],
+        zIndex: 1000
+      });
     }
+
     setActivities(prev => {
+      // Prevent duplicates for the same ID
       if (prev.some(a => a.id === activity.id)) return prev;
-      return [newActivity, ...prev].slice(0, 6);
+      return [newActivity, ...prev].slice(0, 8);
     });
   }, []);
 
@@ -47,18 +55,19 @@ const VibeScreen = () => {
     if (event?.gallery_urls?.length > 0) {
       const interval = setInterval(() => {
         setCurrentPhotoIndex(prev => (prev + 1) % event.gallery_urls.length);
-      }, 6000);
+      }, 8000);
       return () => clearInterval(interval);
     }
   }, [event]);
 
   const fetchInitialData = async (eventId: string) => {
+    // Fetch recent check-ins and sprays
     const { data: rsvps } = await supabase
       .from('rsvps')
-      .select('id, guest_name, created_at')
+      .select('id, guest_name, checked_in, updated_at, created_at')
       .eq('event_id', eventId)
-      .order('created_at', { ascending: false })
-      .limit(15);
+      .order('updated_at', { ascending: false })
+      .limit(20);
 
     const { data: sprays } = await supabase
       .from('budget_items')
@@ -67,20 +76,22 @@ const VibeScreen = () => {
       .eq('type', 'income')
       .ilike('description', '%Digital Spray%')
       .order('created_at', { ascending: false })
-      .limit(15);
+      .limit(10);
 
     const initialActivities: Activity[] = [
-      ...(rsvps || []).map(r => ({
-        id: r.id,
-        type: 'rsvp' as const,
-        title: 'Guest Confirmed',
-        subtitle: r.guest_name,
-        timestamp: new Date(r.created_at).getTime()
-      })),
+      ...(rsvps || [])
+        .filter(r => r.checked_in)
+        .map(r => ({
+          id: `checkin-${r.id}`,
+          type: 'checkin' as const,
+          title: 'GUEST ARRIVED',
+          subtitle: r.guest_name,
+          timestamp: new Date(r.updated_at).getTime()
+        })),
       ...(sprays || []).map(s => ({
-        id: s.id,
+        id: `spray-${s.id}`,
         type: 'spray' as const,
-        title: 'Digital Spray',
+        title: 'DIGITAL SPRAY',
         subtitle: s.description,
         amount: s.amount,
         timestamp: new Date(s.created_at).getTime()
@@ -89,13 +100,26 @@ const VibeScreen = () => {
 
     setActivities(initialActivities);
 
-    const { data: allGuests } = await supabase
+    // Ticker: Only checked-in guests
+    const { data: checkedInGuests } = await supabase
       .from('rsvps')
       .select('guest_name')
       .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
+      .eq('checked_in', true)
+      .order('updated_at', { ascending: false });
     
-    setTickerGuests((allGuests || []).map(g => g.guest_name));
+    setTickerGuests((checkedInGuests || []).map(g => g.guest_name));
+
+    // Stats
+    const { count: rsvpCount } = await supabase.from('rsvps').select('*', { count: 'exact', head: true }).eq('event_id', eventId);
+    const { count: checkinCount } = await supabase.from('rsvps').select('*', { count: 'exact', head: true }).eq('event_id', eventId).eq('checked_in', true);
+    const totalSprays = sprays?.reduce((acc, s) => acc + s.amount, 0) || 0;
+
+    setStats({
+      rsvps: rsvpCount || 0,
+      checkins: checkinCount || 0,
+      sprays: totalSprays
+    });
   };
 
   const fetchEvent = async () => {
@@ -107,54 +131,35 @@ const VibeScreen = () => {
 
     if (data) {
       setEvent(data);
-      setHostMessage(data.message);
       await fetchInitialData(data.id);
       
-      const { count: rsvpCount } = await supabase.from('rsvps').select('*', { count: 'exact', head: true }).eq('event_id', data.id);
-      const { data: sprays } = await supabase.from('budget_items').select('amount').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%');
-      
-      setStats({
-        rsvps: rsvpCount || 0,
-        sprays: sprays?.reduce((acc, s) => acc + s.amount, 0) || 0
-      });
-
       const channel = supabase
         .channel(`vibe-realtime-${data.id}`)
         .on(
           'postgres_changes',
-          { event: '*', schema: 'public', table: 'events' },
+          { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${data.id}` },
           (payload: any) => {
-            if (payload.new.id === data.id) {
-              setHostMessage(payload.new.message);
-              setEvent((prev: any) => ({ ...prev, ...payload.new }));
-            }
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'rsvps' },
-          (payload: any) => {
-            if (payload.new.event_id === data.id) {
+            if (payload.new.checked_in && !payload.old.checked_in) {
               addActivity({
-                id: payload.new.id,
-                type: 'rsvp',
-                title: 'New Guest Confirmed',
+                id: `checkin-${payload.new.id}`,
+                type: 'checkin',
+                title: 'GUEST ARRIVED',
                 subtitle: payload.new.guest_name
               });
-              setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
+              setStats(prev => ({ ...prev, checkins: prev.checkins + 1 }));
               setTickerGuests(prev => [payload.new.guest_name, ...prev]);
             }
           }
         )
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'budget_items' },
+          { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${data.id}` },
           (payload: any) => {
-            if (payload.new.event_id === data.id && payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+            if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
               addActivity({
-                id: payload.new.id,
+                id: `spray-${payload.new.id}`,
                 type: 'spray',
-                title: 'Digital Spray Received',
+                title: 'DIGITAL SPRAY',
                 subtitle: payload.new.description,
                 amount: payload.new.amount
               });
@@ -228,26 +233,38 @@ const VibeScreen = () => {
               <Sparkles className={`${config.accent} w-3 h-3`} /> Recent Activity
             </h2>
             
-            <div className="flex-1 space-y-2 md:space-y-3 overflow-y-auto custom-scrollbar pr-2">
+            <div className="flex-1 space-y-3 md:space-y-4 overflow-y-auto custom-scrollbar pr-2">
               <AnimatePresence mode="popLayout">
                 {activities.map((activity) => (
                   <motion.div
                     key={activity.id}
                     layout
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="bg-white/[0.02] border border-white/5 p-3 md:p-5 rounded-2xl flex items-center justify-between backdrop-blur-sm"
+                    initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    className={`p-4 md:p-6 rounded-3xl flex items-center justify-between backdrop-blur-2xl border shadow-2xl ${
+                      activity.type === 'spray' 
+                        ? 'bg-amber-500/10 border-amber-500/30 shadow-amber-500/5' 
+                        : 'bg-emerald-500/10 border-emerald-500/30 shadow-emerald-500/5'
+                    }`}
                   >
-                    <div className="flex items-center gap-3 md:gap-5">
-                      <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center ${activity.type === 'spray' ? config.accent.replace('text-', 'bg-') + ' text-black' : 'bg-white/10 ' + config.accent}`}>
-                        {activity.type === 'spray' ? <Coins size={18} /> : <UserCheck size={18} />}
+                    <div className="flex items-center gap-4 md:gap-6">
+                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center ${
+                        activity.type === 'spray' ? 'bg-amber-500 text-black' : 'bg-emerald-500 text-white'
+                      }`}>
+                        {activity.type === 'spray' ? <Coins size={24} /> : <UserCheck size={24} />}
                       </div>
                       <div>
-                        <p className={`${config.accent} text-[6px] md:text-[8px] font-bold uppercase tracking-[0.4em] mb-0.5`}>{activity.title}</p>
-                        <p className="text-base md:text-2xl font-light italic truncate max-w-[150px] md:max-w-none">{activity.subtitle}</p>
+                        <p className={`text-[7px] md:text-[9px] font-black uppercase tracking-[0.4em] mb-1 ${
+                          activity.type === 'spray' ? 'text-amber-400' : 'text-emerald-400'
+                        }`}>{activity.title}</p>
+                        <p className="text-lg md:text-3xl font-light italic truncate max-w-[200px] md:max-w-none">{activity.subtitle}</p>
                       </div>
                     </div>
-                    {activity.amount && <div className="text-xl md:text-4xl font-serif italic">₦{activity.amount.toLocaleString()}</div>}
+                    {activity.amount && (
+                      <div className="text-2xl md:text-5xl font-serif italic text-amber-400">
+                        ₦{activity.amount.toLocaleString()}
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -257,15 +274,15 @@ const VibeScreen = () => {
           {/* Right: Media & Stats */}
           <div className="lg:col-span-5 flex flex-col gap-4 md:gap-8 min-h-0">
             {/* Photo Slideshow */}
-            <div className={`flex-1 rounded-[2rem] overflow-hidden border ${config.border} shadow-2xl bg-black/40 relative min-h-[200px]`}>
+            <div className={`flex-1 rounded-[3rem] overflow-hidden border ${config.border} shadow-2xl bg-black/40 relative min-h-[250px]`}>
               {event.gallery_urls?.length > 0 ? (
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={currentPhotoIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
+                    transition={{ duration: 1.5 }}
                     src={event.gallery_urls[currentPhotoIndex]}
                     className="w-full h-full object-cover"
                     alt=""
@@ -274,45 +291,53 @@ const VibeScreen = () => {
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4 opacity-20"><Camera size={40} /></div>
               )}
-              <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2">
-                <Camera size={10} className={config.accent} />
-                <span className="text-[7px] font-black uppercase tracking-widest text-white">Live Gallery</span>
+              <div className="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                <Camera size={12} className={config.accent} />
+                <span className="text-[8px] font-black uppercase tracking-widest text-white">Live Gallery</span>
               </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4 shrink-0">
-              <div className="bg-white/[0.02] border border-white/5 p-4 md:p-8 rounded-[1.5rem] text-center backdrop-blur-sm">
-                <Users className={`${config.accent} w-5 h-5 mx-auto mb-2`} />
-                <p className="text-2xl md:text-5xl font-light">{stats.rsvps}</p>
-                <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Guests</p>
+            <div className="grid grid-cols-2 gap-4 md:gap-6 shrink-0">
+              <div className="bg-white/[0.02] border border-white/5 p-6 md:p-10 rounded-[2rem] text-center backdrop-blur-xl">
+                <Users className={`${config.accent} w-6 h-6 mx-auto mb-3`} />
+                <p className="text-3xl md:text-6xl font-light">{stats.checkins}</p>
+                <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Guests Arrived</p>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 p-4 md:p-8 rounded-[1.5rem] text-center backdrop-blur-sm">
-                <Coins className={`${config.accent} w-5 h-5 mx-auto mb-2`} />
-                <p className="text-lg md:text-3xl font-light">₦{stats.sprays.toLocaleString()}</p>
-                <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Sprayed</p>
+              <div className="bg-white/[0.02] border border-white/5 p-6 md:p-10 rounded-[2rem] text-center backdrop-blur-xl">
+                <Coins className={`${config.accent} w-6 h-6 mx-auto mb-3`} />
+                <p className="text-2xl md:text-4xl font-light">₦{stats.sprays.toLocaleString()}</p>
+                <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Total Sprayed</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer Ticker */}
-        <div className="mt-4 md:mt-8 pt-4 border-t border-white/5 overflow-hidden relative shrink-0">
-          <div className="flex items-center gap-6 animate-marquee whitespace-nowrap">
-            <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor}`}>Checked-in:</span>
-            {tickerGuests.map((name, i) => (
-              <span key={i} className="text-sm md:text-xl font-light italic flex items-center gap-4">{name} <span className={config.accent}>•</span></span>
-            ))}
-            {tickerGuests.map((name, i) => (
-              <span key={`dup-${i}`} className="text-sm md:text-xl font-light italic flex items-center gap-4">{name} <span className={config.accent}>•</span></span>
-            ))}
+        <div className="mt-6 md:mt-10 pt-6 border-t border-white/5 overflow-hidden relative shrink-0">
+          <div className="flex items-center gap-8 animate-marquee whitespace-nowrap">
+            <span className={`text-[9px] md:text-[11px] font-black uppercase tracking-[0.5em] ${mutedColor} flex items-center gap-3`}>
+              <CheckCircle2 size={14} className="text-emerald-400" /> Verified Entry:
+            </span>
+            {tickerGuests.length > 0 ? (
+              <>
+                {tickerGuests.map((name, i) => (
+                  <span key={i} className="text-base md:text-2xl font-light italic flex items-center gap-6">{name} <span className={config.accent}>•</span></span>
+                ))}
+                {tickerGuests.map((name, i) => (
+                  <span key={`dup-${i}`} className="text-base md:text-2xl font-light italic flex items-center gap-6">{name} <span className={config.accent}>•</span></span>
+                ))}
+              </>
+            ) : (
+              <span className="text-base md:text-2xl font-light italic opacity-30">Waiting for first arrival...</span>
+            )}
           </div>
         </div>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-marquee { display: inline-flex; animation: marquee 40s linear infinite; }
+        .animate-marquee { display: inline-flex; animation: marquee 60s linear infinite; }
       `}} />
     </div>
   );

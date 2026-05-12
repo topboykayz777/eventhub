@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users, Power } from 'lucide-react';
+import { Plus, Loader2, LayoutDashboard, Sparkles, Users, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -28,9 +28,7 @@ const Dashboard = () => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
-  const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Performance: Select only necessary fields for the list
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-events-list'],
     queryFn: async () => {
@@ -45,22 +43,57 @@ const Dashboard = () => {
 
       if (error) throw error;
       return data;
-    },
-    staleTime: 30000, // Cache for 30 seconds
+    }
   });
 
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
+
+  // Real-time subscription for the entire dashboard
+  useEffect(() => {
+    const channel = supabase
+      .channel('dashboard-global-updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['host-events-list'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rsvps' },
+        (payload: any) => {
+          // If an RSVP changes, update the specific event details if expanded
+          const eventId = payload.new?.event_id || payload.old?.event_id;
+          if (eventId && expandedEvents.has(eventId)) {
+            fetchEventDetails(eventId);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [expandedEvents, queryClient]);
   
+  const fetchEventDetails = async (eventId: string) => {
+    const { data: rsvps } = await supabase
+      .from('rsvps')
+      .select('id, guest_name, guest_phone, checked_in, table_number, has_plus_one, song_request, created_at')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false });
+    
+    setEventDetails(prev => ({ ...prev, [eventId]: rsvps || [] }));
+  };
+
   const toggleExpand = async (eventId: string) => {
     const newExpanded = new Set(expandedEvents);
     if (newExpanded.has(eventId)) {
       newExpanded.delete(eventId);
     } else {
       newExpanded.add(eventId);
-      if (!eventDetails[eventId]) {
-        const { data: rsvps } = await supabase.from('rsvps').select('id, guest_name, guest_phone, checked_in, table_number, has_plus_one, song_request').eq('event_id', eventId);
-        setEventDetails(prev => ({ ...prev, [eventId]: rsvps || [] }));
-      }
+      await fetchEventDetails(eventId);
     }
     setExpandedEvents(newExpanded);
   };
@@ -74,7 +107,6 @@ const Dashboard = () => {
     if (error) showError(error.message);
     else {
       showSuccess(currentStatus ? "Event re-opened." : "Event marked as concluded.");
-      queryClient.invalidateQueries({ queryKey: ['host-events-list'] });
     }
   };
 
@@ -96,8 +128,7 @@ const Dashboard = () => {
       showError("Pass not found or invalid.");
     } else { 
       showSuccess(`${data.guest_name} verified.`); 
-      const { data: updatedRsvps } = await supabase.from('rsvps').select('*').eq('event_id', data.event_id);
-      setEventDetails(prev => ({ ...prev, [data.event_id]: updatedRsvps || [] }));
+      await fetchEventDetails(data.event_id);
     }
   };
 
@@ -117,10 +148,7 @@ const Dashboard = () => {
           </motion.div>
           
           <div className="flex gap-4 w-full md:w-auto">
-            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['host-events-list'] })} className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest">
-              <RefreshCw className="w-4 h-4 mr-2" /> Sync
-            </Button>
-            <Link to="/create-event" className="flex-1 md:flex-none">
+            <Link to="/create-event" className="w-full md:w-auto">
               <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest">
                 <Plus className="w-4 h-4 mr-2" /> New Event
               </Button>
@@ -202,8 +230,7 @@ const Dashboard = () => {
                                   onExportCSV={() => {}} 
                                   onToggleCheckIn={() => {}} 
                                   onUpdate={async () => {
-                                    const { data } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
-                                    setEventDetails(prev => ({ ...prev, [event.id]: data || [] }));
+                                    await fetchEventDetails(event.id);
                                   }}
                                 />
                               ) : (
@@ -219,6 +246,13 @@ const Dashboard = () => {
               </AnimatePresence>
             </motion.div>
           ))}
+          
+          {events.length === 0 && (
+            <div className="text-center py-48 border border-dashed border-white/10 rounded-[4rem]">
+              <LayoutDashboard className="text-gray-600 w-12 h-12 mx-auto mb-8" />
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
+            </div>
+          )}
         </div>
       </div>
 

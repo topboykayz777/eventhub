@@ -24,7 +24,6 @@ const GuestList = ({
   searchQuery, 
   onSearchChange, 
   onOpenScanner, 
-  onExportCSV,
   onUpdate
 }: GuestListProps) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -73,6 +72,39 @@ const GuestList = ({
     }
   };
 
+  const handleExportCSV = () => {
+    if (rsvps.length === 0) {
+      showError("No guests to export.");
+      return;
+    }
+
+    const headers = ["Guest Name", "Phone", "Status", "Table", "Plus One", "Song Request", "RSVP Date"];
+    const rows = rsvps.map(r => [
+      r.guest_name,
+      r.guest_phone,
+      r.checked_in ? "Checked-in" : "Pending",
+      r.table_number || "N/A",
+      r.has_plus_one ? "Yes" : "No",
+      r.song_request || "None",
+      new Date(r.created_at).toLocaleDateString()
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `GuestList_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showSuccess("Guest list exported successfully.");
+  };
+
   const getTableMates = (tableNum: string) => {
     return rsvps.filter(r => r.table_number === tableNum);
   };
@@ -111,7 +143,7 @@ const GuestList = ({
           <Button variant="outline" onClick={exportSongRequests} className="h-16 rounded-none border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-[0.2em] px-8">
             <Music className="w-4 h-4 mr-2" /> Vibe List
           </Button>
-          <Button variant="outline" onClick={onExportCSV} className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8">
+          <Button variant="outline" onClick={handleExportCSV} className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8">
             <FileDown className="w-4 h-4 mr-2" /> Export CSV
           </Button>
         </div>
