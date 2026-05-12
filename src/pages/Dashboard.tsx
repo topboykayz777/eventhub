@@ -31,22 +31,19 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   
-  const { data: events = [], isLoading: eventsLoading } = useQuery({
-    queryKey: ['host-events-list', user?.id],
-    enabled: !!user?.id,
+  // We rely on RLS policies to filter events for the logged-in user
+  const { data: events = [], isLoading: eventsLoading, refetch } = useQuery({
+    queryKey: ['host-events-list'],
+    enabled: !!user,
     queryFn: async () => {
-      // We fetch events where host_id matches the current user's ID
       const { data, error } = await supabase
         .from('events')
         .select('id, event_name, event_date, photo_url, is_paid, plan, slug, is_concluded, broadcast_message')
-        .eq('host_id', user!.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
-    },
-    // Retry once if the first attempt fails to account for session propagation
-    retry: 1
+    }
   });
 
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
@@ -58,15 +55,16 @@ const Dashboard = () => {
   }, [user, sessionLoading, navigate]);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user) return;
 
+    // Listen for any changes to events or RSVPs to keep the dashboard fresh
     const channel = supabase
-      .channel('dashboard-global-updates')
+      .channel('dashboard-realtime')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'events', filter: `host_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'events' },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['host-events-list', user.id] });
+          refetch();
         }
       )
       .subscribe();
@@ -74,7 +72,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id]);
+  }, [user, refetch]);
   
   const fetchEventDetails = async (eventId: string) => {
     const { data: rsvps } = await supabase
@@ -106,7 +104,7 @@ const Dashboard = () => {
     if (error) showError(error.message);
     else {
       showSuccess(currentStatus ? "Event re-opened." : "Event marked as concluded.");
-      queryClient.invalidateQueries({ queryKey: ['host-events-list', user?.id] });
+      refetch();
     }
   };
 
