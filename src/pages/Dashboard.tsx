@@ -30,7 +30,6 @@ const Dashboard = () => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Optimized: Only fetch basic event info first
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-events-list'],
     queryFn: async () => {
@@ -39,7 +38,7 @@ const Dashboard = () => {
 
       const { data, error } = await supabase
         .from('events')
-        .select('*, rsvps(id)') // Only get IDs to count them
+        .select('*, rsvps(id)')
         .eq('host_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -53,7 +52,6 @@ const Dashboard = () => {
     refetchInterval: 60000,
   });
 
-  // Fetch full guest data only when expanded
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
   
   const toggleExpand = async (eventId: string) => {
@@ -62,7 +60,6 @@ const Dashboard = () => {
       newExpanded.delete(eventId);
     } else {
       newExpanded.add(eventId);
-      // Fetch full details if not already cached
       if (!eventDetails[eventId]) {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', eventId);
         setEventDetails(prev => ({ ...prev, [eventId]: rsvps || [] }));
@@ -96,7 +93,6 @@ const Dashboard = () => {
       showError("Pass not found or invalid.");
     } else { 
       showSuccess(`${data.guest_name} verified.`); 
-      // Refresh the specific event's guest list
       const { data: updatedRsvps } = await supabase.from('rsvps').select('*').eq('event_id', data.event_id);
       setEventDetails(prev => ({ ...prev, [data.event_id]: updatedRsvps || [] }));
     }
@@ -105,7 +101,7 @@ const Dashboard = () => {
   if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#050505]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
       <Navbar />
       
       <DigitalSpray eventIds={events.map(e => e.id)} />
@@ -194,10 +190,12 @@ const Dashboard = () => {
                           <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
                           
                           <Tabs defaultValue="tools" className="w-full">
-                            <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-12 mb-12 rounded-none h-auto p-0">
-                              <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
-                              <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
-                            </TabsList>
+                            <div className="overflow-x-auto custom-scrollbar pb-2">
+                              <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 min-w-max">
+                                <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
+                                <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
+                              </TabsList>
+                            </div>
                             <TabsContent value="tools" className="mt-0">
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
