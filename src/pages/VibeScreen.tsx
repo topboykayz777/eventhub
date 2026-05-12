@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Coins, UserCheck, Sparkles, Users, QrCode, Clock, Loader2, Megaphone, Camera, Timer } from 'lucide-react';
@@ -30,10 +30,9 @@ const VibeScreen = () => {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [tickerGuests, setTickerGuests] = useState<string[]>([]);
 
-  const addActivity = useCallback((activity: Omit<Activity, 'id' | 'timestamp'>) => {
+  const addActivity = useCallback((activity: Omit<Activity, 'timestamp'>) => {
     const newActivity = {
       ...activity,
-      id: Math.random().toString(36).substring(7),
       timestamp: Date.now()
     };
     
@@ -46,7 +45,11 @@ const VibeScreen = () => {
       });
     }
 
-    setActivities(prev => [newActivity, ...prev].slice(0, 5));
+    setActivities(prev => {
+      // Prevent duplicates if the same ID comes through
+      if (prev.some(a => a.id === activity.id)) return prev;
+      return [newActivity, ...prev].slice(0, 6);
+    });
   }, []);
 
   useEffect(() => {
@@ -59,48 +62,48 @@ const VibeScreen = () => {
     if (event?.gallery_urls?.length > 0) {
       const interval = setInterval(() => {
         setCurrentPhotoIndex(prev => (prev + 1) % event.gallery_urls.length);
-      }, 8000);
+      }, 6000);
       return () => clearInterval(interval);
     }
   }, [event]);
 
   const fetchInitialData = async (eventId: string) => {
-    // Fetch last 5 RSVPs
+    // Fetch last 10 RSVPs to ensure we have a full list
     const { data: rsvps } = await supabase
       .from('rsvps')
-      .select('guest_name, created_at')
+      .select('id, guest_name, created_at')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(10);
 
-    // Fetch last 5 Sprays
+    // Fetch last 10 Sprays
     const { data: sprays } = await supabase
       .from('budget_items')
-      .select('description, amount, created_at')
+      .select('id, description, amount, created_at')
       .eq('event_id', eventId)
       .eq('type', 'income')
       .ilike('description', '%Digital Spray%')
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(10);
 
-    // Combine and sort
+    // Combine and sort by actual creation time
     const initialActivities: Activity[] = [
       ...(rsvps || []).map(r => ({
-        id: `rsvp-${r.created_at}`,
+        id: r.id,
         type: 'rsvp' as const,
         title: 'Guest Confirmed',
         subtitle: r.guest_name,
         timestamp: new Date(r.created_at).getTime()
       })),
       ...(sprays || []).map(s => ({
-        id: `spray-${s.created_at}`,
+        id: s.id,
         type: 'spray' as const,
         title: 'Digital Spray',
         subtitle: s.description,
         amount: s.amount,
         timestamp: new Date(s.created_at).getTime()
       }))
-    ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+    ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
 
     setActivities(initialActivities);
 
@@ -135,36 +138,42 @@ const VibeScreen = () => {
         sprays: sprays?.reduce((acc, s) => acc + s.amount, 0) || 0
       });
 
-      // Real-time Listeners
+      // Real-time Listeners - Manual filtering for 100% reliability
       const channel = supabase
-        .channel(`vibe-screen-${data.id}`)
+        .channel(`vibe-screen-realtime-${data.id}`)
         .on(
           'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${data.id}` },
+          { event: '*', schema: 'public', table: 'events' },
           (payload) => {
-            setHostMessage(payload.new.message);
-            setEvent(prev => ({ ...prev, ...payload.new }));
+            if (payload.new.id === data.id) {
+              setHostMessage(payload.new.message);
+              setEvent(prev => ({ ...prev, ...payload.new }));
+            }
           }
         )
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'rsvps', filter: `event_id=eq.${data.id}` },
+          { event: 'INSERT', schema: 'public', table: 'rsvps' },
           (payload) => {
-            addActivity({
-              type: 'rsvp',
-              title: 'New Guest Confirmed',
-              subtitle: payload.new.guest_name
-            });
-            setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
-            setTickerGuests(prev => [payload.new.guest_name, ...prev]);
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${data.id}` },
-          (payload) => {
-            if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+            if (payload.new.event_id === data.id) {
               addActivity({
+                id: payload.new.id,
+                type: 'rsvp',
+                title: 'New Guest Confirmed',
+                subtitle: payload.new.guest_name
+              });
+              setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
+              setTickerGuests(prev => [payload.new.guest_name, ...prev]);
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'budget_items' },
+          (payload) => {
+            if (payload.new.event_id === data.id && payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+              addActivity({
+                id: payload.new.id,
                 type: 'spray',
                 title: 'Digital Spray Received',
                 subtitle: payload.new.description,
@@ -230,30 +239,30 @@ const VibeScreen = () => {
       <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full ${config.glow} blur-[150px] animate-pulse`} />
       <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full ${config.glow} blur-[150px] animate-pulse`} />
 
-      <div className="relative z-10 h-screen flex flex-col p-8 md:p-12">
+      <div className="relative z-10 h-screen flex flex-col p-6 md:p-12">
         {/* Header */}
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex justify-between items-start mb-6 md:mb-10">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <span className={`${config.accent} text-[10px] font-bold tracking-[0.6em] uppercase mb-3 block`}>Live Event Feed</span>
-            <h1 className="text-4xl md:text-6xl italic leading-tight">{event.event_name}</h1>
+            <span className={`${config.accent} text-[8px] md:text-[10px] font-bold tracking-[0.6em] uppercase mb-2 md:mb-3 block`}>Live Event Feed</span>
+            <h1 className="text-3xl md:text-6xl italic leading-tight">{event.event_name}</h1>
           </motion.div>
           <div className="text-right">
-            <div className={`flex items-center gap-4 text-2xl md:text-4xl font-light tracking-widest mb-1`}>
-              <Clock className={`${config.accent} w-6 h-6 md:w-8 md:h-8`} />
+            <div className={`flex items-center gap-3 md:gap-4 text-xl md:text-4xl font-light tracking-widest mb-1`}>
+              <Clock className={`${config.accent} w-5 h-5 md:w-8 md:h-8`} />
               {currentTime.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </div>
-            <p className={`${mutedColor} text-[10px] uppercase tracking-[0.4em]`}>{currentTime.toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+            <p className={`${mutedColor} text-[8px] md:text-[10px] uppercase tracking-[0.4em]`}>{currentTime.toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
         </div>
 
         {/* Hype Timer / Status */}
-        <div className="mb-8 flex justify-center">
-          <div className={`px-8 py-3 rounded-full border ${config.border} bg-white/5 backdrop-blur-md flex items-center gap-4`}>
-            <Timer className={`${config.accent} w-5 h-5`} />
+        <div className="mb-6 md:mb-10 flex justify-center">
+          <div className={`px-6 md:px-8 py-2 md:py-3 rounded-full border ${config.border} bg-white/5 backdrop-blur-md flex items-center gap-3 md:gap-4`}>
+            <Timer className={`${config.accent} w-4 h-4 md:w-5 md:h-5`} />
             {isLive ? (
-              <span className="text-xs font-black uppercase tracking-[0.4em] animate-pulse">Celebration in Progress</span>
+              <span className="text-[8px] md:text-xs font-black uppercase tracking-[0.4em] animate-pulse">Celebration in Progress</span>
             ) : (
-              <span className="text-xs font-black uppercase tracking-[0.4em]">Starts in: <span className={config.accent}>{getTimeRemaining()}</span></span>
+              <span className="text-[8px] md:text-xs font-black uppercase tracking-[0.4em]">Starts in: <span className={config.accent}>{getTimeRemaining()}</span></span>
             )}
           </div>
         </div>
@@ -266,61 +275,67 @@ const VibeScreen = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className={`mb-8 bg-white/5 border ${config.border} p-6 rounded-[2rem] flex items-center gap-6 backdrop-blur-xl`}
+              className={`mb-6 md:mb-10 bg-white/5 border ${config.border} p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center gap-4 md:gap-6 backdrop-blur-xl`}
             >
-              <div className={`w-12 h-12 rounded-full ${config.accent.replace('text-', 'bg-')} text-black flex items-center justify-center shrink-0`}>
-                <Megaphone size={24} />
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${config.accent.replace('text-', 'bg-')} text-black flex items-center justify-center shrink-0`}>
+                <Megaphone size={20} />
               </div>
               <div className="flex-1">
-                <p className={`${config.accent} text-[10px] font-bold uppercase tracking-[0.4em] mb-1`}>Host Announcement</p>
-                <p className="text-xl md:text-3xl font-light italic">{hostMessage}</p>
+                <p className={`${config.accent} text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] mb-1`}>Host Announcement</p>
+                <p className="text-lg md:text-3xl font-light italic">{hostMessage}</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="flex-grow grid grid-cols-12 gap-8 md:gap-12 overflow-hidden">
+        <div className="flex-grow grid grid-cols-12 gap-6 md:gap-12 overflow-hidden">
           {/* Left: Live Feed */}
           <div className="col-span-12 lg:col-span-7 flex flex-col">
-            <h2 className={`text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor} mb-6 flex items-center gap-4`}>
-              <Sparkles className={`${config.accent} w-4 h-4`} /> Recent Activity
+            <h2 className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor} mb-4 md:mb-6 flex items-center gap-3 md:gap-4`}>
+              <Sparkles className={`${config.accent} w-3 h-3 md:w-4 md:h-4`} /> Recent Activity
             </h2>
             
-            <div className="flex-grow space-y-4 overflow-hidden">
+            <div className="flex-grow space-y-3 md:space-y-4 overflow-hidden">
               <AnimatePresence mode="popLayout">
                 {activities.map((activity) => (
                   <motion.div
                     key={activity.id}
+                    layout
                     initial={{ opacity: 0, x: -50, scale: 0.9 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                    className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] flex items-center justify-between group hover:bg-white/[0.04] transition-all backdrop-blur-sm"
+                    className="bg-white/[0.02] border border-white/5 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-between group hover:bg-white/[0.04] transition-all backdrop-blur-sm"
                   >
-                    <div className="flex items-center gap-6">
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${activity.type === 'spray' ? config.accent.replace('text-', 'bg-') + ' text-black' : 'bg-white/10 ' + config.accent}`}>
-                        {activity.type === 'spray' ? <Coins size={24} /> : <UserCheck size={24} />}
+                    <div className="flex items-center gap-4 md:gap-6">
+                      <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center ${activity.type === 'spray' ? config.accent.replace('text-', 'bg-') + ' text-black' : 'bg-white/10 ' + config.accent}`}>
+                        {activity.type === 'spray' ? <Coins size={20} /> : <UserCheck size={20} />}
                       </div>
                       <div>
-                        <p className={`${config.accent} text-[8px] font-bold uppercase tracking-[0.4em] mb-1`}>{activity.title}</p>
-                        <p className="text-xl md:text-3xl font-light italic">{activity.subtitle}</p>
+                        <p className={`${config.accent} text-[7px] md:text-[8px] font-bold uppercase tracking-[0.4em] mb-1`}>{activity.title}</p>
+                        <p className="text-lg md:text-3xl font-light italic">{activity.subtitle}</p>
                       </div>
                     </div>
                     {activity.amount && (
-                      <div className="text-3xl md:text-5xl font-serif italic">
+                      <div className="text-2xl md:text-5xl font-serif italic">
                         ₦{activity.amount.toLocaleString()}
                       </div>
                     )}
                   </motion.div>
                 ))}
               </AnimatePresence>
+              {activities.length === 0 && (
+                <div className="h-full flex items-center justify-center border border-dashed border-white/10 rounded-[2rem]">
+                  <p className={`${mutedColor} text-[10px] font-bold uppercase tracking-[0.4em]`}>Waiting for the first moment...</p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right: Media & Stats */}
-          <div className="col-span-12 lg:col-span-5 flex flex-col gap-8">
+          <div className="col-span-12 lg:col-span-5 flex flex-col gap-6 md:gap-8">
             {/* Photo Slideshow */}
             {event.gallery_urls?.length > 0 && (
-              <div className={`relative aspect-video rounded-[2.5rem] overflow-hidden border ${config.border} shadow-2xl`}>
+              <div className={`relative flex-grow rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border ${config.border} shadow-2xl bg-black/20`}>
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={currentPhotoIndex}
@@ -329,66 +344,66 @@ const VibeScreen = () => {
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 1.5 }}
                     src={event.gallery_urls[currentPhotoIndex]}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                     alt="Event Moment"
                   />
                 </AnimatePresence>
-                <div className="absolute bottom-6 right-6 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2">
-                  <Camera size={12} className={config.accent} />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-white">Live Gallery</span>
+                <div className="absolute bottom-4 md:bottom-6 right-4 md:right-6 bg-black/50 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-full flex items-center gap-2">
+                  <Camera size={10} className={config.accent} />
+                  <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-white">Live Gallery</span>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] text-center backdrop-blur-sm">
-                <Users className={`${config.accent} w-6 h-6 mx-auto mb-3`} />
-                <p className="text-3xl md:text-5xl font-light mb-1">{stats.rsvps}</p>
-                <p className={`text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Guests</p>
+            <div className="grid grid-cols-2 gap-4 md:gap-6">
+              <div className="bg-white/[0.02] border border-white/5 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] text-center backdrop-blur-sm">
+                <Users className={`${config.accent} w-5 h-5 md:w-6 md:h-6 mx-auto mb-2 md:mb-3`} />
+                <p className="text-2xl md:text-5xl font-light mb-1">{stats.rsvps}</p>
+                <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Guests</p>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] text-center backdrop-blur-sm">
-                <Coins className={`${config.accent} w-6 h-6 mx-auto mb-3`} />
-                <p className="text-xl md:text-3xl font-light mb-1">₦{stats.sprays.toLocaleString()}</p>
-                <p className={`text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Sprayed</p>
+              <div className="bg-white/[0.02] border border-white/5 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] text-center backdrop-blur-sm">
+                <Coins className={`${config.accent} w-5 h-5 md:w-6 md:h-6 mx-auto mb-2 md:mb-3`} />
+                <p className="text-lg md:text-3xl font-light mb-1">₦{stats.sprays.toLocaleString()}</p>
+                <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Sprayed</p>
               </div>
             </div>
 
-            <div className={`flex-grow ${config.accent.replace('text-', 'bg-')} p-8 rounded-[3rem] text-black text-center relative overflow-hidden group`}>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 -mr-16 -mt-16 rotate-45" />
+            <div className={`h-[250px] md:h-[350px] ${config.accent.replace('text-', 'bg-')} p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] text-black text-center relative overflow-hidden group`}>
+              <div className="absolute top-0 right-0 w-24 h-24 md:w-32 md:h-32 bg-white/20 -mr-12 -mt-12 md:-mr-16 md:-mt-16 rotate-45" />
               <div className="relative z-10 flex flex-col h-full justify-center">
-                <QrCode className="w-8 h-8 mx-auto mb-4 opacity-50" />
-                <h3 className="text-2xl md:text-3xl font-serif italic mb-2">Join the Vibe</h3>
-                <p className="text-[8px] font-bold uppercase tracking-[0.2em] mb-6 opacity-60">Scan to RSVP or Spray</p>
+                <QrCode className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-3 md:mb-4 opacity-50" />
+                <h3 className="text-xl md:text-3xl font-serif italic mb-1 md:mb-2">Join the Vibe</h3>
+                <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] mb-4 md:mb-6 opacity-60">Scan to RSVP or Spray</p>
                 
-                <div className="bg-white p-4 rounded-[2rem] inline-block shadow-2xl transform group-hover:scale-105 transition-transform duration-500 mx-auto">
-                  <QRCodeSVG value={eventUrl} size={isMobile ? 140 : 180} level="H" />
+                <div className="bg-white p-3 md:p-4 rounded-[1.5rem] md:rounded-[2rem] inline-block shadow-2xl transform group-hover:scale-105 transition-transform duration-500 mx-auto">
+                  <QRCodeSVG value={eventUrl} size={isMobile ? 100 : 160} level="H" />
                 </div>
                 
-                <p className="mt-6 text-[8px] font-black uppercase tracking-[0.4em]">eventhub.ng/event/{event.slug}</p>
+                <p className="mt-4 md:mt-6 text-[7px] md:text-[8px] font-black uppercase tracking-[0.4em]">eventhub.ng/event/{event.slug}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer Ticker */}
-        <div className="mt-8 pt-6 border-t border-white/5 overflow-hidden relative">
-          <div className="flex items-center gap-8 animate-marquee whitespace-nowrap">
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className={`text-[10px] font-bold uppercase tracking-[0.5em] ${mutedColor}`}>Checked-in Guests:</span>
+        <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-white/5 overflow-hidden relative">
+          <div className="flex items-center gap-6 md:gap-8 animate-marquee whitespace-nowrap">
+            <div className="flex items-center gap-3 md:gap-4 shrink-0">
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] md:tracking-[0.5em] ${mutedColor}`}>Checked-in Guests:</span>
             </div>
             {tickerGuests.length > 0 ? (
               tickerGuests.map((name, i) => (
-                <span key={i} className="text-lg md:text-xl font-light italic flex items-center gap-4">
+                <span key={i} className="text-base md:text-xl font-light italic flex items-center gap-4">
                   {name} <span className={config.accent}>•</span>
                 </span>
               ))
             ) : (
-              <span className="text-lg italic opacity-30">Waiting for the first guest to arrive...</span>
+              <span className="text-base italic opacity-30">Waiting for the first guest to arrive...</span>
             )}
             {/* Duplicate for seamless loop */}
             {tickerGuests.map((name, i) => (
-              <span key={`dup-${i}`} className="text-lg md:text-xl font-light italic flex items-center gap-4">
+              <span key={`dup-${i}`} className="text-base md:text-xl font-light italic flex items-center gap-4">
                 {name} <span className={config.accent}>•</span>
               </span>
             ))}
