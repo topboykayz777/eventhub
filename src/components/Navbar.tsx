@@ -18,7 +18,6 @@ const Navbar = () => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     
-    // Listen for auth state changes to update UI in real-time
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
         queryClient.invalidateQueries({ queryKey: ['session'] });
@@ -41,13 +40,11 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    // Immediately update the cache to reflect logout
     queryClient.setQueryData(['session'], null);
     setIsMenuOpen(false);
     navigate('/');
   };
 
-  // Removed 'Directory' from navLinks as per Fix 3
   const navLinks = [
     ...(session ? [{ name: 'Dashboard', path: '/dashboard' }] : []),
   ];

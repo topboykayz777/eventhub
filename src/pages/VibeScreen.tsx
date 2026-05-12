@@ -47,33 +47,121 @@ const VibeScreen = () => {
     if (event?.gallery_urls?.length > 0) {
       const interval = setInterval(() => {
         setCurrentPhotoIndex(prev => (prev + 1) % event.gallery_urls.length);
-      }, 8000);
+      }, 6000);
       return () => clearInterval(interval);
     }
   }, [event]);
 
+  const fetchInitialData = async (eventId: string) => {
+    const { data: rsvps } = await supabase
+      .from('rsvps')
+      .select('id, guest_name, created_at')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(15);
+
+    const { data: sprays } = await supabase
+      .from('budget_items')
+      .select('id, description, amount, created_at')
+      .eq('event_id', eventId)
+      .eq('type', 'income')
+      .ilike('description', '%Digital Spray%')
+      .order('created_at', { ascending: false })
+      .limit(15);
+
+    const initialActivities: Activity[] = [
+      ...(rsvps || []).map(r => ({
+        id: r.id,
+        type: 'rsvp' as const,
+        title: 'Guest Confirmed',
+        subtitle: r.guest_name,
+        timestamp: new Date(r.created_at).getTime()
+      })),
+      ...(sprays || []).map(s => ({
+        id: s.id,
+        type: 'spray' as const,
+        title: 'Digital Spray',
+        subtitle: s.description,
+        amount: s.amount,
+        timestamp: new Date(s.created_at).getTime()
+      }))
+    ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 8);
+
+    setActivities(initialActivities);
+
+    const { data: allGuests } = await supabase
+      .from('rsvps')
+      .select('guest_name')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false });
+    
+    setTickerGuests((allGuests || []).map(g => g.guest_name));
+  };
+
   const fetchEvent = async () => {
-    const { data } = await supabase.from('events').select('*').ilike('slug', slug?.trim() || '').maybeSingle();
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .ilike('slug', slug?.trim() || '')
+      .maybeSingle();
+
     if (data) {
       setEvent(data);
       setHostMessage(data.message);
+      await fetchInitialData(data.id);
       
-      // Initial Data Fetch
-      const { data: rsvps } = await supabase.from('rsvps').select('id, guest_name, created_at').eq('event_id', data.id).order('created_at', { ascending: false }).limit(10);
-      const { data: sprays } = await supabase.from('budget_items').select('id, description, amount, created_at').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%').order('created_at', { ascending: false }).limit(10);
-      
-      const initial = [...(rsvps || []).map(r => ({ id: r.id, type: 'rsvp' as const, title: 'Guest Confirmed', subtitle: r.guest_name, timestamp: new Date(r.created_at).getTime() })), ...(sprays || []).map(s => ({ id: s.id, type: 'spray' as const, title: 'Digital Spray', subtitle: s.description, amount: s.amount, timestamp: new Date(s.created_at).getTime() }))].sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
-      setActivities(initial);
-
       const { count: rsvpCount } = await supabase.from('rsvps').select('*', { count: 'exact', head: true }).eq('event_id', data.id);
-      const { data: sprayData } = await supabase.from('budget_items').select('amount').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%');
-      setStats({ rsvps: rsvpCount || 0, sprays: sprayData?.reduce((acc, s) => acc + s.amount, 0) || 0 });
-      setTickerGuests((rsvps || []).map(g => g.guest_name));
+      const { data: sprays } = await supabase.from('budget_items').select('amount').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%');
+      
+      setStats({
+        rsvps: rsvpCount || 0,
+        sprays: sprays?.reduce((acc, s) => acc + s.amount, 0) || 0
+      });
 
-      const channel = supabase.channel(`vibe-${data.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, (p: any) => { if (p.new.id === data.id) { setHostMessage(p.new.message); setEvent((prev: any) => ({ ...prev, ...p.new })); } })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rsvps' }, (p: any) => { if (p.new.event_id === data.id) { addActivity({ id: p.new.id, type: 'rsvp', title: 'New Guest Confirmed', subtitle: p.new.guest_name }); setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 })); setTickerGuests(prev => [p.new.guest_name, ...prev]); } })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'budget_items' }, (p: any) => { if (p.new.event_id === data.id && p.new.description.includes('Digital Spray')) { addActivity({ id: p.new.id, type: 'spray', title: 'Digital Spray Received', subtitle: p.new.description, amount: p.new.amount }); setStats(prev => ({ ...prev, sprays: prev.sprays + p.new.amount })); } })
+      const channel = supabase
+        .channel(`vibe-realtime-${data.id}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'events' },
+          (payload: any) => {
+            if (payload.new.id === data.id) {
+              setHostMessage(payload.new.message);
+              setEvent((prev: any) => ({ ...prev, ...payload.new }));
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'rsvps' },
+          (payload: any) => {
+            if (payload.new.event_id === data.id) {
+              addActivity({
+                id: payload.new.id,
+                type: 'rsvp',
+                title: 'New Guest Confirmed',
+                subtitle: payload.new.guest_name
+              });
+              setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
+              setTickerGuests(prev => [payload.new.guest_name, ...prev]);
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'budget_items' },
+          (payload: any) => {
+            if (payload.new.event_id === data.id && payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+              addActivity({
+                id: payload.new.id,
+                type: 'spray',
+                title: 'Digital Spray Received',
+                subtitle: payload.new.description,
+                amount: payload.new.amount
+              });
+              setStats(prev => ({ ...prev, sprays: prev.sprays + payload.new.amount }));
+            }
+          }
+        )
         .subscribe();
 
       setLoading(false);
@@ -81,9 +169,15 @@ const VibeScreen = () => {
     }
   };
 
-  useEffect(() => { if (slug) fetchEvent(); }, [slug]);
+  useEffect(() => {
+    if (slug) fetchEvent();
+  }, [slug]);
 
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  if (loading) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
+    </div>
+  );
 
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
