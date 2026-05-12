@@ -10,6 +10,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Plus, Loader2, LayoutDashboard, Sparkles, Users, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSession } from '@/components/SessionProvider';
 
 import EventCard from '@/components/dashboard/EventCard';
 import GuestList from '@/components/dashboard/GuestList';
@@ -22,6 +23,7 @@ import DigitalSpray from '@/components/dashboard/DigitalSpray';
 const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user, loading: sessionLoading } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
@@ -29,16 +31,14 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['host-events-list'],
+  const { data: events = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ['host-events-list', user?.id],
+    enabled: !!user,
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate('/login'); return []; }
-
       const { data, error } = await supabase
         .from('events')
         .select('id, event_name, event_date, photo_url, is_paid, plan, slug, is_concluded, broadcast_message')
-        .eq('host_id', user.id)
+        .eq('host_id', user!.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -48,8 +48,15 @@ const Dashboard = () => {
 
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
 
-  // Real-time subscription for the entire dashboard
   useEffect(() => {
+    if (!sessionLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, sessionLoading, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+
     const channel = supabase
       .channel('dashboard-global-updates')
       .on(
@@ -63,7 +70,6 @@ const Dashboard = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rsvps' },
         (payload: any) => {
-          // If an RSVP changes, update the specific event details if expanded
           const eventId = payload.new?.event_id || payload.old?.event_id;
           if (eventId && expandedEvents.has(eventId)) {
             fetchEventDetails(eventId);
@@ -75,7 +81,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [expandedEvents, queryClient]);
+  }, [expandedEvents, queryClient, user]);
   
   const fetchEventDetails = async (eventId: string) => {
     const { data: rsvps } = await supabase
@@ -132,7 +138,8 @@ const Dashboard = () => {
     }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#050505]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  // Show a minimal shell while session is loading to prevent flicker
+  if (sessionLoading) return <div className="min-h-screen bg-[#050505]" />;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
@@ -157,101 +164,109 @@ const Dashboard = () => {
         </div>
 
         <div className="space-y-8">
-          {events.map((event: any, index: number) => (
-            <motion.div 
-              key={event.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={`border ${event.is_concluded ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
-            >
-              <div 
-                onClick={() => toggleExpand(event.id)} 
-                className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-white/[0.05] transition-colors"
-              >
-                <div className="flex items-center gap-6 md:gap-10 w-full md:w-auto">
-                  <img src={event.photo_url} loading="lazy" className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${event.is_concluded ? 'grayscale' : ''}`} alt="" />
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h2 className={`text-2xl md:text-4xl font-serif italic ${event.is_concluded ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
-                      {event.is_concluded ? (
-                        <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-gray-400 px-2 py-1 rounded-full">Concluded</span>
-                      ) : (
-                        <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live</span>
-                      )}
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">
-                      {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-8 md:gap-16 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-6 md:pt-0">
-                  <Button 
-                    variant="ghost" 
-                    onClick={(e) => { e.stopPropagation(); handleConcludeEvent(event.id, event.is_concluded); }}
-                    className={`text-[8px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${event.is_concluded ? 'border-green-500/30 text-green-500 hover:bg-green-500/10' : 'border-red-500/30 text-red-500 hover:bg-red-500/10'}`}
+          {eventsLoading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
+            </div>
+          ) : (
+            <>
+              {events.map((event: any, index: number) => (
+                <motion.div 
+                  key={event.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`border ${event.is_concluded ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
+                >
+                  <div 
+                    onClick={() => toggleExpand(event.id)} 
+                    className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-white/[0.05] transition-colors"
                   >
-                    <Power className="w-3 h-3 mr-2" /> {event.is_concluded ? 'Re-open Event' : 'Conclude Event'}
-                  </Button>
-                  <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10">
-                    {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
-                  </Button>
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {expandedEvents.has(event.id) && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                    <div className="p-6 md:p-16 border-t border-white/5 bg-black/40">
-                      <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
-                        <EventCard event={event} onCopyLink={() => {}} />
-                        
-                        <div className="lg:col-span-8 space-y-12">
-                          <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
-                          
-                          <Tabs defaultValue="tools" className="w-full">
-                            <div className="overflow-x-auto custom-scrollbar pb-2">
-                              <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 min-w-max">
-                                <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
-                                <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
-                              </TabsList>
-                            </div>
-                            <TabsContent value="tools" className="mt-0">
-                              <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
-                            </TabsContent>
-                            <TabsContent value="guests" className="mt-0">
-                              {eventDetails[event.id] ? (
-                                <GuestList 
-                                  rsvps={eventDetails[event.id]} 
-                                  searchQuery={searchQuery} 
-                                  onSearchChange={setSearchQuery} 
-                                  onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
-                                  onExportCSV={() => {}} 
-                                  onToggleCheckIn={() => {}} 
-                                  onUpdate={async () => {
-                                    await fetchEventDetails(event.id);
-                                  }}
-                                />
-                              ) : (
-                                <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#D4AF37]" /></div>
-                              )}
-                            </TabsContent>
-                          </Tabs>
+                    <div className="flex items-center gap-6 md:gap-10 w-full md:w-auto">
+                      <img src={event.photo_url} loading="lazy" className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${event.is_concluded ? 'grayscale' : ''}`} alt="" />
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                          <h2 className={`text-2xl md:text-4xl font-serif italic ${event.is_concluded ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
+                          {event.is_concluded ? (
+                            <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-gray-400 px-2 py-1 rounded-full">Concluded</span>
+                          ) : (
+                            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live</span>
+                          )}
                         </div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">
+                          {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' })}
+                        </p>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-          
-          {events.length === 0 && (
-            <div className="text-center py-48 border border-dashed border-white/10 rounded-[4rem]">
-              <LayoutDashboard className="text-gray-600 w-12 h-12 mx-auto mb-8" />
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
-            </div>
+                    
+                    <div className="flex items-center gap-8 md:gap-16 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-6 md:pt-0">
+                      <Button 
+                        variant="ghost" 
+                        onClick={(e) => { e.stopPropagation(); handleConcludeEvent(event.id, event.is_concluded); }}
+                        className={`text-[8px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${event.is_concluded ? 'border-green-500/30 text-green-500 hover:bg-green-500/10' : 'border-red-500/30 text-red-500 hover:bg-red-500/10'}`}
+                      >
+                        <Power className="w-3 h-3 mr-2" /> {event.is_concluded ? 'Re-open Event' : 'Conclude Event'}
+                      </Button>
+                      <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10">
+                        {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {expandedEvents.has(event.id) && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                        <div className="p-6 md:p-16 border-t border-white/5 bg-black/40">
+                          <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
+                            <EventCard event={event} onCopyLink={() => {}} />
+                            
+                            <div className="lg:col-span-8 space-y-12">
+                              <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
+                              
+                              <Tabs defaultValue="tools" className="w-full">
+                                <div className="overflow-x-auto custom-scrollbar pb-2">
+                                  <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 min-w-max">
+                                    <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
+                                    <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
+                                  </TabsList>
+                                </div>
+                                <TabsContent value="tools" className="mt-0">
+                                  <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
+                                </TabsContent>
+                                <TabsContent value="guests" className="mt-0">
+                                  {eventDetails[event.id] ? (
+                                    <GuestList 
+                                      rsvps={eventDetails[event.id]} 
+                                      searchQuery={searchQuery} 
+                                      onSearchChange={setSearchQuery} 
+                                      onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
+                                      onExportCSV={() => {}} 
+                                      onToggleCheckIn={() => {}} 
+                                      onUpdate={async () => {
+                                        await fetchEventDetails(event.id);
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#D4AF37]" /></div>
+                                  )}
+                                </TabsContent>
+                              </Tabs>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+              
+              {events.length === 0 && (
+                <div className="text-center py-48 border border-dashed border-white/10 rounded-[4rem]">
+                  <LayoutDashboard className="text-gray-600 w-12 h-12 mx-auto mb-8" />
+                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
