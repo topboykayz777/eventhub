@@ -22,7 +22,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Initialize session once on mount
   useEffect(() => {
     const initializeSession = async () => {
       try {
@@ -37,15 +36,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     };
 
     initializeSession();
+  }, []);
 
-    // Set up auth state change listener with cleanup
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      // Only update if session actually changed to prevent unnecessary renders
       if (currentSession?.access_token !== session?.access_token) {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        
-        // Handle navigation based on auth state
+
         if (event === 'SIGNED_IN') {
           if (location.pathname === '/login' || location.pathname === '/signup') {
             navigate('/dashboard', { replace: true });
@@ -59,7 +57,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
     });
 
-    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
