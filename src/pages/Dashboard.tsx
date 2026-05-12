@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users } from 'lucide-react';
+import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  // Performance: Select only necessary fields for the list
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-events-list'],
     queryFn: async () => {
@@ -38,18 +39,14 @@ const Dashboard = () => {
 
       const { data, error } = await supabase
         .from('events')
-        .select('*, rsvps(id)')
+        .select('id, event_name, event_date, photo_url, is_paid, plan, slug, is_concluded, broadcast_message')
         .eq('host_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data.map(e => ({
-        ...e,
-        rsvpCount: e.rsvps?.length || 0,
-        isCompleted: new Date(e.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now()
-      }));
+      return data;
     },
-    refetchInterval: 60000,
+    staleTime: 30000, // Cache for 30 seconds
   });
 
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
@@ -61,18 +58,24 @@ const Dashboard = () => {
     } else {
       newExpanded.add(eventId);
       if (!eventDetails[eventId]) {
-        const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', eventId);
+        const { data: rsvps } = await supabase.from('rsvps').select('id, guest_name, guest_phone, checked_in, table_number, has_plus_one, song_request').eq('event_id', eventId);
         setEventDetails(prev => ({ ...prev, [eventId]: rsvps || [] }));
       }
     }
     setExpandedEvents(newExpanded);
   };
 
-  const handleManualRefresh = async () => {
-    setIsRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ['host-events-list'] });
-    setTimeout(() => setIsRefreshing(false), 1000);
-    showSuccess("Dashboard Synchronized.");
+  const handleConcludeEvent = async (eventId: string, currentStatus: boolean) => {
+    const { error } = await supabase
+      .from('events')
+      .update({ is_concluded: !currentStatus })
+      .eq('id', eventId);
+
+    if (error) showError(error.message);
+    else {
+      showSuccess(currentStatus ? "Event re-opened." : "Event marked as concluded.");
+      queryClient.invalidateQueries({ queryKey: ['host-events-list'] });
+    }
   };
 
   const handleQRScan = async (scannedText: string) => {
@@ -114,8 +117,8 @@ const Dashboard = () => {
           </motion.div>
           
           <div className="flex gap-4 w-full md:w-auto">
-            <Button variant="outline" onClick={handleManualRefresh} className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest">
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['host-events-list'] })} className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest">
+              <RefreshCw className="w-4 h-4 mr-2" /> Sync
             </Button>
             <Link to="/create-event" className="flex-1 md:flex-none">
               <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest">
@@ -132,18 +135,22 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className={`border ${event.isCompleted ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
+              className={`border ${event.is_concluded ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
             >
               <div 
                 onClick={() => toggleExpand(event.id)} 
                 className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-white/[0.05] transition-colors"
               >
                 <div className="flex items-center gap-6 md:gap-10 w-full md:w-auto">
-                  <img src={event.photo_url} className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+                  <img src={event.photo_url} loading="lazy" className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${event.is_concluded ? 'grayscale' : ''}`} alt="" />
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h2 className={`text-2xl md:text-4xl font-serif italic ${event.isCompleted ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
-                      {!event.isCompleted && <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live</span>}
+                      <h2 className={`text-2xl md:text-4xl font-serif italic ${event.is_concluded ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
+                      {event.is_concluded ? (
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-gray-400 px-2 py-1 rounded-full">Concluded</span>
+                      ) : (
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live</span>
+                      )}
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">
                       {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -152,10 +159,13 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="flex items-center gap-8 md:gap-16 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-6 md:pt-0">
-                  <div className="text-left md:text-right">
-                    <p className="text-[8px] font-bold uppercase tracking-widest text-gray-600 mb-1">Engagement</p>
-                    <p className="text-xl md:text-2xl font-serif italic text-[#D4AF37]">{event.rsvpCount} RSVPs</p>
-                  </div>
+                  <Button 
+                    variant="ghost" 
+                    onClick={(e) => { e.stopPropagation(); handleConcludeEvent(event.id, event.is_concluded); }}
+                    className={`text-[8px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${event.is_concluded ? 'border-green-500/30 text-green-500 hover:bg-green-500/10' : 'border-red-500/30 text-red-500 hover:bg-red-500/10'}`}
+                  >
+                    <Power className="w-3 h-3 mr-2" /> {event.is_concluded ? 'Re-open Event' : 'Conclude Event'}
+                  </Button>
                   <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10">
                     {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
                   </Button>
@@ -170,23 +180,6 @@ const Dashboard = () => {
                         <EventCard event={event} onCopyLink={() => {}} />
                         
                         <div className="lg:col-span-8 space-y-12">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10">
-                            <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] border border-white/5">
-                              <div className="flex items-center gap-4 mb-6">
-                                <Users className="text-[#D4AF37] w-5 h-5" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Guest List</span>
-                              </div>
-                              <div className="text-3xl md:text-5xl font-serif italic">{event.rsvpCount} Confirmed</div>
-                            </div>
-                            <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] border border-white/5">
-                              <div className="flex items-center gap-4 mb-6">
-                                <Sparkles className="text-[#D4AF37] w-5 h-5" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</span>
-                              </div>
-                              <div className="text-3xl md:text-5xl font-serif italic">{event.plan} Suite</div>
-                            </div>
-                          </div>
-                          
                           <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
                           
                           <Tabs defaultValue="tools" className="w-full">
@@ -226,13 +219,6 @@ const Dashboard = () => {
               </AnimatePresence>
             </motion.div>
           ))}
-          
-          {events.length === 0 && (
-            <div className="text-center py-48 border border-dashed border-white/10 rounded-[4rem]">
-              <LayoutDashboard className="text-gray-600 w-12 h-12 mx-auto mb-8" />
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
-            </div>
-          )}
         </div>
       </div>
 
