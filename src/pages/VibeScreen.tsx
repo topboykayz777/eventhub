@@ -28,23 +28,13 @@ const VibeScreen = () => {
   const [tickerGuests, setTickerGuests] = useState<string[]>([]);
 
   const addActivity = useCallback((activity: Omit<Activity, 'timestamp'>) => {
-    const newActivity = {
-      ...activity,
-      timestamp: Date.now()
-    };
-    
+    const newActivity = { ...activity, timestamp: Date.now() };
     if (activity.type === 'spray') {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#D4AF37', '#ffffff']
-      });
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff'] });
     }
-
     setActivities(prev => {
       if (prev.some(a => a.id === activity.id)) return prev;
-      return [newActivity, ...prev].slice(0, 8);
+      return [newActivity, ...prev].slice(0, 6);
     });
   }, []);
 
@@ -57,121 +47,33 @@ const VibeScreen = () => {
     if (event?.gallery_urls?.length > 0) {
       const interval = setInterval(() => {
         setCurrentPhotoIndex(prev => (prev + 1) % event.gallery_urls.length);
-      }, 6000);
+      }, 8000);
       return () => clearInterval(interval);
     }
   }, [event]);
 
-  const fetchInitialData = async (eventId: string) => {
-    const { data: rsvps } = await supabase
-      .from('rsvps')
-      .select('id, guest_name, created_at')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false })
-      .limit(15);
-
-    const { data: sprays } = await supabase
-      .from('budget_items')
-      .select('id, description, amount, created_at')
-      .eq('event_id', eventId)
-      .eq('type', 'income')
-      .ilike('description', '%Digital Spray%')
-      .order('created_at', { ascending: false })
-      .limit(15);
-
-    const initialActivities: Activity[] = [
-      ...(rsvps || []).map(r => ({
-        id: r.id,
-        type: 'rsvp' as const,
-        title: 'Guest Confirmed',
-        subtitle: r.guest_name,
-        timestamp: new Date(r.created_at).getTime()
-      })),
-      ...(sprays || []).map(s => ({
-        id: s.id,
-        type: 'spray' as const,
-        title: 'Digital Spray',
-        subtitle: s.description,
-        amount: s.amount,
-        timestamp: new Date(s.created_at).getTime()
-      }))
-    ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 8);
-
-    setActivities(initialActivities);
-
-    const { data: allGuests } = await supabase
-      .from('rsvps')
-      .select('guest_name')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
-    
-    setTickerGuests((allGuests || []).map(g => g.guest_name));
-  };
-
   const fetchEvent = async () => {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .ilike('slug', slug?.trim() || '')
-      .maybeSingle();
-
+    const { data } = await supabase.from('events').select('*').ilike('slug', slug?.trim() || '').maybeSingle();
     if (data) {
       setEvent(data);
       setHostMessage(data.message);
-      await fetchInitialData(data.id);
       
-      const { count: rsvpCount } = await supabase.from('rsvps').select('*', { count: 'exact', head: true }).eq('event_id', data.id);
-      const { data: sprays } = await supabase.from('budget_items').select('amount').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%');
+      // Initial Data Fetch
+      const { data: rsvps } = await supabase.from('rsvps').select('id, guest_name, created_at').eq('event_id', data.id).order('created_at', { ascending: false }).limit(10);
+      const { data: sprays } = await supabase.from('budget_items').select('id, description, amount, created_at').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%').order('created_at', { ascending: false }).limit(10);
       
-      setStats({
-        rsvps: rsvpCount || 0,
-        sprays: sprays?.reduce((acc, s) => acc + s.amount, 0) || 0
-      });
+      const initial = [...(rsvps || []).map(r => ({ id: r.id, type: 'rsvp' as const, title: 'Guest Confirmed', subtitle: r.guest_name, timestamp: new Date(r.created_at).getTime() })), ...(sprays || []).map(s => ({ id: s.id, type: 'spray' as const, title: 'Digital Spray', subtitle: s.description, amount: s.amount, timestamp: new Date(s.created_at).getTime() }))].sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
+      setActivities(initial);
 
-      const channel = supabase
-        .channel(`vibe-realtime-${data.id}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'events' },
-          (payload: any) => {
-            if (payload.new.id === data.id) {
-              setHostMessage(payload.new.message);
-              setEvent((prev: any) => ({ ...prev, ...payload.new }));
-            }
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'rsvps' },
-          (payload: any) => {
-            if (payload.new.event_id === data.id) {
-              addActivity({
-                id: payload.new.id,
-                type: 'rsvp',
-                title: 'New Guest Confirmed',
-                subtitle: payload.new.guest_name
-              });
-              setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
-              setTickerGuests(prev => [payload.new.guest_name, ...prev]);
-            }
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'budget_items' },
-          (payload: any) => {
-            if (payload.new.event_id === data.id && payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
-              addActivity({
-                id: payload.new.id,
-                type: 'spray',
-                title: 'Digital Spray Received',
-                subtitle: payload.new.description,
-                amount: payload.new.amount
-              });
-              setStats(prev => ({ ...prev, sprays: prev.sprays + payload.new.amount }));
-            }
-          }
-        )
+      const { count: rsvpCount } = await supabase.from('rsvps').select('*', { count: 'exact', head: true }).eq('event_id', data.id);
+      const { data: sprayData } = await supabase.from('budget_items').select('amount').eq('event_id', data.id).eq('type', 'income').ilike('description', '%Digital Spray%');
+      setStats({ rsvps: rsvpCount || 0, sprays: sprayData?.reduce((acc, s) => acc + s.amount, 0) || 0 });
+      setTickerGuests((rsvps || []).map(g => g.guest_name));
+
+      const channel = supabase.channel(`vibe-${data.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, (p: any) => { if (p.new.id === data.id) { setHostMessage(p.new.message); setEvent((prev: any) => ({ ...prev, ...p.new })); } })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rsvps' }, (p: any) => { if (p.new.event_id === data.id) { addActivity({ id: p.new.id, type: 'rsvp', title: 'New Guest Confirmed', subtitle: p.new.guest_name }); setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 })); setTickerGuests(prev => [p.new.guest_name, ...prev]); } })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'budget_items' }, (p: any) => { if (p.new.event_id === data.id && p.new.description.includes('Digital Spray')) { addActivity({ id: p.new.id, type: 'spray', title: 'Digital Spray Received', subtitle: p.new.description, amount: p.new.amount }); setStats(prev => ({ ...prev, sprays: prev.sprays + p.new.amount })); } })
         .subscribe();
 
       setLoading(false);
@@ -179,27 +81,9 @@ const VibeScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (slug) fetchEvent();
-  }, [slug]);
+  useEffect(() => { if (slug) fetchEvent(); }, [slug]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
-    </div>
-  );
-
-  const eventDate = new Date(event.event_date);
-  const isLive = currentTime >= eventDate;
-
-  const getTimeRemaining = () => {
-    const diff = eventDate.getTime() - currentTime.getTime();
-    if (diff <= 0) return null;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-    return `${hours}h ${mins}m ${secs}s`;
-  };
+  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
 
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
@@ -222,142 +106,96 @@ const VibeScreen = () => {
   const mutedColor = config.dark ? 'text-black/60' : 'text-gray-500';
 
   return (
-    <div className={`min-h-screen ${config.bg} ${textColor} overflow-hidden relative font-serif transition-colors duration-1000`}>
+    <div className={`min-h-screen ${config.bg} ${textColor} overflow-hidden relative font-serif flex flex-col`}>
       <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full ${config.glow} blur-[150px] animate-pulse`} />
       <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full ${config.glow} blur-[150px] animate-pulse`} />
 
-      <div className="relative z-10 h-screen flex flex-col p-6 md:p-10">
+      <div className="relative z-10 flex-1 flex flex-col p-4 md:p-10 max-h-screen">
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-4 md:mb-8 shrink-0">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <span className={`${config.accent} text-[8px] md:text-[10px] font-bold tracking-[0.6em] uppercase mb-2 block`}>Live Event Feed</span>
-            <h1 className="text-3xl md:text-5xl italic leading-tight">{event.event_name}</h1>
+            <span className={`${config.accent} text-[8px] md:text-[10px] font-bold tracking-[0.6em] uppercase mb-1 block`}>Live Event Feed</span>
+            <h1 className="text-2xl md:text-5xl italic leading-tight truncate max-w-[250px] md:max-w-none">{event.event_name}</h1>
           </motion.div>
           <div className="text-right">
-            <div className={`flex items-center gap-3 text-xl md:text-3xl font-light tracking-widest mb-1`}>
-              <Clock className={`${config.accent} w-5 h-5 md:w-7 md:h-7`} />
-              {currentTime.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            <div className={`flex items-center gap-2 md:gap-3 text-lg md:text-3xl font-light tracking-widest`}>
+              <Clock className={`${config.accent} w-4 h-4 md:w-7 md:h-7`} />
+              {currentTime.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}
             </div>
-            <p className={`${mutedColor} text-[8px] md:text-[10px] uppercase tracking-[0.4em]`}>{currentTime.toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+            <p className={`${mutedColor} text-[7px] md:text-[10px] uppercase tracking-[0.4em]`}>{currentTime.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })}</p>
           </div>
         </div>
 
-        {/* Hype Timer */}
-        <div className="mb-6 flex justify-center">
-          <div className={`px-6 py-2 rounded-full border ${config.border} bg-white/5 backdrop-blur-md flex items-center gap-3`}>
-            <Timer className={`${config.accent} w-4 h-4`} />
-            {isLive ? (
-              <span className="text-[8px] md:text-xs font-black uppercase tracking-[0.4em] animate-pulse">Celebration in Progress</span>
-            ) : (
-              <span className="text-[8px] md:text-xs font-black uppercase tracking-[0.4em]">Starts in: <span className={config.accent}>{getTimeRemaining()}</span></span>
-            )}
-          </div>
-        </div>
-
-        {/* Host Message */}
-        <AnimatePresence mode="wait">
-          {hostMessage && (
-            <motion.div 
-              key={hostMessage}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className={`mb-6 bg-white/5 border ${config.border} p-4 rounded-[1.5rem] flex items-center gap-4 backdrop-blur-xl`}
-            >
-              <div className={`w-10 h-10 rounded-full ${config.accent.replace('text-', 'bg-')} text-black flex items-center justify-center shrink-0`}>
-                <Megaphone size={20} />
-              </div>
-              <div className="flex-1">
-                <p className={`${config.accent} text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] mb-1`}>Host Announcement</p>
-                <p className="text-lg md:text-2xl font-light italic">{hostMessage}</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Grid */}
-        <div className="flex-1 grid grid-cols-12 gap-6 md:gap-10 min-h-0">
+        {/* Main Content Area */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-10 min-h-0 overflow-hidden">
           {/* Left: Live Feed */}
-          <div className="col-span-12 lg:col-span-7 flex flex-col min-h-0">
-            <h2 className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor} mb-4 flex items-center gap-3`}>
+          <div className="lg:col-span-7 flex flex-col min-h-0">
+            <h2 className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor} mb-3 flex items-center gap-2`}>
               <Sparkles className={`${config.accent} w-3 h-3`} /> Recent Activity
             </h2>
             
-            <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-2">
+            <div className="flex-1 space-y-2 md:space-y-3 overflow-y-auto custom-scrollbar pr-2">
               <AnimatePresence mode="popLayout">
                 {activities.map((activity) => (
                   <motion.div
                     key={activity.id}
                     layout
-                    initial={{ opacity: 0, x: -50, scale: 0.9 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                    className="bg-white/[0.02] border border-white/5 p-4 rounded-[1.5rem] flex items-center justify-between group hover:bg-white/[0.04] transition-all backdrop-blur-sm"
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="bg-white/[0.02] border border-white/5 p-3 md:p-5 rounded-2xl flex items-center justify-between backdrop-blur-sm"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${activity.type === 'spray' ? config.accent.replace('text-', 'bg-') + ' text-black' : 'bg-white/10 ' + config.accent}`}>
-                        {activity.type === 'spray' ? <Coins size={20} /> : <UserCheck size={20} />}
+                    <div className="flex items-center gap-3 md:gap-5">
+                      <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center ${activity.type === 'spray' ? config.accent.replace('text-', 'bg-') + ' text-black' : 'bg-white/10 ' + config.accent}`}>
+                        {activity.type === 'spray' ? <Coins size={18} /> : <UserCheck size={18} />}
                       </div>
                       <div>
-                        <p className={`${config.accent} text-[7px] md:text-[8px] font-bold uppercase tracking-[0.4em] mb-1`}>{activity.title}</p>
-                        <p className="text-lg md:text-2xl font-light italic">{activity.subtitle}</p>
+                        <p className={`${config.accent} text-[6px] md:text-[8px] font-bold uppercase tracking-[0.4em] mb-0.5`}>{activity.title}</p>
+                        <p className="text-base md:text-2xl font-light italic truncate max-w-[150px] md:max-w-none">{activity.subtitle}</p>
                       </div>
                     </div>
-                    {activity.amount && (
-                      <div className="text-2xl md:text-4xl font-serif italic">
-                        ₦{activity.amount.toLocaleString()}
-                      </div>
-                    )}
+                    {activity.amount && <div className="text-xl md:text-4xl font-serif italic">₦{activity.amount.toLocaleString()}</div>}
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {activities.length === 0 && (
-                <div className="h-full flex items-center justify-center border border-dashed border-white/10 rounded-[2rem]">
-                  <p className={`${mutedColor} text-[10px] font-bold uppercase tracking-[0.4em]`}>Waiting for the first moment...</p>
-                </div>
-              )}
             </div>
           </div>
 
           {/* Right: Media & Stats */}
-          <div className="col-span-12 lg:col-span-5 flex flex-col gap-6 min-h-0">
-            {/* Photo Slideshow - Expanded to fill space */}
-            <div className={`flex-1 rounded-[2rem] overflow-hidden border ${config.border} shadow-2xl bg-black/40 relative`}>
+          <div className="lg:col-span-5 flex flex-col gap-4 md:gap-8 min-h-0">
+            {/* Photo Slideshow */}
+            <div className={`flex-1 rounded-[2rem] overflow-hidden border ${config.border} shadow-2xl bg-black/40 relative min-h-[200px]`}>
               {event.gallery_urls?.length > 0 ? (
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={currentPhotoIndex}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 1.5 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1 }}
                     src={event.gallery_urls[currentPhotoIndex]}
-                    className="w-full h-full object-contain"
-                    alt="Event Moment"
+                    className="w-full h-full object-cover"
+                    alt=""
                   />
                 </AnimatePresence>
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-4 opacity-20">
-                  <Camera size={40} />
-                  <p className="text-[10px] font-bold uppercase tracking-widest">Gallery Empty</p>
-                </div>
+                <div className="w-full h-full flex flex-col items-center justify-center gap-4 opacity-20"><Camera size={40} /></div>
               )}
               <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2">
                 <Camera size={10} className={config.accent} />
-                <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-white">Live Gallery</span>
+                <span className="text-[7px] font-black uppercase tracking-widest text-white">Live Gallery</span>
               </div>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4 shrink-0">
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-[1.5rem] text-center backdrop-blur-sm">
+              <div className="bg-white/[0.02] border border-white/5 p-4 md:p-8 rounded-[1.5rem] text-center backdrop-blur-sm">
                 <Users className={`${config.accent} w-5 h-5 mx-auto mb-2`} />
-                <p className="text-2xl md:text-4xl font-light mb-1">{stats.rsvps}</p>
+                <p className="text-2xl md:text-5xl font-light">{stats.rsvps}</p>
                 <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Guests</p>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-[1.5rem] text-center backdrop-blur-sm">
+              <div className="bg-white/[0.02] border border-white/5 p-4 md:p-8 rounded-[1.5rem] text-center backdrop-blur-sm">
                 <Coins className={`${config.accent} w-5 h-5 mx-auto mb-2`} />
-                <p className="text-lg md:text-2xl font-light mb-1">₦{stats.sprays.toLocaleString()}</p>
+                <p className="text-lg md:text-3xl font-light">₦{stats.sprays.toLocaleString()}</p>
                 <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Sprayed</p>
               </div>
             </div>
@@ -365,43 +203,22 @@ const VibeScreen = () => {
         </div>
 
         {/* Footer Ticker */}
-        <div className="mt-6 pt-4 border-t border-white/5 overflow-hidden relative shrink-0">
+        <div className="mt-4 md:mt-8 pt-4 border-t border-white/5 overflow-hidden relative shrink-0">
           <div className="flex items-center gap-6 animate-marquee whitespace-nowrap">
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor}`}>Checked-in Guests:</span>
-            </div>
-            {tickerGuests.length > 0 ? (
-              tickerGuests.map((name, i) => (
-                <span key={i} className="text-base md:text-xl font-light italic flex items-center gap-4">
-                  {name} <span className={config.accent}>•</span>
-                </span>
-              ))
-            ) : (
-              <span className="text-base italic opacity-30">Waiting for the first guest to arrive...</span>
-            )}
-            {/* Duplicate for seamless loop */}
+            <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] ${mutedColor}`}>Checked-in:</span>
             {tickerGuests.map((name, i) => (
-              <span key={`dup-${i}`} className="text-base md:text-xl font-light italic flex items-center gap-4">
-                {name} <span className={config.accent}>•</span>
-              </span>
+              <span key={i} className="text-sm md:text-xl font-light italic flex items-center gap-4">{name} <span className={config.accent}>•</span></span>
+            ))}
+            {tickerGuests.map((name, i) => (
+              <span key={`dup-${i}`} className="text-sm md:text-xl font-light italic flex items-center gap-4">{name} <span className={config.accent}>•</span></span>
             ))}
           </div>
         </div>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          display: inline-flex;
-          animation: marquee 40s linear infinite;
-        }
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { display: inline-flex; animation: marquee 40s linear infinite; }
       `}} />
     </div>
   );
