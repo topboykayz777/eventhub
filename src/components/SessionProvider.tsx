@@ -22,23 +22,24 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+  const updateSession = async () => {
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+    } catch (error) {
+      console.error("Session fetch error:", error);
+    } finally {
       setLoading(false);
-      
-      // Automatic redirect for authenticated users on login/signup pages
-      if (session && (location.pathname === '/login' || location.pathname === '/signup')) {
-        navigate('/dashboard');
-      }
-    });
+    }
+  };
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+  useEffect(() => {
+    updateSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
 
       if (event === 'SIGNED_IN') {
@@ -46,7 +47,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
           navigate('/dashboard');
         }
       } else if (event === 'SIGNED_OUT') {
-        // Only redirect to login if they were on a protected route
         const protectedRoutes = ['/dashboard', '/profile', '/create-event', '/edit-event', '/budget'];
         if (protectedRoutes.some(route => location.pathname.startsWith(route))) {
           navigate('/login');

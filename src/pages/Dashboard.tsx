@@ -33,8 +33,9 @@ const Dashboard = () => {
   
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['host-events-list', user?.id],
-    enabled: !!user,
+    enabled: !!user?.id,
     queryFn: async () => {
+      // We fetch events where host_id matches the current user's ID
       const { data, error } = await supabase
         .from('events')
         .select('id, event_name, event_date, photo_url, is_paid, plan, slug, is_concluded, broadcast_message')
@@ -42,8 +43,10 @@ const Dashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
-    }
+      return data || [];
+    },
+    // Retry once if the first attempt fails to account for session propagation
+    retry: 1
   });
 
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
@@ -55,25 +58,15 @@ const Dashboard = () => {
   }, [user, sessionLoading, navigate]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const channel = supabase
       .channel('dashboard-global-updates')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'events' },
+        { event: '*', schema: 'public', table: 'events', filter: `host_id=eq.${user.id}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['host-events-list'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'rsvps' },
-        (payload: any) => {
-          const eventId = payload.new?.event_id || payload.old?.event_id;
-          if (eventId && expandedEvents.has(eventId)) {
-            fetchEventDetails(eventId);
-          }
+          queryClient.invalidateQueries({ queryKey: ['host-events-list', user.id] });
         }
       )
       .subscribe();
@@ -81,7 +74,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [expandedEvents, queryClient, user]);
+  }, [queryClient, user?.id]);
   
   const fetchEventDetails = async (eventId: string) => {
     const { data: rsvps } = await supabase
@@ -113,6 +106,7 @@ const Dashboard = () => {
     if (error) showError(error.message);
     else {
       showSuccess(currentStatus ? "Event re-opened." : "Event marked as concluded.");
+      queryClient.invalidateQueries({ queryKey: ['host-events-list', user?.id] });
     }
   };
 
@@ -138,8 +132,11 @@ const Dashboard = () => {
     }
   };
 
-  // Show a minimal shell while session is loading to prevent flicker
-  if (sessionLoading) return <div className="min-h-screen bg-[#050505]" />;
+  if (sessionLoading) return (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
