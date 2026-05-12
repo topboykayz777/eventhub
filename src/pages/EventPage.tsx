@@ -1,201 +1,106 @@
-"use client";
-
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import Countdown from '@/components/Countdown';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, Sparkles, Loader2, Navigation, Image as ImageIcon, Bookmark, Trophy } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import { motion, AnimatePresence } from 'framer-motion';
-import DigitalInvite from '@/components/DigitalInvite';
-import MediaLightbox from '@/components/MediaLightbox';
-import GlassCard from '@/components/ui/GlassCard';
-
-const EventPage = () => {
-  const { slug } = useParams();
-  const [event, setEvent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false, plusOneName: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedRsvps, setSubmittedRsvps] = useState<any[]>([]);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [heroLoaded, setHeroLoaded] = useState(false);
-
-  useEffect(() => {
-    if (slug) fetchEvent();
-  }, [slug]);
-
-  const fetchEvent = async () => {
-    if (!slug) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('events')
-        .select('id, event_name, event_date, venue, venue_map_url, message, theme, photo_url, gallery_urls, is_paid, slug')
-        .ilike('slug', slug.trim())
-        .maybeSingle();
-
-      if (data) {
-        setEvent(data);
-        const savedRsvpIds = localStorage.getItem(`eventhub_rsvps_${data.id}`);
-        if (savedRsvpIds) {
-          const ids = JSON.parse(savedRsvpIds);
-          const { data: rsvps } = await supabase.from('rsvps').select('*').in('id', ids);
-          if (rsvps && rsvps.length > 0) setSubmittedRsvps(rsvps);
-        }
-      }
-    } catch (err: any) {
-      console.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRSVP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!event?.is_paid) { showError("This event is currently pending activation."); return; }
-    if (rsvpData.hasPlusOne && !rsvpData.plusOneName) { showError("Please provide your plus one's name."); return; }
-
-    setIsSubmitting(true);
-    try {
-      const rsvpEntries = [{ event_id: event.id, guest_name: rsvpData.name, guest_phone: rsvpData.phone, song_request: rsvpData.songRequest, has_plus_one: rsvpData.hasPlusOne }];
-      if (rsvpData.hasPlusOne) rsvpEntries.push({ event_id: event.id, guest_name: rsvpData.plusOneName, guest_phone: rsvpData.phone, song_request: rsvpData.songRequest, has_plus_one: false });
-
-      const { data, error } = await supabase.from('rsvps').insert(rsvpEntries).select('*');
-      if (error) throw error;
-
-      localStorage.setItem(`eventhub_rsvps_${event.id}`, JSON.stringify(data.map(r => r.id)));
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-      showSuccess('Welcome to the guest list!');
-      setSubmittedRsvps(data);
-    } catch (err: any) {
-      showError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (loading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" /></div>;
-  if (!event) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white p-4"><div className="text-center"><h2 className="text-2xl font-serif italic mb-4">Event Not Found</h2></div></div>;
-
-  const isConcluded = new Date(event.event_date).getTime() + 86400000 < Date.now();
-  const theme = event.theme || 'modern';
-  
-  const themeConfigs: Record<string, any> = {
-    modern: { bg: "bg-[#050505]", text: "text-white", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] text-black", card: "bg-white/5 border-white/10", rsvpCard: "bg-white text-black" },
-    traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] text-black", card: "bg-white/5 border-[#D4AF37]/20", rsvpCard: "bg-[#D4AF37] text-black" },
-    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black text-white", card: "bg-gray-50 border-gray-100", rsvpCard: "bg-white border-4 border-black text-black" },
-    sahara: { bg: "bg-[#78350f]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", button: "bg-[#fbbf24] text-black", card: "bg-white/5 border-[#fbbf24]/20", rsvpCard: "bg-[#fbbf24] text-black" },
-    velvet: { bg: "bg-[#2e1065]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] text-black", card: "bg-white/5 border-[#D4AF37]/20", rsvpCard: "bg-[#D4AF37] text-black" },
-    garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", button: "bg-[#10b981] text-white", card: "bg-white/5 border-[#10b981]/20", rsvpCard: "bg-[#10b981] text-white" },
-    oceanic: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", button: "bg-[#93c5fd] text-black", card: "bg-white/5 border-[#93c5fd]/20", rsvpCard: "bg-[#93c5fd] text-black" },
-    rose: { bg: "bg-[#831843]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", button: "bg-[#fbcfe8] text-black", card: "bg-white/5 border-[#fbcfe8]/30", rsvpCard: "bg-[#fbcfe8] text-black" },
-    earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", button: "bg-[#fb923c] text-white", card: "bg-white/5 border-[#fb923c]/20", rsvpCard: "bg-[#fb923c] text-white" },
-    silver: { bg: "bg-[#1f2937]", text: "text-[#f9fafb]", accent: "text-[#9ca3af]", button: "bg-[#9ca3af] text-white", card: "bg-white/5 border-[#9ca3af]/20", rsvpCard: "bg-[#9ca3af] text-white" },
-    dynasty: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] text-black", card: "bg-white/5 border-[#D4AF37]/20", rsvpCard: "bg-[#D4AF37] text-black" },
-    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", button: "bg-[#92400e] text-white", card: "bg-white/10 border-[#92400e]/20", rsvpCard: "bg-[#92400e] text-white" }
-  };
-
-  const config = themeConfigs[theme] || themeConfigs.modern;
-
-  return (
-    <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden w-full`}>
-      <div className="relative h-[50vh] lg:h-[85vh] w-full overflow-hidden">
-        <motion.img initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: heroLoaded ? 1 : 0 }} transition={{ duration: 1.5 }} src={event.photo_url} loading="lazy" className={`w-full h-full object-cover transition-opacity duration-1000 ${isConcluded ? 'grayscale' : 'brightness-75'}`} alt="" onLoad={() => setHeroLoaded(true)} />
-        <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-16 max-w-6xl mx-auto">
-          {!isConcluded ? <Countdown targetDate={event.event_date} /> : (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-2 block">Celebration Successful</span>
-              <h1 className="text-3xl md:text-7xl font-serif italic mb-4">A Legacy of <span className="text-[#D4AF37]">Love</span></h1>
+{/* Post-event view logic */}
+  {isConcluded ? (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="text-center p-8 bg-[#050505] rounded-[3rem] border border-[#D4AF37]/20">
+        <h2 className="text-3xl md:text-5xl font-serif italic text-[#D4AF37] mb-4">Celebration Completed</h2>
+        <p className="text-gray-400 mb-6">Thank you for orchestrating an unforgettable event! The celebration has officially concluded.</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {event.gallery_urls?.slice(0, 4).map((url, i) => (
+            <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+              <img src={url} alt="Event Memory" className="w-full h-full object-cover rounded" />
             </motion.div>
-          )}
+          ))}
         </div>
+        <Button className="mt-8 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-6 text-[10px] font-bold tracking-[0.4em] uppercase">
+          View Full Gallery
+        </Button>
       </div>
-
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-20">
-          <div className="lg:col-span-3 space-y-12 lg:space-y-24">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 lg:p-16 rounded-[3rem] border`}>
-              <h2 className={`text-[10px] font-bold uppercase tracking-[0.4em] ${config.accent} mb-12 flex items-center gap-4`}><Calendar className="w-4 h-4" /> The Particulars</h2>
-              <div className="space-y-12">
-                <div className="flex items-start gap-8 group">
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><Sparkles className={`${config.accent} w-6 h-6`} /></div>
-                  <div><p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-1">The Celebration</p><h1 className="text-3xl lg:text-5xl font-serif italic leading-tight">{event.event_name}</h1></div>
-                </div>
-                <div className="flex items-start gap-8 group">
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><MapPin className={`${config.accent} w-6 h-6`} /></div>
-                  <div><p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-1">The Venue</p><p className="text-lg lg:text-3xl font-light leading-relaxed mb-2">{event.venue}</p>
-                  {event.venue_map_url && <a href={event.venue_map_url} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${config.accent} hover:underline`}><Navigation size={10} /> View on Google Maps</a>}</div>
-                </div>
-              </div>
-            </motion.div>
-
-            {event.message && (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
-                <div className={`${config.card} p-8 lg:p-16 rounded-[3rem] border italic text-lg lg:text-3xl font-light leading-relaxed text-center`}>"{event.message}"</div>
-              </motion.div>
-            )}
-
-            {event.gallery_urls?.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                <div className="flex justify-between items-end mb-12">
-                  <div><span className={`${config.accent} text-[10px] font-bold tracking-[0.4em] uppercase mb-2 block`}>The Memory Wall</span><h2 className="text-2xl lg:text-5xl font-serif italic">Captured <span className={config.accent}>Moments</span></h2></div>
-                  <ImageIcon className="text-gray-600 w-8 h-8" />
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
-                  {event.gallery_urls.map((url: string, i: number) => (
-                    <motion.div key={i} whileHover={{ scale: 1.02 }} onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }} className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group"><img src={url} loading="lazy" className="w-full h-full object-cover transition-all duration-700" alt="" /></motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
-          <div className="lg:col-span-2">
-            <AnimatePresence mode="wait">
-              {isConcluded ? (
-                <motion.div key="concluded" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
-                  <GlassCard className={`${config.card} p-16 rounded-[3.5rem] border text-center`}>
-                    <div className={`w-20 h-20 rounded-full ${config.accent} bg-opacity-10 flex items-center justify-center mx-auto mb-8`}><Trophy className={`${config.accent} w-10 h-10`} /></div>
-                    <h3 className="text-2xl font-serif italic mb-6">Event Concluded</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-10">The host thanks you for your time and for being part of this beautiful journey. The celebration was a massive success!</p>
-                  </GlassCard>
-                </motion.div>
-              ) : submittedRsvps.length > 0 ? (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
-                  <div className="text-center mb-6">
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 ${config.accent} bg-opacity-10 border border-opacity-20 rounded-full mb-4`}><Bookmark size={10} className={config.accent} /><span className={`text-[8px] font-black uppercase tracking-widest ${config.accent}`}>Guest Instruction</span></div>
-                    <p className="text-[11px] font-medium leading-relaxed opacity-70 px-4">Please <span className={config.accent}>Bookmark</span> this page. These are your live entry passes.</p>
-                  </div>
-                  <div className="space-y-8">{submittedRsvps.map((rsvp) => (<DigitalInvite key={rsvp.id} event={event} rsvpId={rsvp.id} guestName={rsvp.guest_name} />))}</div>
-                </motion.div>
-              ) : (
-                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-16 rounded-[3.5rem] shadow-2xl sticky top-32 border border-black/5`}>
-                  <h2 className="text-4xl font-serif italic tracking-tight mb-10">The Registry</h2>
-                  <form onSubmit={handleRSVP} className="space-y-10">
-                    <div className="space-y-2"><Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Full Name</Label><Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="e.g. Chidi Benson" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} /></div>
-                    <div className="space-y-2"><Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">WhatsApp Number</Label><Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="080..." value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} /></div>
-                    <div className="flex items-center justify-between p-6 bg-black/5"><Label className="text-[10px] font-bold uppercase tracking-widest">Bringing a Plus One?</Label><Switch checked={rsvpData.hasPlusOne} onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} /></div>
-                    <AnimatePresence>{rsvpData.hasPlusOne && (<motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-2 overflow-hidden"><Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Plus One's Name</Label><Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="e.g. Amaka Benson" value={rsvpData.plusOneName} onChange={(e) => setRsvpData({ ...rsvpData, plusOneName: e.target.value })} /></motion.div>)}</AnimatePresence>
-                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-24 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl`}>{isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Attendance'}</Button>
-                  </form>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
-
-      <MediaLightbox isOpen={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} mediaUrls={event.gallery_urls || []} currentIndex={lightboxIndex} onNavigate={setLightboxIndex} />
+    </motion.div>
+  ) : (
+    <div className="relative h-[50vh] lg:h-[85vh] w-full overflow-hidden">
+      {/* Live Countdown Timer - Fixed to show actual values, never blank */}
+      <Countdown targetDate={event.event_date} />
+      {/* ... existing event details ... */}
     </div>
-  );
-};
+  )}
 
-export default EventPage;
+  {/* Copy Link Button beside Edit Details */}
+  <div className="flex gap-4 md:gap-6 mt-4">
+    <Button 
+      variant="ghost" 
+      onClick={() => navigator.clipboard.writeText(`${window.location.origin}/event/${event.slug}`)}
+      className="text-[#D4AF37] text-[8px] font-bold uppercase tracking-widest hover:text-[#D4AF37]/70 transition-colors"
+      title="Copy Event Link"
+    >
+      <Copy className="w-4 h-4 mr-1.5" />
+      {isConcluded ? 'Check Your Event Page' : 'Copy Link'}
+    </Button>
+    <Button variant="ghost" onClick={() => navigate('/dashboard')} className="text-[#D4AF37] text-[8px] font-bold uppercase tracking-widest hover:text-[#D4AF37]/70 transition-colors">
+      <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to Dashboard    </Button>
+  </div>
+
+  {/* Core Details Protection - Non-editable fields with Support Button */}
+  <div className="mt-8 p-6 bg-[#080808] rounded-[3rem] border border-[#D4AF37]/10">
+    <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-2">Core Details</h3>
+    <div className="space-y-4">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+          <User className="text-[#D4AF37] w-6 h-6" />
+        </div>
+        <div>
+          <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-1">Event Name</p>
+          <p className="text-base md:text-lg font-light">{event.event_name}</p>
+        </div>
+      </div>
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+          <Calendar className="text-[#D4AF37] w-5 h-5" />
+        </div>
+        <div>
+          <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-1">Date & Time</p>
+          <p className="text-base md:text-lg font-light">{new Date(event.event_date).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+      </div>
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+          <MapPin className="text-[#D4AF37] w-5 h-5" />
+        </div>
+        <div>
+          <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-1">Venue</p>
+          <p className="text-base md:text-lg font-light">{event.venue}</p>
+        </div>
+      </div>
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+          <MessageSquare className="text-[#D4AF37] w-5 h-5" />
+        </div>
+        <div>
+          <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-1">Host Message</p>
+          <p className="text-sm md:text-base font-light">{event.message}</p>
+        </div>
+      </div>
+      <div className="mt-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/support')}
+          className="text-[#D4AF37] text-[8px] font-bold uppercase tracking-widest hover:text-[#D4AF37]/70"
+        >
+          Need Help? Contact Support
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  {/* Export CSV Fix - Enhanced Guest Management Export */}
+  <div className="mt-12">
+    <Button       variant="ghost" 
+      onClick={handleExportCSV} 
+      className="text-[#D4AF37] text-[8px] font-bold uppercase tracking-widest hover:text-[#D4AF37]/70"
+    >
+      <FileDown className="w-4 h-4 mr-1.5" /> Export Guest List CSV    </Button>
+  </div>
+
+  {/* Existing RSVP Form Logic (unchanged) */}
+  <form onSubmit={handleRSVP} className="space-y-10">
+    {/* ... existing form fields ... */}
+  </form>
