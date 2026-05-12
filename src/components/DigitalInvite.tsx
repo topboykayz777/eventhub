@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck, Flower2, Waves, Sun, Moon, PenTool, User } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -124,13 +124,11 @@ const DigitalInvite = ({ event, rsvpId, guestName }: DigitalInviteProps) => {
             <div className="relative group">
               <div className="absolute -inset-3 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[1.5rem] blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
               <div className="relative bg-white p-3 md:p-5 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl border-2 md:border-4 border-black/5">
-                <QRCodeSVG 
+                <QRCodeCanvas 
                   value={qrValue} 
                   size={isMobile ? 100 : 140} 
                   level="H" 
                   includeMargin={false}
-                  fgColor="#000000"
-                  bgColor="#FFFFFF"
                 />
               </div>
               {isPass && (

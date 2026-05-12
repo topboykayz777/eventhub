@@ -3,11 +3,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, UserCheck, Sparkles, Users, QrCode, Clock, Loader2, Megaphone, Camera, Timer } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Coins, UserCheck, Sparkles, Users, Clock, Loader2, Megaphone, Camera, Timer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import confetti from 'canvas-confetti';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Activity {
   id: string;
@@ -20,7 +18,6 @@ interface Activity {
 
 const VibeScreen = () => {
   const { slug } = useParams();
-  const isMobile = useIsMobile();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -192,7 +189,6 @@ const VibeScreen = () => {
     </div>
   );
 
-  const eventUrl = `${window.location.origin}/event/${event.slug}`;
   const eventDate = new Date(event.event_date);
   const isLive = currentTime >= eventDate;
 
@@ -325,8 +321,8 @@ const VibeScreen = () => {
 
           {/* Right: Media & Stats */}
           <div className="col-span-12 lg:col-span-5 flex flex-col gap-6 min-h-0">
-            {/* Photo Slideshow - Fixed Aspect Ratio */}
-            <div className={`relative aspect-[16/10] rounded-[2rem] overflow-hidden border ${config.border} shadow-2xl bg-black/40 shrink-0`}>
+            {/* Photo Slideshow - Expanded to fill space */}
+            <div className={`flex-1 rounded-[2rem] overflow-hidden border ${config.border} shadow-2xl bg-black/40 relative`}>
               {event.gallery_urls?.length > 0 ? (
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -363,21 +359,6 @@ const VibeScreen = () => {
                 <Coins className={`${config.accent} w-5 h-5 mx-auto mb-2`} />
                 <p className="text-lg md:text-2xl font-light mb-1">₦{stats.sprays.toLocaleString()}</p>
                 <p className={`text-[7px] md:text-[8px] font-bold uppercase tracking-[0.3em] ${mutedColor}`}>Sprayed</p>
-              </div>
-            </div>
-
-            {/* QR Section - Fixed Height */}
-            <div className={`flex-1 min-h-[200px] ${config.accent.replace('text-', 'bg-')} p-6 rounded-[2rem] text-black text-center relative overflow-hidden group flex flex-col justify-center`}>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 -mr-12 -mt-12 rotate-45" />
-              <div className="relative z-10">
-                <h3 className="text-xl md:text-2xl font-serif italic mb-1">Join the Vibe</h3>
-                <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] mb-4 opacity-60">Scan to RSVP or Spray</p>
-                
-                <div className="bg-white p-3 rounded-[1.5rem] inline-block shadow-2xl transform group-hover:scale-105 transition-transform duration-500">
-                  <QRCodeSVG value={eventUrl} size={isMobile ? 100 : 130} level="H" />
-                </div>
-                
-                <p className="mt-4 text-[7px] md:text-[8px] font-black uppercase tracking-[0.4em]">eventhub.ng/event/{event.slug}</p>
               </div>
             </div>
           </div>
