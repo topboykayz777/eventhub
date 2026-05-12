@@ -31,14 +31,15 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   
-  // We rely on RLS policies to filter events for the logged-in user
+  // Fetch events specifically for the logged-in user
   const { data: events = [], isLoading: eventsLoading, refetch } = useQuery({
-    queryKey: ['host-events-list'],
-    enabled: !!user,
+    queryKey: ['host-events-list', user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
         .select('id, event_name, event_date, photo_url, is_paid, plan, slug, is_concluded, broadcast_message')
+        .eq('host_id', user!.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -55,14 +56,14 @@ const Dashboard = () => {
   }, [user, sessionLoading, navigate]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
-    // Listen for any changes to events or RSVPs to keep the dashboard fresh
+    // Real-time updates for the dashboard
     const channel = supabase
-      .channel('dashboard-realtime')
+      .channel(`dashboard-realtime-${user.id}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'events' },
+        { event: '*', schema: 'public', table: 'events', filter: `host_id=eq.${user.id}` },
         () => {
           refetch();
         }
@@ -72,7 +73,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, refetch]);
+  }, [user?.id, refetch]);
   
   const fetchEventDetails = async (eventId: string) => {
     const { data: rsvps } = await supabase
