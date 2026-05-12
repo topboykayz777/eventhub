@@ -35,20 +35,16 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
-            
             <Route path="/create-event" element={<CreateEvent />} />
             <Route path="/edit-event/:id" element={<EditEvent />} />
             <Route path="/event/:slug" element={<EventPage />} />
             <Route path="/payment/:id" element={<Payment />} />
             <Route path="/budget/:id" element={<BudgetTracker />} />
-            
             <Route path="/vendors" element={<VendorDirectory />} />
             <Route path="/vendor/:id" element={<VendorProfile />} />
-            
             <Route path="/vibe/:slug" element={<VibeScreen />} />
             <Route path="/spray/:slug" element={<SprayPage />} />
             <Route path="/faq" element={<FAQPage />} />
-            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </SessionProvider>
