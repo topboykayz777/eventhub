@@ -127,16 +127,16 @@ const VibeScreen = () => {
     tuscan: { bg: "bg-[#fefce8]", accent: "text-[#ca8a04]", border: "border-[#ca8a04]/30", glow: "bg-[#ca8a04]/10", dark: true },
     frost: { bg: "bg-[#f0f9ff]", accent: "text-[#0ea5e9]", border: "border-[#0ea5e9]/30", glow: "bg-[#0ea5e9]/10", dark: true },
     magenta: { bg: "bg-[#fdf2f8]", accent: "text-[#db2777]", border: "border-[#db2777]/30", glow: "bg-[#db2777]/10", dark: true },
-    jade: { bg: "bg-[#f0fdf4]", accent: "text-[#15803d]", border: "border-[#15803d]/30", glow: "bg-[#15803d]/10", dark: true },
-    saffron: { bg: "bg-[#fff7ed]", accent: "text-[#ea580c]", border: "border-[#ea580c]/30", glow: "bg-[#ea580c]/10", dark: true },
+    jade: { bg: "bg-[#f0fdf4]", accent: "text-[#166534]", border: "border-[#166534]/30", glow: "bg-[#166534]/10", dark: true },
+    saffron: { bg: "bg-[#fff7ed]", accent: "text-[#9a3412]", border: "border-[#9a3412]/30", glow: "bg-[#9a3412]/10", dark: true },
     slate: { bg: "bg-[#f8fafc]", accent: "text-[#475569]", border: "border-[#475569]/30", glow: "bg-[#475569]/10", dark: true },
-    lavender: { bg: "bg-[#f5f3ff]", accent: "text-[#7c3aed]", border: "border-[#7c3aed]/30", glow: "bg-[#7c3aed]/10", dark: true },
-    ruby: { bg: "bg-[#fff1f2]", accent: "text-[#e11d48]", border: "border-[#e11d48]/30", glow: "bg-[#e11d48]/10", dark: true },
-    golden: { bg: "bg-[#fffbeb]", accent: "text-[#d97706]", border: "border-[#d97706]/30", glow: "bg-[#d97706]/10", dark: true },
+    lavender: { bg: "bg-[#f5f3ff]", accent: "text-[#5b21b6]", border: "border-[#5b21b6]/30", glow: "bg-[#5b21b6]/10", dark: true },
+    ruby: { bg: "bg-[#fff1f2]", accent: "text-[#9f1239]", border: "border-[#9f1239]/30", glow: "bg-[#9f1239]/10", dark: true },
+    golden: { bg: "bg-[#fffbeb]", accent: "text-[#854d0e]", border: "border-[#854d0e]/30", glow: "bg-[#854d0e]/10", dark: true },
     birch: { bg: "bg-[#f9fafb]", accent: "text-[#4b5563]", border: "border-[#4b5563]/30", glow: "bg-[#4b5563]/10", dark: true },
     bronze: { bg: "bg-[#fff7ed]", accent: "text-[#9a3412]", border: "border-[#9a3412]/30", glow: "bg-[#9a3412]/10", dark: true },
-    plum: { bg: "bg-[#faf5ff]", accent: "text-[#9333ea]", border: "border-[#9333ea]/30", glow: "bg-[#9333ea]/10", dark: true },
-    teal: { bg: "bg-[#f0fdfa]", accent: "text-[#0d9488]", border: "border-[#0d9488]/30", glow: "bg-[#0d9488]/10", dark: true },
+    plum: { bg: "bg-[#faf5ff]", accent: "text-[#6b21a8]", border: "border-[#6b21a8]/30", glow: "bg-[#6b21a8]/10", dark: true },
+    teal: { bg: "bg-[#f0fdfa]", accent: "text-[#115e59]", border: "border-[#115e59]/30", glow: "bg-[#115e59]/10", dark: true },
     charcoal: { bg: "bg-[#111827]", accent: "text-[#f43f5e]", border: "border-[#f43f5e]/30", glow: "bg-[#f43f5e]/10" },
     sand: { bg: "bg-[#fafaf9]", accent: "text-[#78716c]", border: "border-[#78716c]/30", glow: "bg-[#78716c]/10", dark: true },
     forest: { bg: "bg-[#022c22]", accent: "text-[#10b981]", border: "border-[#10b981]/30", glow: "bg-[#10b981]/10" },
@@ -180,7 +180,9 @@ const VibeScreen = () => {
                 {activities.map((activity) => (
                   <motion.div key={activity.id} layout initial={{ opacity: 0, x: -50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} className={`p-4 md:p-6 rounded-3xl flex items-center justify-between backdrop-blur-2xl border shadow-2xl ${activity.type === 'spray' ? 'bg-amber-500/10 border-amber-500/30 shadow-amber-500/5' : 'bg-emerald-500/10 border-emerald-500/30 shadow-emerald-500/5'}`}>
                     <div className="flex items-center gap-4 md:gap-6">
-                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center ${activity.type === 'spray' ? 'bg-amber-500 text-black' : 'bg-emerald-500 text-white'}`}><activity.type === 'spray' ? <Coins size={24} /> : <UserCheck size={24} />}</div>
+                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center ${activity.type === 'spray' ? 'bg-amber-500 text-black' : 'bg-emerald-500 text-white'}`}>
+                        {activity.type === 'spray' ? <Coins size={24} /> : <UserCheck size={24} />}
+                      </div>
                       <div><p className={`text-[7px] md:text-[9px] font-black uppercase tracking-[0.4em] mb-1 ${activity.type === 'spray' ? 'text-amber-400' : 'text-emerald-400'}`}>{activity.title}</p><p className="text-lg md:text-3xl font-light italic truncate max-w-[200px] md:max-w-none">{activity.subtitle}</p></div>
                     </div>
                     {activity.amount && <div className="text-2xl md:text-5xl font-serif italic text-amber-400">₦{activity.amount.toLocaleString()}</div>}
