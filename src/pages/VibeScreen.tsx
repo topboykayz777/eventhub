@@ -7,6 +7,7 @@ import { Coins, UserCheck, Sparkles, Users, QrCode, Clock, Loader2, Megaphone } 
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '@/integrations/supabase/client';
 import confetti from 'canvas-confetti';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Activity {
   id: string;
@@ -19,6 +20,7 @@ interface Activity {
 
 const VibeScreen = () => {
   const { slug } = useParams();
+  const isMobile = useIsMobile();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<Activity[]>([]);
