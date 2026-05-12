@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { Plus, Loader2, LayoutDashboard, Sparkles, Users, Power } from 'lucide-react';
+import { Plus, Loader2, LayoutDashboard, Sparkles, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionProvider';
@@ -31,14 +31,14 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   
-  // Fetch events specifically for the logged-in user
   const { data: events = [], isLoading: eventsLoading, refetch } = useQuery({
     queryKey: ['host-events-list', user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
+      // Removed 'is_concluded' as it doesn't exist in the schema
       const { data, error } = await supabase
         .from('events')
-        .select('id, event_name, event_date, photo_url, is_paid, plan, slug, is_concluded, broadcast_message')
+        .select('id, event_name, event_date, photo_url, is_paid, plan, slug, broadcast_message')
         .eq('host_id', user!.id)
         .order('created_at', { ascending: false });
 
@@ -58,7 +58,6 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Real-time updates for the dashboard
     const channel = supabase
       .channel(`dashboard-realtime-${user.id}`)
       .on(
@@ -94,19 +93,6 @@ const Dashboard = () => {
       await fetchEventDetails(eventId);
     }
     setExpandedEvents(newExpanded);
-  };
-
-  const handleConcludeEvent = async (eventId: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('events')
-      .update({ is_concluded: !currentStatus })
-      .eq('id', eventId);
-
-    if (error) showError(error.message);
-    else {
-      showSuccess(currentStatus ? "Event re-opened." : "Event marked as concluded.");
-      refetch();
-    }
   };
 
   const handleQRScan = async (scannedText: string) => {
@@ -166,95 +152,92 @@ const Dashboard = () => {
             </div>
           ) : (
             <>
-              {events.map((event: any, index: number) => (
-                <motion.div 
-                  key={event.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`border ${event.is_concluded ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
-                >
-                  <div 
-                    onClick={() => toggleExpand(event.id)} 
-                    className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-white/[0.05] transition-colors"
+              {events.map((event: any, index: number) => {
+                const isConcluded = new Date(event.event_date).getTime() + 86400000 < Date.now();
+                
+                return (
+                  <motion.div 
+                    key={event.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`border ${isConcluded ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
                   >
-                    <div className="flex items-center gap-6 md:gap-10 w-full md:w-auto">
-                      <img src={event.photo_url} loading="lazy" className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${event.is_concluded ? 'grayscale' : ''}`} alt="" />
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                          <h2 className={`text-2xl md:text-4xl font-serif italic ${event.is_concluded ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
-                          {event.is_concluded ? (
-                            <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-gray-400 px-2 py-1 rounded-full">Concluded</span>
-                          ) : (
-                            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live</span>
-                          )}
+                    <div 
+                      onClick={() => toggleExpand(event.id)} 
+                      className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-white/[0.05] transition-colors"
+                    >
+                      <div className="flex items-center gap-6 md:gap-10 w-full md:w-auto">
+                        <img src={event.photo_url} loading="lazy" className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${isConcluded ? 'grayscale' : ''}`} alt="" />
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-3 mb-2">
+                            <h2 className={`text-2xl md:text-4xl font-serif italic ${isConcluded ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
+                            {isConcluded ? (
+                              <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-gray-400 px-2 py-1 rounded-full">Concluded</span>
+                            ) : (
+                              <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live</span>
+                            )}
+                          </div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">
+                            {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' })}
+                          </p>
                         </div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">
-                          {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-8 md:gap-16 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-6 md:pt-0">
+                        <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10">
+                          {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-8 md:gap-16 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-6 md:pt-0">
-                      <Button 
-                        variant="ghost" 
-                        onClick={(e) => { e.stopPropagation(); handleConcludeEvent(event.id, event.is_concluded); }}
-                        className={`text-[8px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${event.is_concluded ? 'border-green-500/30 text-green-500 hover:bg-green-500/10' : 'border-red-500/30 text-red-500 hover:bg-red-500/10'}`}
-                      >
-                        <Power className="w-3 h-3 mr-2" /> {event.is_concluded ? 'Re-open Event' : 'Conclude Event'}
-                      </Button>
-                      <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10">
-                        {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
-                      </Button>
-                    </div>
-                  </div>
 
-                  <AnimatePresence>
-                    {expandedEvents.has(event.id) && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                        <div className="p-6 md:p-16 border-t border-white/5 bg-black/40">
-                          <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
-                            <EventCard event={event} onCopyLink={() => {}} />
-                            
-                            <div className="lg:col-span-8 space-y-12">
-                              <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
+                    <AnimatePresence>
+                      {expandedEvents.has(event.id) && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                          <div className="p-6 md:p-16 border-t border-white/5 bg-black/40">
+                            <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
+                              <EventCard event={event} onCopyLink={() => {}} />
                               
-                              <Tabs defaultValue="tools" className="w-full">
-                                <div className="overflow-x-auto custom-scrollbar pb-2">
-                                  <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 min-w-max">
-                                    <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
-                                    <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
-                                  </TabsList>
-                                </div>
-                                <TabsContent value="tools" className="mt-0">
-                                  <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
-                                </TabsContent>
-                                <TabsContent value="guests" className="mt-0">
-                                  {eventDetails[event.id] ? (
-                                    <GuestList 
-                                      rsvps={eventDetails[event.id]} 
-                                      searchQuery={searchQuery} 
-                                      onSearchChange={setSearchQuery} 
-                                      onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
-                                      onExportCSV={() => {}} 
-                                      onToggleCheckIn={() => {}} 
-                                      onUpdate={async () => {
-                                        await fetchEventDetails(event.id);
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#D4AF37]" /></div>
-                                  )}
-                                </TabsContent>
-                              </Tabs>
+                              <div className="lg:col-span-8 space-y-12">
+                                <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
+                                
+                                <Tabs defaultValue="tools" className="w-full">
+                                  <div className="overflow-x-auto custom-scrollbar pb-2">
+                                    <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 min-w-max">
+                                      <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
+                                      <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
+                                    </TabsList>
+                                  </div>
+                                  <TabsContent value="tools" className="mt-0">
+                                    <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
+                                  </TabsContent>
+                                  <TabsContent value="guests" className="mt-0">
+                                    {eventDetails[event.id] ? (
+                                      <GuestList 
+                                        rsvps={eventDetails[event.id]} 
+                                        searchQuery={searchQuery} 
+                                        onSearchChange={setSearchQuery} 
+                                        onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
+                                        onExportCSV={() => {}} 
+                                        onToggleCheckIn={() => {}} 
+                                        onUpdate={async () => {
+                                          await fetchEventDetails(event.id);
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#D4AF37]" /></div>
+                                    )}
+                                  </TabsContent>
+                                </Tabs>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
               
               {events.length === 0 && (
                 <div className="text-center py-48 border border-dashed border-white/10 rounded-[4rem]">
