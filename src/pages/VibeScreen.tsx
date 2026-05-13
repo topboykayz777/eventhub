@@ -4,13 +4,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, UserCheck, Sparkles } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Coins, UserCheck, Sparkles, Heart, Camera, Music } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface VibeNotification {
   id: string;
-  type: 'spray' | 'checkin' | 'rsvp';
+  type: 'spray' | 'checkin' | 'rsvp' | 'gallery';
   title: string;
   detail: string;
   amount?: number;
@@ -22,14 +21,6 @@ const VibeScreen = () => {
   const [event, setEvent] = useState<any>(null);
   const [notifications, setNotifications] = useState<VibeNotification[]>([]);
   const [stats, setStats] = useState({ rsvps: 0, checkedIn: 0, totalSprayed: 0 });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const fetchInitialData = useCallback(async () => {
     if (!slug) return;
@@ -53,6 +44,7 @@ const VibeScreen = () => {
           totalSprayed: budget?.reduce((acc, curr) => acc + curr.amount, 0) || 0
         });
 
+        // Real-time Orchestration
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
           .on('postgres_changes', 
@@ -62,8 +54,8 @@ const VibeScreen = () => {
                 const guestName = payload.new.description.replace('Digital Spray from ', '');
                 addNotification({ 
                   type: 'spray', 
-                  title: 'Digital Spray Received!', 
-                  detail: `${guestName} just sprayed the host`, 
+                  title: 'Digital Spray Received', 
+                  detail: `${guestName} just honored the host`, 
                   amount: payload.new.amount 
                 });
                 setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
@@ -77,7 +69,7 @@ const VibeScreen = () => {
                 addNotification({ 
                   type: 'checkin', 
                   title: 'Guest Arrival', 
-                  detail: `${payload.new.guest_name} just checked in!` 
+                  detail: `${payload.new.guest_name} has entered the celebration` 
                 });
                 setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
               }
@@ -88,10 +80,23 @@ const VibeScreen = () => {
             (payload) => {
               addNotification({
                 type: 'rsvp',
-                title: 'New RSVP',
+                title: 'New RSVP Confirmed',
                 detail: `${payload.new.guest_name} is joining the guest list`
               });
               setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
+            }
+          )
+          .on('postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` },
+            (payload) => {
+              setEvent(payload.new);
+              if (payload.new.gallery_urls?.length > payload.old.gallery_urls?.length) {
+                addNotification({
+                  type: 'gallery',
+                  title: 'New Memories Captured',
+                  detail: 'Fresh photos have been added to the gallery'
+                });
+              }
             }
           )
           .subscribe();
@@ -99,7 +104,7 @@ const VibeScreen = () => {
         return () => { supabase.removeChannel(channel); };
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Vibe Error:', error);
     }
   }, [slug]);
 
@@ -111,7 +116,7 @@ const VibeScreen = () => {
     const id = Math.random().toString(36).substring(7);
     const newNotif = { ...notif, id, timestamp: Date.now() };
     
-    setNotifications(prev => [newNotif, ...prev].slice(0, 4));
+    setNotifications(prev => [newNotif, ...prev].slice(0, 5));
     
     if (notif.type === 'spray') {
       confetti({ 
@@ -125,173 +130,190 @@ const VibeScreen = () => {
 
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 15000);
+    }, 20000); // Keep on screen longer for TV visibility
   };
 
   if (!event) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <div className="text-center">
-        <div className="w-12 h-12 md:w-16 md:h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-[#D4AF37] font-serif italic text-lg md:text-2xl">Initializing Vibe...</p>
+        <div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-8" />
+        <p className="text-[#D4AF37] font-serif italic text-3xl tracking-widest animate-pulse">Initializing Vibe...</p>
       </div>
     </div>
   );
 
-  const sprayUrl = `${window.location.origin}/spray/${event.slug}`;
+  const theme = event.theme || 'modern';
+  const themeConfigs: Record<string, any> = {
+    modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", glow: "shadow-[#D4AF37]/10" },
+    traditional: { bg: "bg-[#064e3b]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", glass: "bg-black/20", glow: "shadow-[#D4AF37]/20" },
+    elegant: { bg: "bg-[#f8f8f8]", accent: "text-black", border: "border-black/10", glass: "bg-white/80", glow: "shadow-black/5", dark: false },
+    sahara: { bg: "bg-[#451a03]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", glass: "bg-black/20", glow: "shadow-[#fbbf24]/10" },
+    velvet: { bg: "bg-[#2e1065]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10" },
+    garden: { bg: "bg-[#064e3b]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-black/20", glow: "shadow-[#10b981]/10" },
+    oceanic: { bg: "bg-[#1e3a8a]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", glass: "bg-black/20", glow: "shadow-[#93c5fd]/10" },
+    rose: { bg: "bg-[#831843]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/20", glass: "bg-black/20", glow: "shadow-[#fbcfe8]/10" },
+    earth: { bg: "bg-[#431407]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", glass: "bg-black/20", glow: "shadow-[#fb923c]/10" },
+    silver: { bg: "bg-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", glass: "bg-black/20", glow: "shadow-[#9ca3af]/10" },
+    dynasty: { bg: "bg-[#7f1d1d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10" },
+    vintage: { bg: "bg-[#fef3c7]", accent: "text-[#92400e]", border: "border-[#92400e]/20", glass: "bg-white/40", glow: "shadow-[#92400e]/10", dark: false }
+  };
+
+  const config = themeConfigs[theme] || themeConfigs.modern;
+  const isDark = config.dark !== false;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden flex flex-col">
-      {/* Background Image */}
+    <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden flex flex-col relative`}>
+      {/* Cinematic Background */}
       <div className="fixed inset-0 z-0">
         <motion.img 
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 30, repeat: Infinity }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
           src={event.photo_url} 
-          className="w-full h-full object-cover opacity-20 blur-3xl" 
+          className="w-full h-full object-cover blur-2xl" 
           alt="" 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#050505]/80 to-[#050505]" />
+        <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-b from-transparent via-black/40 to-black' : 'bg-gradient-to-b from-transparent via-white/40 to-white'}`} />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen p-4 md:p-6 lg:p-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 lg:mb-12 gap-4">
+      <div className="relative z-10 flex flex-col h-screen p-12 lg:p-20">
+        {/* Header - Large & Elegant */}
+        <div className="flex justify-between items-start mb-20">
           <motion.div 
-            initial={{ opacity: 0, x: -50 }} 
-            animate={{ opacity: 1, x: 0 }}
-            className="max-w-full"
+            initial={{ opacity: 0, y: -50 }} 
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
           >
-            <span className="text-[#D4AF37] text-[10px] md:text-[12px] font-bold tracking-[0.5em] md:tracking-[0.8em] uppercase mb-2 md:mb-4 block">
+            <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase mb-6 block`}>
               Live Celebration Feed
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif italic leading-tight mb-2 md:mb-4">
+            <h1 className="text-6xl lg:text-9xl font-serif italic leading-tight mb-4">
               {event.event_name}
             </h1>
-            <div className="h-1 w-24 md:w-32 lg:w-48 bg-gradient-to-r from-[#D4AF37] to-transparent" />
+            <div className={`h-1 w-64 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
           </motion.div>
 
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            className="self-center md:self-end"
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-right"
           >
-            <div className="bg-white p-2 md:p-3 lg:p-4 rounded-xl md:rounded-2xl shadow-2xl border-2 md:border-4 border-[#D4AF37]/20">
-              <QRCodeSVG value={sprayUrl} size={isMobile ? 120 : 150} level="H" />
-            </div>
-            <div className="text-center mt-2 md:mt-4">
-              <p className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#D4AF37] mb-1">
-                Scan to Spray
-              </p>
-              <p className="text-gray-500 font-mono text-[10px] md:text-xs truncate max-w-[200px] mx-auto">
-                {sprayUrl.replace('https://', '')}
-              </p>
+            <p className="text-sm font-bold uppercase tracking-[0.5em] opacity-50 mb-4">Engagement Stats</p>
+            <div className="flex gap-12">
+              <div>
+                <p className="text-4xl lg:text-6xl font-serif italic mb-1">{stats.checkedIn}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Verified Guests</p>
+              </div>
+              <div>
+                <p className={`${config.accent} text-4xl lg:text-6xl font-serif italic mb-1`}>₦{stats.totalSprayed.toLocaleString()}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Digital Sprays</p>
+              </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 lg:gap-8">
-          {/* Notifications Feed */}
-          <div className="lg:col-span-8 order-2 lg:order-1">
+        {/* Main Feed Area */}
+        <div className="flex-grow grid grid-cols-12 gap-12">
+          <div className="col-span-8">
             <AnimatePresence mode="popLayout">
               {notifications.length > 0 ? (
-                notifications.map((n) => (
+                notifications.map((n, i) => (
                   <motion.div
                     key={n.id}
                     layout
-                    initial={{ opacity: 0, x: -100, scale: 0.8 }}
+                    initial={{ opacity: 0, x: -100, scale: 0.9 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5, x: 50 }}
-                    className="glass-premium p-4 md:p-6 lg:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-2xl md:rounded-[3.5rem] border border-[#D4AF37]/30 shadow-[0_0_50px_-12px_rgba(212,175,55,0.2)] mb-4"
+                    exit={{ opacity: 0, scale: 0.8, x: 50 }}
+                    transition={{ duration: 0.8, ease: "circOut" }}
+                    className={`${config.glass} backdrop-blur-3xl p-10 lg:p-16 flex items-center justify-between rounded-[4rem] border ${config.border} ${config.glow} mb-8`}
                   >
-                    <div className="flex items-center gap-3 md:gap-6 lg:gap-10 w-full sm:w-auto mb-3 sm:mb-0">
-                      <div className={`w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 rounded-full flex items-center justify-center shrink-0 ${
-                        n.type === 'spray' ? 'bg-[#D4AF37] text-black' : 'bg-white/10 text-[#D4AF37]'
+                    <div className="flex items-center gap-12">
+                      <div className={`w-24 h-24 lg:w-32 lg:h-32 rounded-full flex items-center justify-center shrink-0 ${
+                        n.type === 'spray' ? 'bg-[#D4AF37] text-black' : 
+                        n.type === 'checkin' ? 'bg-green-500 text-white' :
+                        n.type === 'gallery' ? 'bg-blue-500 text-white' : 'bg-white/10 text-[#D4AF37]'
                       }`}>
-                        {n.type === 'spray' ? <Coins size={isMobile ? 20 : 30} /> : <UserCheck size={isMobile ? 20 : 30} />}
+                        {n.type === 'spray' ? <Coins size={48} /> : 
+                         n.type === 'checkin' ? <UserCheck size={48} /> :
+                         n.type === 'gallery' ? <Camera size={48} /> : <Sparkles size={48} />}
                       </div>
-                      <div className="text-left flex-1 min-w-0">
-                        <p className="text-[#D4AF37] text-[10px] md:text-[12px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] mb-1">
+                      <div>
+                        <p className={`${config.accent} text-xs font-black uppercase tracking-[0.6em] mb-3`}>
                           {n.title}
                         </p>
-                        <h3 className="text-lg sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-serif italic text-white break-words">
+                        <h3 className="text-4xl lg:text-6xl font-serif italic leading-tight">
                           {n.detail}
                         </h3>
                       </div>
                     </div>
                     {n.amount && (
-                      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-serif italic text-[#D4AF37] sm:ml-4 lg:ml-6 shrink-0">
+                      <div className="text-6xl lg:text-8xl font-serif italic text-[#D4AF37] ml-8">
                         ₦{n.amount.toLocaleString()}
                       </div>
                     )}
                   </motion.div>
                 ))
               ) : (
-                <div className="h-48 sm:h-64 md:h-96 flex flex-col items-center justify-center text-center border border-dashed border-white/10 rounded-2xl md:rounded-[3.5rem] p-4">
-                  <Sparkles className="text-gray-800 w-8 h-8 md:w-12 md:h-12 mb-4" />
-                  <p className="text-gray-600 text-sm md:text-base lg:text-xl font-light tracking-[0.3em] md:tracking-[0.4em] uppercase">
-                    Waiting for the next big moment...
+                <div className="h-full flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-[5rem]">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Sparkles className="text-gray-800 w-24 h-24 mb-8 opacity-20" />
+                  </motion.div>
+                  <p className="text-gray-600 text-2xl font-light tracking-[0.5em] uppercase">
+                    The celebration is in motion...
                   </p>
                 </div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Stats Sidebar */}
-          <div className="lg:col-span-4 order-1 lg:order-2 space-y-4 md:space-y-6 lg:space-y-8">
-            <div className="glass-premium p-4 md:p-6 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/5">
-              <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-gray-500 mb-2 md:mb-4 lg:mb-6">
-                Total Digital Sprays
-              </p>
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif italic text-[#D4AF37]">
-                ₦{stats.totalSprayed.toLocaleString()}
+          {/* Sidebar - Event Info */}
+          <div className="col-span-4 space-y-8">
+            <div className={`${config.glass} backdrop-blur-2xl p-12 rounded-[4rem] border ${config.border}`}>
+              <div className="flex items-center gap-6 mb-8">
+                <Heart className={config.accent} size={32} />
+                <h4 className="text-xl font-serif italic">The Host's Message</h4>
               </div>
+              <p className="text-2xl font-light leading-relaxed italic opacity-80">
+                "{event.message || 'Thank you for being part of our special day. Your presence makes this celebration complete.'}"
+              </p>
             </div>
-            
-            <div className="glass-premium p-4 md:p-6 lg:p-10 rounded-2xl md:rounded-[3rem] border border-white/5">
-              <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-gray-500 mb-2 md:mb-4 lg:mb-6">
-                Guest Attendance
-              </p>
-              <div className="flex items-baseline gap-2 md:gap-4">
-                <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif italic text-white">
-                  {stats.checkedIn}
-                </span>
-                <span className="text-gray-600 text-sm md:text-base lg:text-xl font-light">
-                  / {stats.rsvps} Verified
-                </span>
+
+            <div className={`${config.glass} backdrop-blur-2xl p-12 rounded-[4rem] border ${config.border}`}>
+              <div className="flex items-center gap-6 mb-8">
+                <Music className={config.accent} size={32} />
+                <h4 className="text-xl font-serif italic">Celebration Vibe</h4>
               </div>
-              {/* Progress bar */}
-              <div className="mt-3 md:mt-4 h-1 md:h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[#D4AF37] transition-all duration-1000"
-                  style={{ width: `${stats.rsvps > 0 ? (stats.checkedIn / stats.rsvps) * 100 : 0}%` }}
-                />
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-widest opacity-40">Venue</span>
+                  <span className="text-lg font-light">{event.venue}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-widest opacity-40">Date</span>
+                  <span className="text-lg font-light">
+                    {new Date(event.event_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-auto pt-6 md:pt-8 lg:pt-12 flex flex-col sm:flex-row justify-between items-start sm:items-end border-t border-white/5 gap-4 sm:gap-0">
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className="w-6 h-6 md:w-8 md:h-8 border border-[#D4AF37] flex items-center justify-center rotate-45">
-              <span className="text-[#D4AF37] font-serif text-xs md:text-sm -rotate-45">E</span>
+        {/* Footer - Minimal & Clean */}
+        <div className="mt-auto pt-12 flex justify-between items-end border-t border-white/5">
+          <div className="flex items-center gap-6">
+            <div className="w-12 h-12 border border-[#D4AF37] flex items-center justify-center rotate-45">
+              <span className="text-[#D4AF37] font-serif text-xl -rotate-45">E</span>
             </div>
-            <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-gray-600">
-              Powered by EventHub Nigeria
+            <span className="text-xs font-bold uppercase tracking-[0.5em] opacity-30">
+              Powered by EventHub Nigeria Orchestration Suite
             </span>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-8 w-full sm:w-auto">
-            <div className="text-left sm:text-right">
-              <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-600 mb-0.5">Venue</p>
-              <p className="text-xs md:text-sm font-light truncate max-w-[200px] sm:max-w-none">{event.venue}</p>
-            </div>
-            <div className="text-left sm:text-right">
-              <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-600 mb-0.5">Date</p>
-              <p className="text-xs md:text-sm font-light">
-                {new Date(event.event_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            </div>
+          <div className="text-right">
+            <p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-2">Live Portal</p>
+            <p className="text-xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p>
           </div>
         </div>
       </div>
