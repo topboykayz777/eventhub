@@ -64,8 +64,17 @@ const Dashboard = () => {
 
   const handleQRScan = async (scannedText: string) => {
     let rsvpId = scannedText;
-    if (scannedText.includes('/')) {
-      const parts = scannedText.split('/');
+    let isPlusOne = false;
+
+    // Handle the new dual-pass format: "rsvp-uuid:plus-one"
+    if (scannedText.includes(':plus-one')) {
+      rsvpId = scannedText.split(':plus-one')[0];
+      isPlusOne = true;
+    }
+
+    // Clean up URL if scanned from a full link
+    if (rsvpId.includes('/')) {
+      const parts = rsvpId.split('/');
       rsvpId = parts[parts.length - 1];
     }
 
@@ -75,9 +84,11 @@ const Dashboard = () => {
       return;
     }
 
+    const updateData = isPlusOne ? { plus_one_checked_in: true } : { checked_in: true };
+
     const { data, error } = await supabase
       .from('rsvps')
-      .update({ checked_in: true })
+      .update(updateData)
       .eq('id', rsvpId)
       .select('guest_name')
       .maybeSingle();
@@ -85,7 +96,7 @@ const Dashboard = () => {
     if (error || !data) {
       showError("Pass not found or invalid.");
     } else { 
-      showSuccess(`${data.guest_name} verified and checked in.`); 
+      showSuccess(`${data.guest_name}${isPlusOne ? "'s Plus One" : ""} verified and checked in.`); 
       queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
     }
   };

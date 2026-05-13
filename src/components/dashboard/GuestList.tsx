@@ -193,9 +193,17 @@ const GuestList = ({
               </div>
             </div>
             
-            <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-600'}`}>
-              {rsvp.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-              <span className="text-[8px] font-black uppercase tracking-[0.3em]">{rsvp.checked_in ? 'Verified' : 'Pending'}</span>
+            <div className="flex flex-col items-end gap-2">
+              <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-600'}`}>
+                {rsvp.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                <span className="text-[8px] font-black uppercase tracking-[0.3em]">Main: {rsvp.checked_in ? 'Verified' : 'Pending'}</span>
+              </div>
+              {rsvp.has_plus_one && (
+                <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.plus_one_checked_in ? 'text-blue-500 bg-blue-500/5' : 'text-gray-600'}`}>
+                  {rsvp.plus_one_checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                  <span className="text-[8px] font-black uppercase tracking-[0.3em]">+1: {rsvp.plus_one_checked_in ? 'Verified' : 'Pending'}</span>
+                </div>
+              )}
             </div>
           </div>
         ))}
