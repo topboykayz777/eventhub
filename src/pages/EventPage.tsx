@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, ExternalLink, Bookmark, Users, CheckCircle2, PartyPopper, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, ExternalLink, Bookmark, Users, CheckCircle2, PartyPopper, ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -62,6 +62,11 @@ const EventPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const isVideo = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
   const fetchTableMates = async (eventId: string, tableNum: string) => {
@@ -171,14 +176,18 @@ const EventPage = () => {
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden w-full`}>
       {/* Hero Image Section */}
       <div className="relative h-[50vh] min-h-[400px] md:h-[60vh] md:min-h-[500px] lg:h-[85vh] w-full overflow-hidden">
-        <motion.img 
+        <motion.div 
           initial={{ scale: 1.1, opacity: 0 }} 
           animate={{ scale: 1, opacity: 1 }} 
           transition={{ duration: 1.5 }} 
-          src={event.photo_url} 
-          className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} 
-          alt="" 
-        />
+          className="w-full h-full"
+        >
+          {isVideo(event.photo_url) ? (
+            <video src={event.photo_url} className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} autoPlay muted loop playsInline />
+          ) : (
+            <img src={event.photo_url} className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} alt="" />
+          )}
+        </motion.div>
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 lg:p-16 max-w-6xl mx-auto">
@@ -262,9 +271,18 @@ const EventPage = () => {
                       key={i} 
                       whileHover={{ scale: 1.02 }}
                       onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }}
-                      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group"
+                      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative"
                     >
-                      <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                      {isVideo(url) ? (
+                        <div className="w-full h-full relative">
+                          <video src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" muted />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <PlayCircle className="text-white/70 w-10 h-10" />
+                          </div>
+                        </div>
+                      ) : (
+                        <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                      )}
                     </motion.div>
                   ))}
                 </div>

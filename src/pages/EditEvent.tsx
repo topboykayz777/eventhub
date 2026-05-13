@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield } from 'lucide-react';
+import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield, PlayCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const EditEvent = () => {
@@ -60,13 +60,18 @@ const EditEvent = () => {
     setLoading(false);
   };
 
+  const isVideo = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isGallery = false) => {
     if (!e.target.files || !e.target.files[0]) return;
     
     const file = e.target.files[0];
 
-    if (file.size > 10 * 1024 * 1024) {
-      showError("File is too large. Maximum size is 10MB.");
+    if (file.size > 50 * 1024 * 1024) {
+      showError("File is too large. Maximum size is 50MB.");
       return;
     }
 
@@ -146,7 +151,7 @@ const EditEvent = () => {
     { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
     { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
     { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
-    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
+    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#831843]', icon: Heart },
     { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
     { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
     { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
@@ -268,7 +273,11 @@ const EditEvent = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-8">
                   {formData.photo_url && (
                     <div className="w-full sm:w-32 h-48 sm:h-32 border border-white/10 overflow-hidden">
-                      <img src={formData.photo_url} className="w-full h-full object-cover" alt="Cover" />
+                      {isVideo(formData.photo_url) ? (
+                        <video src={formData.photo_url} className="w-full h-full object-cover" muted />
+                      ) : (
+                        <img src={formData.photo_url} className="w-full h-full object-cover" alt="Cover" />
+                      )}
                     </div>
                   )}
                   <Label htmlFor="cover-upload" className="cursor-pointer h-32 w-full flex-1 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
@@ -298,12 +307,21 @@ const EditEvent = () => {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                   {(formData.gallery_urls || []).map((url, i) => (
-                    <div key={i} className="relative aspect-square border border-white/10 group">
-                      <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
+                    <div key={i} className="relative aspect-square border border-white/10 group overflow-hidden">
+                      {isVideo(url) ? (
+                        <div className="w-full h-full relative">
+                          <video src={url} className="w-full h-full object-cover" muted />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <PlayCircle className="text-white/70 w-8 h-8" />
+                          </div>
+                        </div>
+                      ) : (
+                        <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
+                      )}
                       <button 
                         type="button"
                         onClick={() => removeGalleryPhoto(url)}
-                        className="absolute top-2 right-2 bg-black/50 p-1.5 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                        className="absolute top-2 right-2 bg-black/50 p-1.5 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
                       >
                         <X size={14} />
                       </button>
@@ -317,7 +335,7 @@ const EditEvent = () => {
                     </Label>
                   )}
                 </div>
-                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 10MB per file. Images and Videos supported.</p>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 50MB per file. Images and Videos supported.</p>
               </div>
             </div>
           </GlassCard>
