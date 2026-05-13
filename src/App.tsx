@@ -58,6 +58,7 @@ const AppRoutes = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/create-event" element={<CreateEvent />} />
+      <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/payment/:id" element={<Payment />} />
       <Route path="/event/:slug" element={<EventPage />} />
       <Route path="/vibe/:slug" element={<VibeScreen />} />
