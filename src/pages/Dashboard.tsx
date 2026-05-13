@@ -89,27 +89,26 @@ const Dashboard = () => {
     // Clean any potential query params or fragments
     rsvpId = rsvpId.split('?')[0].split('#')[0];
 
-    // Correct UUID regex for 8-4-4-4-12 format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(rsvpId)) {
-      showError("Invalid pass format. Please scan a guest's digital pass.");
-      return;
-    }
-
+    // We'll let the database query handle the validation instead of a strict regex
+    // to be more robust against minor formatting variations.
     const updateData = isPlusOne ? { plus_one_checked_in: true } : { checked_in: true };
 
-    const { data, error } = await supabase
-      .from('rsvps')
-      .update(updateData)
-      .eq('id', rsvpId)
-      .select('guest_name')
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from('rsvps')
+        .update(updateData)
+        .eq('id', rsvpId)
+        .select('guest_name')
+        .maybeSingle();
 
-    if (error || !data) {
-      showError("Pass not found or invalid.");
-    } else { 
-      showSuccess(`${data.guest_name}${isPlusOne ? "'s Plus One" : ""} verified and checked in.`); 
-      queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+      if (error || !data) {
+        showError("Pass not found or invalid.");
+      } else { 
+        showSuccess(`${data.guest_name}${isPlusOne ? "'s Plus One" : ""} verified and checked in.`); 
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+      }
+    } catch (err) {
+      showError("Invalid pass format.");
     }
   };
 

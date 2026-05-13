@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError, showSuccess } from '@/utils/toast';
-import { motion } from 'framer-motion';
-import { User, Briefcase, Check, Mail, Lock, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Briefcase, Check, Mail, Lock, ArrowRight, Sparkles, LockIcon } from 'lucide-react';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,6 +22,8 @@ const Signup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (role === 'vendor') return; // Prevent submission for vendors
+
     if (password !== confirmPassword) {
       showError("Passwords do not match.");
       return;
@@ -29,8 +31,6 @@ const Signup = () => {
 
     setLoading(true);
 
-    // Sign up the user. The database trigger 'handle_new_user' will 
-    // automatically create the profile record in the background.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -45,8 +45,6 @@ const Signup = () => {
       showError(error.message);
     } else if (data.user) {
       showSuccess("Verification email sent. Please check your inbox to activate your account.");
-      // We don't navigate immediately because the user needs to confirm their email
-      // to establish an 'authenticated' session for RLS.
     }
     
     setLoading(false);
@@ -90,60 +88,87 @@ const Signup = () => {
             </button>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-8">
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Email Address</Label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
-                <Input 
-                  type="email"
-                  required 
-                  placeholder="your@email.com"
-                  className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
+          <div className="relative">
+            <AnimatePresence mode="wait">
+              {role === 'vendor' ? (
+                <motion.div 
+                  key="vendor-coming-soon"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center bg-[#0f0f0f]/80 backdrop-blur-md rounded-2xl border border-[#D4AF37]/20 p-8"
+                >
+                  <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6">
+                    <LockIcon className="text-[#D4AF37] w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-serif italic text-white mb-2">Coming Soon</h3>
+                  <p className="text-gray-400 text-xs uppercase tracking-widest mb-6">The Vendor Atelier is currently in private beta.</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setRole('host')}
+                    className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-none text-[10px] font-bold uppercase tracking-widest"
+                  >
+                    Register as Host instead
+                  </Button>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
 
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Create Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
-                <Input 
-                  type="password"
-                  required 
-                  placeholder="••••••••"
-                  className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+            <form onSubmit={handleSignup} className={`space-y-8 transition-all duration-500 ${role === 'vendor' ? 'blur-md pointer-events-none opacity-20' : ''}`}>
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                  <Input 
+                    type="email"
+                    required 
+                    placeholder="your@email.com"
+                    className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
-                <Input 
-                  type="password"
-                  required 
-                  placeholder="••••••••"
-                  className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Create Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                  <Input 
+                    type="password"
+                    required 
+                    placeholder="••••••••"
+                    className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
 
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'} <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </form>
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
+                  <Input 
+                    type="password"
+                    required 
+                    placeholder="••••••••"
+                    className="h-16 pl-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+              >
+                {loading ? 'Creating Account...' : 'Create Account'} <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </form>
+          </div>
 
           <div className="mt-12 text-center">
             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
