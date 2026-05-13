@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Phone, Mail, Shield, Camera, ArrowLeft, Landmark, CreditCard, Wallet, Loader2 } from 'lucide-react';
+import { User, Phone, Mail, Shield, Camera, ArrowLeft, Landmark, CreditCard, Wallet, Loader2, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 import { useNavigate } from 'react-router-dom';
@@ -58,7 +58,6 @@ const Profile = () => {
         account_name: data.account_name || ''
       });
     } else {
-      // If no profile exists, initialize with user email
       setProfile(prev => ({ ...prev, email: user.email || '' }));
     }
     setLoading(false);
@@ -88,6 +87,12 @@ const Profile = () => {
     setSaving(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    showSuccess("Signed out successfully.");
+    navigate('/');
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
@@ -111,7 +116,7 @@ const Profile = () => {
 
         <form onSubmit={handleSave} className="space-y-12">
           <div className="grid md:grid-cols-12 gap-12">
-            <div className="md:col-span-4">
+            <div className="md:col-span-4 space-y-6">
               <GlassCard className="p-10 text-center border-white/5">
                 <div className="relative w-32 h-32 mx-auto mb-8">
                   <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#D4AF37]/30 bg-white/5">
@@ -127,6 +132,15 @@ const Profile = () => {
                 <h3 className="text-xl font-serif italic mb-2">{profile.full_name || 'Elite Member'}</h3>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Verified Account</p>
               </GlassCard>
+
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={handleLogout}
+                className="w-full border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10 rounded-none py-8 text-[10px] font-bold uppercase tracking-[0.3em]"
+              >
+                <LogOut className="w-4 h-4 mr-2" /> Sign Out
+              </Button>
             </div>
 
             <div className="md:col-span-8 space-y-12">

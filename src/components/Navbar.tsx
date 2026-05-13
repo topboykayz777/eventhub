@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Menu, X, UserCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Menu, X, UserCircle, LogOut } from 'lucide-react';
+import { useSession } from '@/components/SessionProvider';
 import { motion, AnimatePresence } from 'framer-motion';
+import { showSuccess } from '@/utils/toast';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -19,17 +21,10 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const { data: session } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data } = await supabase.auth.getSession();
-      return data.session;
-    }
-  });
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsMenuOpen(false);
+    showSuccess("Signed out successfully.");
     navigate('/');
   };
 
@@ -78,9 +73,9 @@ const Navbar = () => {
                 </Link>
                 <button 
                   onClick={handleLogout}
-                  className="text-[9px] md:text-[10px] lg:text-xs font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-[#D4AF37] hover:opacity-70 transition-opacity"
+                  className="text-[9px] md:text-[10px] lg:text-xs font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-1.5"
                 >
-                  Logout
+                  <LogOut size={14} /> Logout
                 </button>
               </div>
             ) : (
@@ -157,9 +152,9 @@ const Navbar = () => {
                   </Link>
                   <button 
                     onClick={handleLogout}
-                    className="text-2xl font-serif italic text-[#D4AF37] text-left"
+                    className="text-2xl font-serif italic text-[#D4AF37] text-left flex items-center gap-3"
                   >
-                    Logout
+                    <LogOut size={24} /> Logout
                   </button>
                 </>
               ) : (
