@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { showSuccess, showError } from "@/utils/toast";
@@ -22,20 +22,21 @@ const GuestList = ({
   onSearchChange,
   onOpenScanner,
   onExportCSV,
-  onToggleCheckIn,
   onUpdate,
 }: GuestListProps) => {
-  const [checkingIn, setCheckingIn] = React.useState<string | null>(null);
+  const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
   const handleToggleCheckIn = async (id: string, currentStatus: boolean) => {
     setCheckingIn(id);
     try {
-      const { error } = await fetch(`/api/rsvps/${id}/checkin`, {
+      const response = await fetch(`/api/rsvps/${id}/checkin`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ checked_in: !currentStatus }),
       });
-      if (error) throw error;
+      
+      if (!response.ok) throw new Error("Failed to update status");
+      
       await onUpdate();
       showSuccess("Check-in status updated.");
     } catch (err: any) {
