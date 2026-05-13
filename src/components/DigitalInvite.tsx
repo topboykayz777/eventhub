@@ -13,10 +13,11 @@ interface DigitalInviteProps {
   event: any;
   rsvpId?: string;
   guestName?: string;
+  plusOneName?: string;
   isPlusOne?: boolean;
 }
 
-const DigitalInvite = ({ event, rsvpId, guestName, isPlusOne = false }: DigitalInviteProps) => {
+const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = false }: DigitalInviteProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const isPass = !!rsvpId;
@@ -81,7 +82,6 @@ const DigitalInvite = ({ event, rsvpId, guestName, isPlusOne = false }: DigitalI
   const config = themeConfigs[theme] || themeConfigs.modern;
   const Icon = config.icon;
   
-  // Encode the plus-one status into the QR code
   const qrValue = isPlusOne ? `${rsvpId}:plus-one` : rsvpId || `${window.location.origin}/event/${event.slug?.trim()}`;
 
   return (
@@ -157,7 +157,7 @@ const DigitalInvite = ({ event, rsvpId, guestName, isPlusOne = false }: DigitalI
               <div className="flex items-center gap-2">
                 <User size={12} className={config.accent} />
                 <span className={`text-sm font-serif italic ${config.dark ? 'text-white' : 'text-black'}`}>
-                  {isPlusOne ? `Guest of ${guestName}` : guestName}
+                  {isPlusOne ? (plusOneName || `Guest of ${guestName}`) : guestName}
                 </span>
               </div>
             </div>

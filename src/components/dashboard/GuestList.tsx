@@ -32,7 +32,8 @@ const GuestList = ({
 
   const filteredRSVPs = rsvps.filter((r: any) => 
     r.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.guest_phone.includes(searchQuery)
+    r.guest_phone.includes(searchQuery) ||
+    (r.plus_one_name && r.plus_one_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const toggleSelect = (id: string) => {
@@ -96,11 +97,12 @@ const GuestList = ({
       showError("Guest list is empty.");
       return;
     }
-    const headers = ["Guest Name", "Phone", "Plus One", "Song Request", "Table Number", "Checked In"];
+    const headers = ["Guest Name", "Phone", "Plus One", "Plus One Name", "Song Request", "Table Number", "Checked In"];
     const rows = rsvps.map(r => [
       `"${r.guest_name}"`,
       `"${r.guest_phone}"`,
       r.has_plus_one ? "Yes" : "No",
+      `"${r.plus_one_name || ""}"`,
       `"${r.song_request || ""}"`,
       r.table_number || "N/A",
       r.checked_in ? "Yes" : "No"
@@ -183,7 +185,11 @@ const GuestList = ({
                 <p className="text-lg font-serif italic text-white mb-1">{rsvp.guest_name}</p>
                 <div className="flex flex-wrap items-center gap-4">
                   <p className="text-[8px] text-gray-500 font-bold uppercase tracking-[0.2em]">{rsvp.guest_phone}</p>
-                  {rsvp.has_plus_one && <span className="text-[7px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1"><UserPlus size={10} /> +1</span>}
+                  {rsvp.has_plus_one && (
+                    <span className="text-[7px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1">
+                      <UserPlus size={10} /> +1 {rsvp.plus_one_name ? `(${rsvp.plus_one_name})` : ''}
+                    </span>
+                  )}
                   {rsvp.song_request && <span className="text-[7px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1"><Music size={10} /> {rsvp.song_request}</span>}
                   
                   {rsvp.table_number && (

@@ -21,7 +21,7 @@ const EventPage = () => {
   const { slug } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false });
+  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false, plusOneName: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
   const [tableMates, setTableMates] = useState<any[]>([]);
@@ -86,7 +86,8 @@ const EventPage = () => {
         guest_name: rsvpData.name,
         guest_phone: rsvpData.phone,
         song_request: rsvpData.songRequest,
-        has_plus_one: rsvpData.hasPlusOne
+        has_plus_one: rsvpData.hasPlusOne,
+        plus_one_name: rsvpData.hasPlusOne ? rsvpData.plusOneName : null
       }).select('*').single();
 
       if (error) throw error;
@@ -152,7 +153,7 @@ const EventPage = () => {
     rose: { bg: "bg-[#831843]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", button: "bg-[#fbcfe8] hover:bg-[#f9a8d4] text-black", card: "bg-white/5 border-[#fbcfe8]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbcfe8] text-black" },
     earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", button: "bg-[#fb923c] hover:bg-[#ea580c] text-white", card: "bg-white/5 border-[#fb923c]/20 backdrop-blur-xl", rsvpCard: "bg-[#fb923c] text-white" },
     silver: { bg: "bg-[#1f2937]", text: "text-[#f9fafb]", accent: "text-[#9ca3af]", button: "bg-[#9ca3af] hover:bg-[#6b7280] text-white", card: "bg-white/5 border-[#9ca3af]/20 backdrop-blur-xl", rsvpCard: "bg-[#9ca3af] text-white" },
-    dynasty: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
+    traditional: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
     vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", button: "bg-[#92400e] hover:bg-[#78350f] text-white", card: "bg-white/10 border-[#92400e]/20 backdrop-blur-xl", rsvpCard: "bg-[#92400e] text-white" }
   };
 
@@ -332,6 +333,7 @@ const EventPage = () => {
                           event={event} 
                           rsvpId={submittedRsvp.id} 
                           guestName={submittedRsvp.guest_name} 
+                          plusOneName={submittedRsvp.plus_one_name}
                           isPlusOne={passIndex === 1}
                         />
                       </motion.div>
@@ -435,6 +437,27 @@ const EventPage = () => {
                         onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} 
                       />
                     </div>
+                    
+                    <AnimatePresence>
+                      {rsvpData.hasPlusOne && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="space-y-2 overflow-hidden"
+                        >
+                          <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Plus One Name</Label>
+                          <Input 
+                            required 
+                            className="bg-black/5 border-none h-16 rounded-none text-xl px-6" 
+                            placeholder="e.g. Sarah Benson" 
+                            value={rsvpData.plusOneName} 
+                            onChange={(e) => setRsvpData({ ...rsvpData, plusOneName: e.target.value })} 
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <Button 
                       type="submit" 
                       disabled={isSubmitting} 
