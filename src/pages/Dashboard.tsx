@@ -62,23 +62,27 @@ const Dashboard = () => {
     showSuccess("Dashboard Synchronized.");
   };
 
+  const isVideo = (url: string) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   const handleQRScan = async (scannedText: string) => {
     let rsvpId = scannedText;
     let isPlusOne = false;
 
-    // Handle the new dual-pass format: "rsvp-uuid:plus-one"
     if (scannedText.includes(':plus-one')) {
       rsvpId = scannedText.split(':plus-one')[0];
       isPlusOne = true;
     }
 
-    // Clean up URL if scanned from a full link
     if (rsvpId.includes('/')) {
       const parts = rsvpId.split('/');
       rsvpId = parts[parts.length - 1];
     }
 
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(rsvpId)) {
       showError("Invalid pass format.");
       return;
@@ -161,7 +165,22 @@ const Dashboard = () => {
               >
                 <div className="flex items-center gap-4 md:gap-8 w-full md:w-auto">
                   <div className="relative shrink-0">
-                    <img src={event.photo_url} className={`w-16 h-20 md:w-24 md:h-32 object-cover border border-white/10 rounded-xl md:rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+                    {isVideo(event.photo_url) ? (
+                      <video 
+                        src={event.photo_url} 
+                        className={`w-16 h-20 md:w-24 md:h-32 object-cover border border-white/10 rounded-xl md:rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`}
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <img 
+                        src={event.photo_url} 
+                        className={`w-16 h-20 md:w-24 md:h-32 object-cover border border-white/10 rounded-xl md:rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} 
+                        alt="" 
+                      />
+                    )}
                     {event.isCompleted && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl md:rounded-2xl">
                         <CheckCircle2 className="text-white w-6 h-6 md:w-8 md:h-8" />

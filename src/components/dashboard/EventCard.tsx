@@ -26,6 +26,12 @@ const EventCard = ({ event }: EventCardProps) => {
 
   const isFinished = event.is_finished;
 
+  const isVideo = (url: string) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/event/${event.slug}`;
@@ -57,11 +63,22 @@ const EventCard = ({ event }: EventCardProps) => {
   return (
     <div className="lg:col-span-4 w-full">
       <div className="relative aspect-[4/5] w-full overflow-hidden border border-white/10 group rounded-2xl md:rounded-none">
-        <img 
-          src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-          className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
-          alt={event.event_name}
-        />
+        {isVideo(event.photo_url) ? (
+          <video 
+            src={event.photo_url} 
+            className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
+            muted
+            loop
+            autoPlay
+            playsInline
+          />
+        ) : (
+          <img 
+            src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
+            className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
+            alt={event.event_name}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
         
         <div className="absolute top-4 right-4 md:top-6 md:right-6 flex flex-col gap-2 items-end">
