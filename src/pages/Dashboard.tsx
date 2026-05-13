@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, Coins, CheckCircle2, Clock, LayoutDashboard, Users, Sparkles } from 'lucide-react';
+import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import confetti from 'canvas-confetti';
 
 import EventCard from '@/components/dashboard/EventCard';
 import GuestList from '@/components/dashboard/GuestList';
@@ -18,6 +17,7 @@ import ConciergeTools from '@/components/dashboard/ConciergeTools';
 import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
 import BroadcastBox from '@/components/dashboard/BroadcastBox';
 import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
+import DigitalSpray from '@/components/dashboard/DigitalSpray';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,12 +28,9 @@ const Dashboard = () => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
-  const [lastSpray, setLastSpray] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  const eventsRef = useRef<any[]>([]);
-
-  const { data: events = [], isLoading, refetch } = useQuery({
+  const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-dashboard-data'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -49,15 +46,13 @@ const Dashboard = () => {
 
       const enriched = await Promise.all((eventsData || []).map(async (event) => {
         const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
-        const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
         const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
-        return { ...event, rsvps: rsvps || [], toasts: toasts || [], isCompleted };
+        return { ...event, rsvps: rsvps || [], isCompleted };
       }));
 
-      eventsRef.current = enriched;
       return enriched;
     },
-    refetchInterval: 15000,
+    refetchInterval: 30000,
   });
 
   const handleManualRefresh = async () => {
@@ -66,41 +61,6 @@ const Dashboard = () => {
     setTimeout(() => setIsRefreshing(false), 1000);
     showSuccess("Dashboard Synchronized.");
   };
-
-  useEffect(() => {
-    const channel = supabase
-      .channel('dashboard-realtime-v2')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'budget_items' },
-        (payload) => {
-          const newItem = payload.new;
-          const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
-          
-          if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
-            confetti({ 
-              particleCount: 150, 
-              spread: 70, 
-              origin: { y: 0.6 }, 
-              colors: ['#D4AF37', '#ffffff', '#F9E4B7'] 
-            });
-            setLastSpray(newItem);
-            setTimeout(() => setLastSpray(null), 8000);
-            queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'rsvps' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
 
   const handleQRScan = async (scannedText: string) => {
     let rsvpId = scannedText;
@@ -130,125 +90,142 @@ const Dashboard = () => {
     }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#050505]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+
+  const activeEventIds = events.map((e: any) => e.id);
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black">
       <Navbar />
       
-      <AnimatePresence>
-        {lastSpray && (
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md px-6">
-            <div className="bg-[#D4AF37] text-black p-8 rounded-[2rem] shadow-2xl flex items-center gap-6 border-4 border-white/20">
-              <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center shrink-0">
-                <Coins className="w-8 h-8 animate-bounce" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1">New Digital Spray!</p>
-                <h4 className="text-2xl font-serif italic">₦{lastSpray.amount.toLocaleString()}</h4>
-                <p className="text-[8px] font-bold opacity-60">{lastSpray.description}</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <DigitalSpray eventIds={activeEventIds} />
 
-      <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-24">
-          <div>
-            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Planner Command Center</span>
-            <h1 className="text-4xl md:text-7xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
-          </div>
-          <div className="flex gap-4 w-full md:w-auto">
+      <div className="max-w-7xl mx-auto py-8 md:py-24 px-4 md:px-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 mb-12 md:mb-24">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-2 md:mb-4 block">Planner Command Center</span>
+            <h1 className="text-3xl md:text-7xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex gap-3 w-full md:w-auto"
+          >
             <Button 
               variant="outline" 
               onClick={handleManualRefresh}
-              className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10"
+              className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-4 md:px-8 py-4 md:py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync
+              <RefreshCw className={`w-3 h-3 md:w-4 md:h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync
             </Button>
             <Link to="/create-event" className="flex-1 md:flex-none">
-              <Button className="w-full bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest">
-                <Plus className="w-4 h-4 mr-2" /> New Event
+              <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-6 md:px-10 py-4 md:py-6 text-[10px] font-bold uppercase tracking-widest transition-all duration-500">
+                <Plus className="w-3 h-3 md:w-4 md:h-4 mr-2" /> New Event
               </Button>
             </Link>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="space-y-12">
-          {events.map((event: any) => (
-            <div key={event.id} className={`border ${event.isCompleted ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] overflow-hidden transition-all`}>
-              <div onClick={() => {
-                const newExpanded = new Set(expandedEvents);
-                if (newExpanded.has(event.id)) newExpanded.delete(event.id);
-                else newExpanded.add(event.id);
-                setExpandedEvents(newExpanded);
-              }} className="p-10 flex justify-between items-center cursor-pointer hover:bg-white/[0.05]">
-                <div className="flex items-center gap-8">
-                  <div className="relative">
-                    <img src={event.photo_url} className={`w-20 h-24 object-cover border border-white/10 ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+        <div className="space-y-6 md:space-y-12">
+          {events.map((event: any, index: number) => (
+            <motion.div 
+              key={event.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`border ${event.isCompleted ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
+            >
+              <div 
+                onClick={() => {
+                  const newExpanded = new Set(expandedEvents);
+                  if (newExpanded.has(event.id)) newExpanded.delete(event.id);
+                  else newExpanded.add(event.id);
+                  setExpandedEvents(newExpanded);
+                }} 
+                className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 cursor-pointer hover:bg-white/[0.05] transition-colors"
+              >
+                <div className="flex items-center gap-4 md:gap-8 w-full md:w-auto">
+                  <div className="relative shrink-0">
+                    <img src={event.photo_url} className={`w-16 h-20 md:w-24 md:h-32 object-cover border border-white/10 rounded-xl md:rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
                     {event.isCompleted && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <CheckCircle2 className="text-white w-6 h-6" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl md:rounded-2xl">
+                        <CheckCircle2 className="text-white w-6 h-6 md:w-8 md:h-8" />
                       </div>
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-4 mb-2">
-                      <h2 className={`text-3xl font-serif italic ${event.isCompleted ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-1 md:mb-3">
+                      <h2 className={`text-xl md:text-4xl font-serif italic ${event.isCompleted ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
                       {event.isCompleted ? (
-                        <span className="text-[8px] font-black uppercase tracking-widest bg-gray-800 text-gray-400 px-2 py-1 rounded">Completed</span>
+                        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest bg-gray-800 text-gray-400 px-2 py-1 rounded-full">Completed</span>
                       ) : (
-                        <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded flex items-center gap-1">
-                          <Clock size={10} /> Active
+                        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1">
+                          <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                      {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-600">
+                      {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest">
-                  {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
-                </Button>
+                
+                <div className="flex items-center gap-6 md:gap-12 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
+                  <div className="text-left md:text-right">
+                    <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-600 mb-0.5">Engagement</p>
+                    <p className="text-sm md:text-xl font-serif italic text-[#D4AF37]">{event.rsvps.length} RSVPs</p>
+                  </div>
+                  <Button variant="ghost" className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] hover:bg-[#D4AF37]/10 px-2 md:px-4">
+                    {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
+                  </Button>
+                </div>
               </div>
 
               <AnimatePresence>
                 {expandedEvents.has(event.id) && (
-                  <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                    <div className="p-12 border-t border-white/5 bg-black/40">
-                      <div className="grid lg:grid-cols-12 gap-12">
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }} 
+                    animate={{ height: 'auto', opacity: 1 }} 
+                    exit={{ height: 0, opacity: 0 }} 
+                    className="overflow-hidden"
+                  >
+                    <div className="p-6 md:p-16 border-t border-white/5 bg-black/40">
+                      <div className="grid lg:grid-cols-12 gap-8 md:gap-16">
                         <EventCard event={event} onCopyLink={() => {}} />
-                        <div className="lg:col-span-8">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                            <div className="bg-white/5 border border-white/5 p-8 rounded-none">
-                              <div className="flex items-center gap-4 mb-4">
-                                <Users className="text-[#D4AF37] w-5 h-5" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Guest Engagement</span>
+                        
+                        <div className="lg:col-span-8 space-y-8 md:space-y-12">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
+                            <div className="glass-premium p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5">
+                              <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                                <Users className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
+                                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Guest List</span>
                               </div>
-                              <div className="text-3xl font-serif italic">{event.rsvps.length} RSVPs</div>
+                              <div className="text-2xl md:text-4xl font-serif italic">{event.rsvps.length} Confirmed</div>
                             </div>
-                            <div className="bg-white/5 border border-white/5 p-8 rounded-none">
-                              <div className="flex items-center gap-4 mb-4">
-                                <Sparkles className="text-[#D4AF37] w-5 h-5" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</span>
+                            <div className="glass-premium p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5">
+                              <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                                <Sparkles className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5" />
+                                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</span>
                               </div>
-                              <div className="text-3xl font-serif italic">{event.plan} Suite</div>
+                              <div className="text-2xl md:text-4xl font-serif italic">{event.plan} Suite</div>
                             </div>
                           </div>
                           
                           <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
                           
-                          <Tabs defaultValue="tools" className="mt-12">
-                            <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-12 mb-12 rounded-none">
-                              <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-widest">Concierge Tools</TabsTrigger>
-                              <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-widest">Guest List</TabsTrigger>
+                          <Tabs defaultValue="tools" className="w-full">
+                            <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-6 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 overflow-x-auto no-scrollbar">
+                              <TabsTrigger value="tools" className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] pb-4 md:pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent whitespace-nowrap">Concierge Tools</TabsTrigger>
+                              <TabsTrigger value="guests" className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] pb-4 md:pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent whitespace-nowrap">Guest Management</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="tools">
+                            <TabsContent value="tools" className="mt-0">
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
-                            <TabsContent value="guests">
+                            <TabsContent value="guests" className="mt-0">
                               <GuestList 
                                 rsvps={event.rsvps} 
                                 searchQuery={searchQuery} 
@@ -266,16 +243,27 @@ const Dashboard = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           ))}
           
           {events.length === 0 && (
-            <div className="text-center py-40 border border-dashed border-white/10 rounded-[3rem]">
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-24 md:py-48 border border-dashed border-white/10 rounded-[2rem] md:rounded-[4rem]"
+            >
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6 md:mb-8">
+                <LayoutDashboard className="text-gray-600 w-8 h-8 md:w-10 md:h-10" />
+              </div>
+              <p className="text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] px-6">No celebrations found in your archive.</p>
+              <Link to="/create-event" className="mt-8 md:mt-10 inline-block">
+                <Button variant="link" className="text-[#D4AF37] uppercase tracking-widest text-[10px] font-black">Create Your First Event</Button>
+              </Link>
+            </motion.div>
           )}
         </div>
       </div>
+
       <QRScannerOverlay isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleQRScan} />
       {activeEvent && <WhatsAppBlast isOpen={isBlastOpen} onClose={() => setIsBlastOpen(false)} event={activeEvent} rsvps={activeEvent.rsvps} />}
     </div>

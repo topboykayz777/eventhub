@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --background: 0 0% 5%; /* Deeper Obsidian */
+    --background: 0 0% 5%;
     --foreground: 0 0% 98%;
     --card: 0 0% 8%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 45 60% 53%; /* Champagne Gold */
+    --primary: 45 60% 53%;
     --primary-foreground: 0 0% 5%;
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
@@ -75,8 +75,18 @@ html, body {
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #root {
-  @apply overflow-x-hidden max-w-full w-full;
+  @apply min-h-screen flex flex-col;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Fix for mobile input zoom */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }
