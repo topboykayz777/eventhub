@@ -142,19 +142,20 @@ const VibeScreen = () => {
     </div>
   );
 
+  // Theme Configuration Mapping
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
-    modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", glow: "shadow-[#D4AF37]/10" },
-    traditional: { bg: "bg-[#064e3b]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", glass: "bg-black/20", glow: "shadow-[#D4AF37]/20" },
+    modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", glow: "shadow-[#D4AF37]/10", dark: true },
+    traditional: { bg: "bg-[#064e3b]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", glass: "bg-black/20", glow: "shadow-[#D4AF37]/20", dark: true },
     elegant: { bg: "bg-[#f8f8f8]", accent: "text-black", border: "border-black/10", glass: "bg-white/80", glow: "shadow-black/5", dark: false },
-    sahara: { bg: "bg-[#451a03]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", glass: "bg-black/20", glow: "shadow-[#fbbf24]/10" },
-    velvet: { bg: "bg-[#2e1065]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10" },
-    garden: { bg: "bg-[#064e3b]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-black/20", glow: "shadow-[#10b981]/10" },
-    oceanic: { bg: "bg-[#1e3a8a]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", glass: "bg-black/20", glow: "shadow-[#93c5fd]/10" },
-    rose: { bg: "bg-[#831843]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/20", glass: "bg-black/20", glow: "shadow-[#fbcfe8]/10" },
-    earth: { bg: "bg-[#431407]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", glass: "bg-black/20", glow: "shadow-[#fb923c]/10" },
-    silver: { bg: "bg-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", glass: "bg-black/20", glow: "shadow-[#9ca3af]/10" },
-    dynasty: { bg: "bg-[#7f1d1d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10" },
+    sahara: { bg: "bg-[#451a03]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", glass: "bg-black/20", glow: "shadow-[#fbbf24]/10", dark: true },
+    velvet: { bg: "bg-[#2e1065]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10", dark: true },
+    garden: { bg: "bg-[#064e3b]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-black/20", glow: "shadow-[#10b981]/10", dark: true },
+    oceanic: { bg: "bg-[#1e3a8a]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", glass: "bg-black/20", glow: "shadow-[#93c5fd]/10", dark: true },
+    rose: { bg: "bg-[#831843]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/20", glass: "bg-black/20", glow: "shadow-[#fbcfe8]/10", dark: true },
+    earth: { bg: "bg-[#431407]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", glass: "bg-black/20", glow: "shadow-[#fb923c]/10", dark: true },
+    silver: { bg: "bg-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", glass: "bg-black/20", glow: "shadow-[#9ca3af]/10", dark: true },
+    dynasty: { bg: "bg-[#7f1d1d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10", dark: true },
     vintage: { bg: "bg-[#fef3c7]", accent: "text-[#92400e]", border: "border-[#92400e]/20", glass: "bg-white/40", glow: "shadow-[#92400e]/10", dark: false }
   };
 
@@ -162,7 +163,7 @@ const VibeScreen = () => {
   const isDark = config.dark !== false;
 
   return (
-    <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden flex flex-col relative`}>
+    <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden flex flex-col relative transition-colors duration-1000`}>
       {/* Cinematic Background */}
       <div className="fixed inset-0 z-0">
         <motion.img 
