@@ -147,7 +147,7 @@ const EventPage = () => {
                 )}
               </div>
 
-              {/* Gallery Section (Always visible but emphasized in Concluded state) */}
+              {/* Gallery Section */}
               {event.gallery_urls && event.gallery_urls.length > 0 && (
                 <div className="space-y-8">
                   <div className="flex justify-between items-center">

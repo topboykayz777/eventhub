@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { showSuccess, showError } from "@/utils/toast";
-import { Plus, Loader2, LayoutDashboard, CheckCircle2, Power } from "lucide-react";
+import { Plus, Loader2, LayoutDashboard, Power, Calendar, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/components/SessionProvider";
@@ -31,19 +31,33 @@ const Dashboard = () => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
 
-  const { data: events = [], isLoading: eventsLoading, refetch } = useQuery({
+  const { data: events = [], isLoading: eventsLoading, refetch, error: fetchError } = useQuery({
     queryKey: ["host-events-list", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("id, event_name, event_date, photo_url, is_paid, plan, slug, broadcast_message, is_concluded")
-        .eq("host_id", user!.id)
-        .order("created_at", { ascending: false });
+      // We fetch columns explicitly. If is_concluded fails, we fallback to a query without it
+      try {
+        const { data, error } = await supabase
+          .from("events")
+          .select("id, event_name, event_date, photo_url, is_paid, plan, slug, broadcast_message, is_concluded, venue")
+          .eq("host_id", user!.id)
+          .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+        if (error) throw error;
+        return data || [];
+      } catch (err) {
+        console.error("Primary fetch failed, trying fallback:", err);
+        const { data, error } = await supabase
+          .from("events")
+          .select("id, event_name, event_date, photo_url, is_paid, plan, slug, broadcast_message, venue")
+          .eq("host_id", user!.id)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        return (data || []).map(e => ({ ...e, is_concluded: false }));
+      }
     },
+    retry: 1,
+    staleTime: 30000, // Cache for 30 seconds to speed up navigation
   });
 
   useEffect(() => {
@@ -58,8 +72,9 @@ const Dashboard = () => {
       .update({ is_concluded: !currentStatus })
       .eq('id', eventId);
 
-    if (error) showError(error.message);
-    else {
+    if (error) {
+      showError("Could not update event status. Please try again.");
+    } else {
       showSuccess(currentStatus ? "Event reopened." : "Event concluded successfully.");
       refetch();
     }
@@ -81,7 +96,9 @@ const Dashboard = () => {
       newExpanded.delete(eventId);
     } else {
       newExpanded.add(eventId);
-      await fetchEventDetails(eventId);
+      if (!eventDetails[eventId]) {
+        await fetchEventDetails(eventId);
+      }
     }
     setExpandedEvents(newExpanded);
   };
@@ -138,6 +155,12 @@ const Dashboard = () => {
           </Link>
         </div>
 
+        {fetchError && (
+          <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm mb-8">
+            Failed to load events. Please refresh the page.
+          </div>
+        )}
+
         <div className="space-y-8">
           {eventsLoading ? (
             <div className="flex justify-center py-20">
@@ -158,15 +181,17 @@ const Dashboard = () => {
                   >
                     <div className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8">
                       <div onClick={() => toggleExpand(event.id)} className="flex items-center gap-6 md:gap-10 w-full md:w-auto cursor-pointer flex-1">
-                        <img
-                          src={event.photo_url}
-                          loading="lazy"
-                          className={`w-20 h-24 md:w-28 md:h-36 object-cover border border-white/10 rounded-2xl ${event.is_concluded ? "grayscale" : ""}`}
-                          alt=""
-                        />
-                        <div className="flex-1">
+                        <div className="relative w-20 h-24 md:w-28 md:h-36 shrink-0">
+                          <img
+                            src={event.photo_url}
+                            loading="lazy"
+                            className={`w-full h-full object-cover border border-white/10 rounded-2xl ${event.is_concluded ? "grayscale" : ""}`}
+                            alt=""
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h2 className={`text-2xl md:text-4xl font-serif italic ${event.is_concluded ? "text-gray-500" : "text-white"}`}>
+                            <h2 className={`text-2xl md:text-4xl font-serif italic truncate ${event.is_concluded ? "text-gray-500" : "text-white"}`}>
                               {event.event_name}
                             </h2>
                             {event.is_concluded ? (
@@ -179,16 +204,21 @@ const Dashboard = () => {
                               <span className="text-[8px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-500 px-2 py-1 rounded-full">Upcoming</span>
                             )}
                           </div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">
-                            {new Date(event.event_date).toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric" })}
-                          </p>
+                          <div className="flex flex-col gap-1">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600 flex items-center gap-2">
+                              <Calendar size={12} /> {new Date(event.event_date).toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric" })}
+                            </p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600 flex items-center gap-2 truncate">
+                              <MapPin size={12} /> {event.venue}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
                         {hasStarted && (
                           <Button
-                            onClick={() => handleConcludeEvent(event.id, event.is_concluded)}
+                            onClick={(e) => { e.stopPropagation(); handleConcludeEvent(event.id, event.is_concluded); }}
                             variant="outline"
                             className={`rounded-none h-12 px-6 text-[8px] font-black uppercase tracking-widest transition-all ${
                               event.is_concluded 
