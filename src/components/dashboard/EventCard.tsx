@@ -3,8 +3,10 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Edit, Copy, Check, CheckCircle2 } from 'lucide-react';
-import { showSuccess } from '@/utils/toast';
+import { Calendar, MapPin, Edit, Copy, Check, CheckCircle2, Power } from 'lucide-react';
+import { showSuccess, showError } from '@/utils/toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface EventCardProps {
   event: any;
@@ -13,9 +15,11 @@ interface EventCardProps {
 
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [copied, setCopied] = React.useState(false);
-  // Mark as completed only 24 hours after the event date
-  const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
+  const [loading, setLoading] = React.useState(false);
+
+  const isFinished = event.is_finished;
 
   const handleCopy = () => {
     const url = `${window.location.origin}/event/${event.slug}`;
@@ -25,20 +29,39 @@ const EventCard = ({ event }: EventCardProps) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const toggleFinished = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_finished: !isFinished })
+        .eq('id', event.id);
+
+      if (error) throw error;
+      
+      showSuccess(isFinished ? "Event reopened." : "Event marked as concluded.");
+      queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="lg:col-span-4">
       <div className="relative aspect-[4/5] overflow-hidden border border-white/10 group">
         <img 
           src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-          className={`w-full h-full object-cover ${isCompleted ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
+          className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
           alt={event.event_name}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
         
         <div className="absolute top-6 right-6 flex flex-col gap-2 items-end">
-          {isCompleted ? (
+          {isFinished ? (
             <span className="bg-gray-500 text-white text-[8px] font-black px-3 py-1 uppercase tracking-widest flex items-center gap-1">
-              <CheckCircle2 size={10} /> Completed
+              <CheckCircle2 size={10} /> Concluded
             </span>
           ) : event.is_paid ? (
             <span className="bg-green-500 text-black text-[8px] font-black px-3 py-1 uppercase tracking-widest">Live</span>
@@ -78,6 +101,19 @@ const EventCard = ({ event }: EventCardProps) => {
         >
           {copied ? <Check className="w-3 h-3 mr-2" /> : <Copy className="w-3 h-3 mr-2" />}
           {copied ? 'Copied' : 'Copy Link'}
+        </Button>
+        <Button 
+          variant="outline" 
+          disabled={loading}
+          onClick={toggleFinished}
+          className={`col-span-2 rounded-none py-6 text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${
+            isFinished 
+              ? 'bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20' 
+              : 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20'
+          }`}
+        >
+          <Power className="w-3 h-3 mr-2" />
+          {isFinished ? 'Reopen Event' : 'Conclude Event'}
         </Button>
       </div>
     </div>

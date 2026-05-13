@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, ExternalLink, Bookmark, Users, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, ExternalLink, Bookmark, Users, CheckCircle2, PartyPopper } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalInvite from '@/components/DigitalInvite';
@@ -146,9 +146,12 @@ const EventPage = () => {
     </div>
   );
 
-  const isEventOver = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
+  // Determine Event State
+  const isFinished = event.is_finished;
+  const isOngoing = !isFinished && new Date(event.event_date).getTime() <= Date.now();
+  const isUpcoming = !isFinished && new Date(event.event_date).getTime() > Date.now();
+
   const theme = event.theme || 'modern';
-  
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-black" },
     traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 shadow-xl", rsvpCard: "bg-[#D4AF37] text-black" },
@@ -175,23 +178,23 @@ const EventPage = () => {
           animate={{ scale: 1, opacity: 1 }} 
           transition={{ duration: 1.5 }} 
           src={event.photo_url} 
-          className={`w-full h-full object-cover ${isEventOver ? 'grayscale' : 'brightness-75'}`} 
+          className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} 
           alt="" 
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
         
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 lg:p-16 max-w-6xl mx-auto">
-          {!isEventOver ? (
-            <div className="max-w-2xl mx-auto scale-75 md:scale-100 mb-2 md:mb-4 lg:mb-8">
-              <Countdown targetDate={event.event_date} />
-            </div>
-          ) : (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-4 md:mb-8 lg:mb-12">
-              <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-2 block">The Celebration has Concluded</span>
+          {isFinished ? (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-4 md:mb-8 lg:mb-12 text-center md:text-left">
+              <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-2 block">The Celebration was Successful</span>
               <h1 className="text-2xl md:text-4xl lg:text-7xl font-serif italic mb-2 md:mb-4">
-                Thank You for <br /> <span className="text-[#D4AF37]">Celebrating</span> With Us
+                A Legacy of <br /> <span className="text-[#D4AF37]">Excellence</span>
               </h1>
             </motion.div>
+          ) : (
+            <div className="max-w-2xl mx-auto scale-75 md:scale-100 mb-2 md:mb-4 lg:mb-8">
+              <Countdown targetDate={event.event_date} isFinished={isFinished} />
+            </div>
           )}
         </div>
       </div>
@@ -274,15 +277,15 @@ const EventPage = () => {
           {/* Right Sidebar - RSVP/Guest Area */}
           <div className="lg:col-span-2">
             <AnimatePresence mode="wait">
-              {isEventOver ? (
-                <motion.div key="post-event" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 lg:top-32 space-y-6 md:space-y-8 lg:space-y-10">
+              {isFinished ? (
+                <motion.div key="finished" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-24 lg:top-32 space-y-6 md:space-y-8 lg:space-y-10">
                   <GlassCard className={`${config.card} p-4 md:p-8 lg:p-16 rounded-2xl md:rounded-[2rem] lg:rounded-[3.5rem] border text-center`}>
                     <div className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4 md:mb-6 lg:mb-8">
-                      <Heart className="text-[#D4AF37] w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 fill-current" />
+                      <PartyPopper className="text-[#D4AF37] w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10" />
                     </div>
-                    <h3 className="text-xl md:text-2xl font-serif italic mb-4 md:mb-6">A Legacy of Love</h3>
+                    <h3 className="text-xl md:text-2xl font-serif italic mb-4 md:mb-6">Event Concluded</h3>
                     <p className="text-gray-500 text-xs md:text-sm leading-relaxed mb-6 md:mb-8 lg:mb-10">
-                      The celebration has concluded, but the memories remain. Thank you to everyone who joined us and made this day unforgettable.
+                      The host thanks you for your time and for being part of this beautiful journey. The celebration was a resounding success.
                     </p>
                     <div className="pt-4 md:pt-6 lg:pt-8 border-t border-white/5">
                       <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-600 mb-4">Share the Memories</p>
