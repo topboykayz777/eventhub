@@ -3,19 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import Countdown from '@/components/Countdown';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
-import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, ExternalLink, Bookmark, Users, CheckCircle2, PartyPopper, ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { motion, AnimatePresence } from 'framer-motion';
-import DigitalInvite from '@/components/DigitalInvite';
-import MediaLightbox from '@/components/MediaLightbox';
-import GlassCard from '@/components/ui/GlassCard';
 import { usePaystackPayment } from 'react-paystack';
+
+import EventHero from '@/components/event/EventHero';
+import EventDetails from '@/components/event/EventDetails';
+import EventGallery from '@/components/event/EventGallery';
+import RSVPRegistry from '@/components/event/RSVPRegistry';
+import GuestPortal from '@/components/event/GuestPortal';
+import MediaLightbox from '@/components/MediaLightbox';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -28,7 +26,6 @@ const EventPage = () => {
   const [giftAmount, setGiftAmount] = useState('');
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [passIndex, setPassIndex] = useState(0);
 
   useEffect(() => {
     if (slug) fetchEvent();
@@ -62,11 +59,6 @@ const EventPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const isVideo = (url: string) => {
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
-    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
   const fetchTableMates = async (eventId: string, tableNum: string) => {
@@ -174,327 +166,45 @@ const EventPage = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden w-full`}>
-      {/* Hero Image Section */}
-      <div className="relative h-[50vh] min-h-[400px] md:h-[60vh] md:min-h-[500px] lg:h-[85vh] w-full overflow-hidden">
-        <motion.div 
-          initial={{ scale: 1.1, opacity: 0 }} 
-          animate={{ scale: 1, opacity: 1 }} 
-          transition={{ duration: 1.5 }} 
-          className="w-full h-full"
-        >
-          {isVideo(event.photo_url) ? (
-            <video src={event.photo_url} className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} autoPlay muted loop playsInline />
-          ) : (
-            <img src={event.photo_url} className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} alt="" />
-          )}
-        </motion.div>
-        <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
-        
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 lg:p-16 max-w-6xl mx-auto">
-          {isFinished ? (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-4 md:mb-8 lg:mb-12 text-center md:text-left">
-              <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-2 block">The Celebration was Successful</span>
-              <h1 className="text-3xl md:text-5xl lg:text-7xl font-serif italic mb-4">
-                A Legacy of <br /> <span className="text-[#D4AF37]">Excellence</span>
-              </h1>
-            </motion.div>
-          ) : (
-            <div className="max-w-2xl mx-auto scale-75 md:scale-100 mb-4 md:mb-8">
-              <Countdown targetDate={event.event_date} isFinished={isFinished} />
-            </div>
-          )}
-        </div>
-      </div>
+      <EventHero event={event} isFinished={isFinished} config={config} />
 
-      {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-12 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-20">
-          {/* Left Content */}
           <div className="lg:col-span-3 space-y-16 md:space-y-24">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border`}>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4">
-                <Calendar className="w-4 h-4" /> The Particulars
-              </h2>
-              <div className="space-y-12">
-                <div className="flex items-start gap-8 group">
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
-                    <Sparkles className="text-[#D4AF37] w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-1">The Celebration</p>
-                    <h1 className="text-3xl md:text-5xl font-serif italic leading-tight">{event.event_name}</h1>
-                  </div>
-                </div>
-                <div className="flex items-start gap-8 group">
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
-                    <MapPin className="text-[#D4AF37] w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-1">The Venue</p>
-                    <p className="text-xl md:text-3xl font-light leading-relaxed mb-2">{event.venue}</p>
-                    {event.venue_map_url && (
-                      <a 
-                        href={event.venue_map_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline"
-                      >
-                        <Navigation size={10} /> View on Google Maps <ExternalLink size={8} />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {event.message && (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
-                <Quote className="absolute -top-4 -left-4 w-16 h-16 text-[#D4AF37]/10" />
-                <div className={`${config.card} p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border italic text-xl md:text-3xl font-light leading-relaxed text-center`}>
-                  "{event.message}"
-                </div>
-              </motion.div>
-            )}
-
-            {event.gallery_urls && event.gallery_urls.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                <div className="flex justify-between items-end mb-12">
-                  <div>
-                    <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase mb-2 block">The Memory Wall</span>
-                    <h2 className="text-3xl md:text-5xl font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h2>
-                  </div>
-                  <ImageIcon className="text-gray-600 w-8 h-8" />
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                  {event.gallery_urls.map((url: string, i: number) => (
-                    <motion.div 
-                      key={i} 
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }}
-                      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative"
-                    >
-                      {isVideo(url) ? (
-                        <div className="w-full h-full relative">
-                          <video src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" muted />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <PlayCircle className="text-white/70 w-10 h-10" />
-                          </div>
-                        </div>
-                      ) : (
-                        <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+            <EventDetails event={event} config={config} />
+            <EventGallery 
+              galleryUrls={event.gallery_urls || []} 
+              onOpenLightbox={(i) => { setLightboxIndex(i); setIsLightboxOpen(true); }} 
+            />
           </div>
 
-          {/* Right Sidebar - RSVP/Guest Area */}
           <div className="lg:col-span-2">
-            <AnimatePresence mode="wait">
-              {isFinished ? (
-                <motion.div key="finished" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
-                  <GlassCard className={`${config.card} p-10 md:p-16 rounded-[3.5rem] border text-center`}>
-                    <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8">
-                      <PartyPopper className="text-[#D4AF37] w-10 h-10" />
-                    </div>
-                    <h3 className="text-2xl font-serif italic mb-6">Event Concluded</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-10">
-                      The host thanks you for your time and for being part of this beautiful journey. The celebration was a resounding success.
-                    </p>
-                    <div className="pt-8 border-t border-white/5">
-                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-600 mb-4">Share the Memories</p>
-                      <div className="flex justify-center gap-4">
-                        <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
-                          <Share2 size={16} />
-                        </Button>
-                        <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
-                          <Camera size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                  </GlassCard>
-                </motion.div>
-              ) : submittedRsvp ? (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
-                  <div className="text-center mb-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-4">
-                      <Bookmark size={10} className="text-[#D4AF37]" />
-                      <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Instruction</span>
-                    </div>
-                    <p className="text-[11px] font-medium leading-relaxed opacity-70 px-4">
-                      Please <span className="text-[#D4AF37]">Bookmark</span> this page. This is your live portal for event updates and your entry pass.
-                    </p>
-                  </div>
-
-                  {/* Dual Pass Display for Plus Ones */}
-                  <div className="relative">
-                    {submittedRsvp.has_plus_one && (
-                      <div className="flex justify-center gap-4 mb-6">
-                        <button 
-                          onClick={() => setPassIndex(0)}
-                          className={`px-4 py-2 text-[8px] font-black uppercase tracking-widest transition-all ${passIndex === 0 ? 'bg-[#D4AF37] text-black' : 'bg-white/5 text-gray-500'}`}
-                        >
-                          Main Pass
-                        </button>
-                        <button 
-                          onClick={() => setPassIndex(1)}
-                          className={`px-4 py-2 text-[8px] font-black uppercase tracking-widest transition-all ${passIndex === 1 ? 'bg-[#D4AF37] text-black' : 'bg-white/5 text-gray-500'}`}
-                        >
-                          Plus One Pass
-                        </button>
-                      </div>
-                    )}
-                    
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={passIndex}
-                        initial={{ opacity: 0, x: passIndex === 0 ? -20 : 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: passIndex === 0 ? 20 : -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <DigitalInvite 
-                          event={event} 
-                          rsvpId={submittedRsvp.id} 
-                          guestName={submittedRsvp.guest_name} 
-                          plusOneName={submittedRsvp.plus_one_name}
-                          isPlusOne={passIndex === 1}
-                        />
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                  
-                  {submittedRsvp.table_number && (
-                    <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
-                      <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4">
-                          <Users className="w-4 h-4" /> Table Concierge
-                        </h2>
-                        <span className="text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</span>
-                      </div>
-                      <div className="space-y-4">
-                        <p className="text-[9px] font-bold uppercase tracking-widest opacity-50 mb-2">Your Table Mates</p>
-                        <div className="grid gap-3">
-                          {tableMates.map((mate, i) => (
-                            <div key={i} className="flex justify-between items-center p-4 bg-white/5 border border-white/5 rounded-lg">
-                              <span className="text-sm font-light">{mate.guest_name}</span>
-                              {mate.checked_in && (
-                                <div className="flex items-center gap-2 text-green-500">
-                                  <span className="text-[7px] font-black uppercase tracking-widest">Seated</span>
-                                  <CheckCircle2 className="w-4 h-auto" />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </GlassCard>
-                  )}
-
-                  <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
-                    <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4">
-                      <Coins className="w-4 h-4" /> Digital Spraying
-                    </h2>
-                    <div className="space-y-6">
-                      <div className="relative">
-                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-xl">₦</span>
-                        <Input 
-                          type="number" 
-                          placeholder="Amount" 
-                          className="h-16 pl-12 bg-white/5 border-white/10 rounded-none text-2xl font-light" 
-                          value={giftAmount} 
-                          onChange={(e) => setGiftAmount(e.target.value)} 
-                        />
-                      </div>
-                      <Button 
-                        onClick={() => {
-                          if (!giftAmount || parseInt(giftAmount) < 100) {
-                            showError("Minimum spray is ₦100");
-                            return;
-                          }
-                          initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
-                        }} 
-                        className={`w-full h-16 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
-                      >
-                        Spray the Host
-                      </Button>
-                    </div>
-                  </GlassCard>
-                </motion.div>
-              ) : (
-                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-12 md:p-16 rounded-[3.5rem] shadow-2xl sticky top-32 border border-black/5`}>
-                  <h2 className="text-3xl md:text-4xl font-serif italic tracking-tight mb-10">The Registry</h2>
-                  <form onSubmit={handleRSVP} className="space-y-10">
-                    <div className="space-y-2">
-                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Full Name</Label>
-                      <Input 
-                        required 
-                        className="bg-black/5 border-none h-16 rounded-none text-xl px-6" 
-                        placeholder="e.g. Chidi Benson" 
-                        value={rsvpData.name} 
-                        onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">WhatsApp Number</Label>
-                      <Input 
-                        required 
-                        className="bg-black/5 border-none h-16 rounded-none text-xl px-6" 
-                        placeholder="080..." 
-                        value={rsvpData.phone} 
-                        onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Song Request (Optional)</Label>
-                      <Input 
-                        className="bg-black/5 border-none h-16 rounded-none text-xl px-6" 
-                        placeholder="Your favorite vibe..." 
-                        value={rsvpData.songRequest} 
-                        onChange={(e) => setRsvpData({ ...rsvpData, songRequest: e.target.value })} 
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-6 bg-black/5">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest">Bringing a Plus One?</Label>
-                      <Switch 
-                        checked={rsvpData.hasPlusOne} 
-                        onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} 
-                      />
-                    </div>
-                    
-                    <AnimatePresence>
-                      {rsvpData.hasPlusOne && (
-                        <motion.div 
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="space-y-2 overflow-hidden"
-                        >
-                          <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Plus One Name</Label>
-                          <Input 
-                            required 
-                            className="bg-black/5 border-none h-16 rounded-none text-xl px-6" 
-                            placeholder="e.g. Sarah Benson" 
-                            value={rsvpData.plusOneName} 
-                            onChange={(e) => setRsvpData({ ...rsvpData, plusOneName: e.target.value })} 
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <Button 
-                      type="submit" 
-                      disabled={isSubmitting} 
-                      className={`w-full ${config.button} h-24 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl`}
-                    >
-                      {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Attendance'}
-                    </Button>
-                  </form>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {submittedRsvp ? (
+              <GuestPortal 
+                event={event}
+                submittedRsvp={submittedRsvp}
+                tableMates={tableMates}
+                giftAmount={giftAmount}
+                setGiftAmount={setGiftAmount}
+                onSpray={() => {
+                  if (!giftAmount || parseInt(giftAmount) < 100) {
+                    showError("Minimum spray is ₦100");
+                    return;
+                  }
+                  initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
+                }}
+                isFinished={isFinished}
+                config={config}
+              />
+            ) : (
+              <RSVPRegistry 
+                rsvpData={rsvpData}
+                setRsvpData={setRsvpData}
+                isSubmitting={isSubmitting}
+                onSubmit={handleRSVP}
+                config={config}
+              />
+            )}
           </div>
         </div>
       </div>
