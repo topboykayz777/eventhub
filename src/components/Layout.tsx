@@ -16,10 +16,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen bg-[#050505] w-full flex flex-col overflow-x-hidden">
       {/* 
-        This wrapper ensures that content never touches the screen edges on mobile (px-4 = 16px)
+        This wrapper ensures that content never touches the screen edges on mobile (px-5 = 20px)
         and is centered with a max-width of 1280px on desktop.
       */}
-      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-5 md:px-6 lg:px-8 flex-1 flex flex-col relative">
+      <div className="w-full max-w-[1280px] mx-auto px-5 sm:px-6 md:px-8 lg:px-10 flex-1 flex flex-col relative">
         {children}
       </div>
     </div>

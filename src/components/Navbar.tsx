@@ -7,40 +7,23 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, UserCircle } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from '@/components/SessionProvider';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
-        queryClient.invalidateQueries({ queryKey: ['session'] });
-      }
-    });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      subscription.unsubscribe();
-    };
-  }, [queryClient]);
-
-  const { data: session } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data } = await supabase.auth.getSession();
-      return data.session;
-    }
-  });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    queryClient.setQueryData(['session'], null);
     setIsMenuOpen(false);
     navigate('/');
   };
@@ -60,7 +43,8 @@ const Navbar = () => {
             : 'bg-[#0f0f0f]/90 backdrop-blur-md'
         } text-white border-b border-white/5 w-full`}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3 md:px-6 md:py-4 lg:px-8">
+        {/* Removed redundant max-width container as it's handled by Layout.tsx */}
+        <div className="flex justify-between items-center py-3 md:py-4">
           <Link to="/" className="flex items-center gap-2 md:gap-3 group">
             <div className="w-8 h-8 md:w-10 md:h-10 border border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
               <span className="text-[#D4AF37] font-serif text-sm md:text-base -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>

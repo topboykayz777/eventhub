@@ -7,9 +7,9 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { showSuccess, showError } from "@/utils/toast";
-import { Plus, Loader2, LayoutDashboard, Sparkles, Users } from "lucide-react";
+import { Plus, Loader2, LayoutDashboard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/components/SessionProvider";
 
 import EventCard from "@/components/dashboard/EventCard";
@@ -22,7 +22,6 @@ import DigitalSpray from "@/components/dashboard/DigitalSpray";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { user, loading: sessionLoading } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -30,6 +29,7 @@ const Dashboard = () => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
+  const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
 
   const { data: events = [], isLoading: eventsLoading, refetch } = useQuery({
     queryKey: ["host-events-list", user?.id],
@@ -45,8 +45,6 @@ const Dashboard = () => {
       return data || [];
     },
   });
-
-  const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (!sessionLoading && !user) {
@@ -131,12 +129,12 @@ const Dashboard = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+    <div className="flex-1 flex flex-col">
       <Navbar />
 
       <DigitalSpray eventIds={events.map((e) => e.id)} />
 
-      <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-8">
+      <div className="py-12 md:py-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-20">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">
@@ -243,7 +241,7 @@ const Dashboard = () => {
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="p-6 md:p-16 border-t border-white/5 bg-black/40">
+                          <div className="p-8 md:p-12 lg:p-20 border-t border-white/5 bg-black/40">
                             <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
                               <EventCard
                                 event={event}
