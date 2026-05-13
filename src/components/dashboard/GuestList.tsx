@@ -24,7 +24,6 @@ const GuestList = ({
   searchQuery, 
   onSearchChange, 
   onOpenScanner, 
-  onExportCSV,
   onUpdate
 }: GuestListProps) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -92,6 +91,29 @@ const GuestList = ({
     showSuccess("Vibe List exported for the DJ.");
   };
 
+  const exportGuestList = () => {
+    if (rsvps.length === 0) {
+      showError("Guest list is empty.");
+      return;
+    }
+    const headers = ["Guest Name", "Phone", "Plus One", "Song Request", "Table Number", "Checked In"];
+    const rows = rsvps.map(r => [
+      `"${r.guest_name}"`,
+      `"${r.guest_phone}"`,
+      r.has_plus_one ? "Yes" : "No",
+      `"${r.song_request || ""}"`,
+      r.table_number || "N/A",
+      r.checked_in ? "Yes" : "No"
+    ]);
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "GuestList_Export.csv");
+    link.click();
+    showSuccess("Guest list exported successfully.");
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row gap-6">
@@ -111,7 +133,7 @@ const GuestList = ({
           <Button variant="outline" onClick={exportSongRequests} className="h-16 rounded-none border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-[0.2em] px-8">
             <Music className="w-4 h-4 mr-2" /> Vibe List
           </Button>
-          <Button variant="outline" onClick={onExportCSV} className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8">
+          <Button variant="outline" onClick={exportGuestList} className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8">
             <FileDown className="w-4 h-4 mr-2" /> Export CSV
           </Button>
         </div>

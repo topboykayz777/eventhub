@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Loader2, Coins } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BudgetTracker = () => {
@@ -22,7 +22,6 @@ const BudgetTracker = () => {
   useEffect(() => {
     fetchBudget();
 
-    // Robust Real-time Subscription
     const channel = supabase
       .channel(`budget-realtime-${id}`)
       .on(
@@ -33,14 +32,9 @@ const BudgetTracker = () => {
           table: 'budget_items', 
           filter: `event_id=eq.${id}` 
         },
-        (payload) => {
-          console.log("[BudgetTracker] Real-time update received:", payload.eventType);
-          fetchBudget();
-        }
+        () => fetchBudget()
       )
-      .subscribe((status) => {
-        console.log("[BudgetTracker] Real-time status:", status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -85,9 +79,17 @@ const BudgetTracker = () => {
     }
   };
 
-  const totalIncome = items.filter(i => i.type === 'income').reduce((acc, i) => acc + i.amount, 0);
-  const totalExpense = items.filter(i => i.type === 'expense').reduce((acc, i) => acc + i.amount, 0);
-  const balance = totalIncome - totalExpense;
+  // Separate Digital Spray from Manual Income
+  const digitalSprays = items.filter(i => i.type === 'income' && i.description.includes('Digital Spray'));
+  const manualIncome = items.filter(i => i.type === 'income' && !i.description.includes('Digital Spray'));
+  const expenses = items.filter(i => i.type === 'expense');
+
+  const totalDigitalSpray = digitalSprays.reduce((acc, i) => acc + i.amount, 0);
+  const totalManualIncome = manualIncome.reduce((acc, i) => acc + i.amount, 0);
+  const totalExpense = expenses.reduce((acc, i) => acc + i.amount, 0);
+  
+  // Balance only considers manual income and expenses
+  const balance = totalManualIncome - totalExpense;
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
@@ -118,35 +120,45 @@ const BudgetTracker = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <GlassCard className="p-10 border-white/5" hover={false}>
+        <div className="grid md:grid-cols-4 gap-6 mb-16">
+          <GlassCard className="p-8 border-white/5" hover={false}>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
                 <TrendingUp className="text-green-500 w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Total Income</span>
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Manual Income</span>
             </div>
-            <div className="text-4xl font-serif italic text-white">₦{totalIncome.toLocaleString()}</div>
+            <div className="text-2xl font-serif italic text-white">₦{totalManualIncome.toLocaleString()}</div>
           </GlassCard>
 
-          <GlassCard className="p-10 border-white/5" hover={false}>
+          <GlassCard className="p-8 border-white/5" hover={false}>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
                 <TrendingDown className="text-red-500 w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Total Expenses</span>
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Total Expenses</span>
             </div>
-            <div className="text-4xl font-serif italic text-white">₦{totalExpense.toLocaleString()}</div>
+            <div className="text-2xl font-serif italic text-white">₦{totalExpense.toLocaleString()}</div>
           </GlassCard>
 
-          <GlassCard className="p-10 bg-[#D4AF37] border-none" hover={false}>
+          <GlassCard className="p-8 bg-white/5 border-white/10" hover={false}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Wallet className="text-[#D4AF37] w-5 h-5" />
+              </div>
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-400">Current Balance</span>
+            </div>
+            <div className="text-2xl font-serif italic text-white">₦{balance.toLocaleString()}</div>
+          </GlassCard>
+
+          <GlassCard className="p-8 bg-[#D4AF37] border-none" hover={false}>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">
-                <Wallet className="text-black w-5 h-5" />
+                <Coins className="text-black w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">Current Balance</span>
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-black/60">Digital Spray</span>
             </div>
-            <div className="text-4xl font-serif italic text-black">₦{balance.toLocaleString()}</div>
+            <div className="text-2xl font-serif italic text-black">₦{totalDigitalSpray.toLocaleString()}</div>
           </GlassCard>
         </div>
 
@@ -203,7 +215,7 @@ const BudgetTracker = () => {
               <GlassCard className="p-8 border-white/5 group" hover={true}>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-6">
-                    <div className={`w-2 h-2 rounded-full ${item.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <div className={`w-2 h-2 rounded-full ${item.type === 'income' ? (item.description.includes('Digital Spray') ? 'bg-[#D4AF37]' : 'bg-green-500') : 'bg-red-500'}`} />
                     <div>
                       <p className="text-lg font-light tracking-wide text-white mb-1">{item.description}</p>
                       <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">
@@ -212,15 +224,17 @@ const BudgetTracker = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-8">
-                    <div className={`text-xl font-serif italic ${item.type === 'income' ? 'text-green-500' : 'text-white'}`}>
+                    <div className={`text-xl font-serif italic ${item.type === 'income' ? (item.description.includes('Digital Spray') ? 'text-[#D4AF37]' : 'text-green-500') : 'text-white'}`}>
                       {item.type === 'income' ? '+' : '-'} ₦{item.amount.toLocaleString()}
                     </div>
-                    <button 
-                      onClick={() => deleteItem(item.id)}
-                      className="text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!item.description.includes('Digital Spray') && (
+                      <button 
+                        onClick={() => deleteItem(item.id)}
+                        className="text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </GlassCard>
