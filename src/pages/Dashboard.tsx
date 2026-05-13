@@ -89,7 +89,8 @@ const Dashboard = () => {
     // Clean any potential query params or fragments
     rsvpId = rsvpId.split('?')[0].split('#')[0];
 
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    // Correct UUID regex for 8-4-4-4-12 format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(rsvpId)) {
       showError("Invalid pass format. Please scan a guest's digital pass.");
       return;
