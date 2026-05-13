@@ -8,26 +8,28 @@ import { format } from 'date-fns';
 interface DigitalPassProps {
   event: any;
   rsvp: any;
+  isPlusOne?: boolean;
 }
 
-const DigitalPass = ({ event, rsvp }: DigitalPassProps) => {
+const DigitalPass = ({ event, rsvp, isPlusOne = false }: DigitalPassProps) => {
   const eventDate = new Date(event.event_date);
   
-  // The QR code should contain the RSVP ID or a check-in URL
-  // We'll use the RSVP ID as the primary identifier
-  const qrValue = rsvp.id;
+  // The QR code contains the RSVP ID, with a suffix for plus-ones to match scanning logic
+  const qrValue = isPlusOne ? `${rsvp.id}:plus-one` : rsvp.id;
+  const displayName = isPlusOne ? (rsvp.plus_one_name || `${rsvp.guest_name}'s Guest`) : rsvp.guest_name;
 
   return (
     <div className="w-full max-w-sm bg-white rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
       {/* Top Section: Event Info */}
       <div className="bg-[#0f0f0f] p-8 text-white relative overflow-hidden">
-        {/* Decorative background element */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-3xl" />
         
         <div className="relative z-10 space-y-6">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">Official Entry Pass</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">
+                {isPlusOne ? 'Plus One Entry Pass' : 'Official Entry Pass'}
+              </p>
               <h2 className="text-2xl font-serif italic">{event.event_name}</h2>
             </div>
             <Ticket className="text-[#D4AF37]" size={24} />
@@ -60,13 +62,12 @@ const DigitalPass = ({ event, rsvp }: DigitalPassProps) => {
             <User size={14} />
             <span className="text-[10px] font-bold uppercase tracking-widest">Guest Name</span>
           </div>
-          <p className="text-xl font-medium">{rsvp.guest_name}</p>
+          <p className="text-xl font-medium">{displayName}</p>
           {rsvp.table_number && (
             <p className="text-sm text-gray-500">Table {rsvp.table_number}</p>
           )}
         </div>
 
-        {/* QR Code Container */}
         <div className="p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
           <QRCodeSVG 
             value={qrValue}
@@ -86,7 +87,6 @@ const DigitalPass = ({ event, rsvp }: DigitalPassProps) => {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="bg-gray-50 py-4 text-center border-t border-gray-100">
         <p className="text-[8px] font-bold uppercase tracking-widest text-gray-300">Powered by Dyad Concierge</p>
       </div>

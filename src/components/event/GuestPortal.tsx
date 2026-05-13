@@ -6,7 +6,7 @@ import { Bookmark, Users, CheckCircle2, Coins, PartyPopper, Share2, Camera } fro
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GlassCard from '@/components/ui/GlassCard';
-import DigitalInvite from '@/components/DigitalInvite';
+import DigitalPass from '@/components/DigitalPass';
 
 interface GuestPortalProps {
   event: any;
@@ -96,11 +96,9 @@ const GuestPortal = ({
             exit={{ opacity: 0, x: passIndex === 0 ? 20 : -20 }}
             transition={{ duration: 0.3 }}
           >
-            <DigitalInvite 
+            <DigitalPass 
               event={event} 
-              rsvpId={submittedRsvp.id} 
-              guestName={submittedRsvp.guest_name} 
-              plusOneName={submittedRsvp.plus_one_name}
+              rsvp={submittedRsvp}
               isPlusOne={passIndex === 1}
             />
           </motion.div>
