@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock } from 'lucide-react';
+import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const EditEvent = () => {
@@ -55,7 +55,7 @@ const EditEvent = () => {
       message: data.message || '',
       theme: data.theme || 'modern',
       photo_url: data.photo_url || '',
-      gallery_urls: data.gallery_urls || [] // Ensure this is always an array
+      gallery_urls: data.gallery_urls || []
     });
     setLoading(false);
   };
@@ -150,7 +150,15 @@ const EditEvent = () => {
     { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
     { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
     { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
-    { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool }
+    { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool },
+    { id: 'onyx', label: 'Onyx Cyber', color: 'bg-[#111111]', icon: Zap },
+    { id: 'lavender', label: 'Lavender Mist', color: 'bg-[#ddd6fe]', icon: Cloud },
+    { id: 'midnight', label: 'Midnight Sapphire', color: 'bg-[#0f172a]', icon: Compass },
+    { id: 'champagne', label: 'Champagne Bubbles', color: 'bg-[#fafaf9]', icon: GlassWater },
+    { id: 'forest', label: 'Forest Mystique', color: 'bg-[#064e3b]', icon: Trees },
+    { id: 'sunset', label: 'Golden Hour', color: 'bg-[#ea580c]', icon: Sunrise },
+    { id: 'marble', label: 'Carrara Marble', color: 'bg-[#e5e7eb]', icon: Layers },
+    { id: 'platinum', label: 'Platinum Elite', color: 'bg-[#f3f4f6]', icon: Shield }
   ];
 
   if (loading) return (

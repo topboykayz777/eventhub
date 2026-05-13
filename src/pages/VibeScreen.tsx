@@ -100,7 +100,6 @@ const VibeScreen = () => {
             { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` },
             (payload) => {
               setEvent(payload.new);
-              // Check if event was just finished
               if (payload.new.is_finished) setIsLive(false);
               
               if (payload.new.gallery_urls?.length > payload.old.gallery_urls?.length) {
@@ -155,7 +154,6 @@ const VibeScreen = () => {
     </div>
   );
 
-  // Access Denied / Not Live View
   if (!isLive) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
@@ -181,7 +179,6 @@ const VibeScreen = () => {
     );
   }
 
-  // Theme Configuration Mapping
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", glow: "shadow-[#D4AF37]/10", dark: true },
@@ -195,7 +192,15 @@ const VibeScreen = () => {
     earth: { bg: "bg-[#431407]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", glass: "bg-black/20", glow: "shadow-[#fb923c]/10", dark: true },
     silver: { bg: "bg-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", glass: "bg-black/20", glow: "shadow-[#9ca3af]/10", dark: true },
     dynasty: { bg: "bg-[#7f1d1d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10", dark: true },
-    vintage: { bg: "bg-[#fef3c7]", accent: "text-[#92400e]", border: "border-[#92400e]/20", glass: "bg-white/40", glow: "shadow-[#92400e]/10", dark: false }
+    vintage: { bg: "bg-[#fef3c7]", accent: "text-[#92400e]", border: "border-[#92400e]/20", glass: "bg-white/40", glow: "shadow-[#92400e]/10", dark: false },
+    onyx: { bg: "bg-[#050505]", accent: "text-[#06b6d4]", border: "border-[#06b6d4]/20", glass: "bg-white/5", glow: "shadow-[#06b6d4]/10", dark: true },
+    lavender: { bg: "bg-[#f5f3ff]", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/20", glass: "bg-white/80", glow: "shadow-[#8b5cf6]/10", dark: false },
+    midnight: { bg: "bg-[#020617]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/20", glass: "bg-white/5", glow: "shadow-[#38bdf8]/10", dark: true },
+    champagne: { bg: "bg-[#fafaf9]", accent: "text-[#d97706]", border: "border-[#d97706]/20", glass: "bg-white/80", glow: "shadow-[#d97706]/10", dark: false },
+    forest: { bg: "bg-[#022c22]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-white/5", glow: "shadow-[#10b981]/10", dark: true },
+    sunset: { bg: "bg-[#451a03]", accent: "text-[#f97316]", border: "border-[#f97316]/20", glass: "bg-white/5", glow: "shadow-[#f97316]/10", dark: true },
+    marble: { bg: "bg-[#f9fafb]", accent: "text-[#111827]", border: "border-[#e5e7eb]", glass: "bg-white/80", glow: "shadow-black/5", dark: false },
+    platinum: { bg: "bg-[#f3f4f6]", accent: "text-[#1f2937]", border: "border-[#d1d5db]", glass: "bg-white/80", glow: "shadow-black/5", dark: false }
   };
 
   const config = themeConfigs[theme] || themeConfigs.modern;
@@ -203,7 +208,6 @@ const VibeScreen = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden flex flex-col relative transition-colors duration-1000`}>
-      {/* Cinematic Background */}
       <div className="fixed inset-0 z-0">
         <motion.img 
           animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
@@ -216,7 +220,6 @@ const VibeScreen = () => {
       </div>
 
       <div className="relative z-10 flex flex-col h-screen p-12 lg:p-20">
-        {/* Header - Large & Elegant */}
         <div className="flex justify-between items-start mb-20">
           <motion.div 
             initial={{ opacity: 0, y: -50 }} 
@@ -251,7 +254,6 @@ const VibeScreen = () => {
           </motion.div>
         </div>
 
-        {/* Main Feed Area */}
         <div className="flex-grow grid grid-cols-12 gap-12">
           <div className="col-span-8">
             <AnimatePresence mode="popLayout">
@@ -308,7 +310,6 @@ const VibeScreen = () => {
             </AnimatePresence>
           </div>
 
-          {/* Sidebar - Event Info */}
           <div className="col-span-4 space-y-8">
             <div className={`${config.glass} backdrop-blur-2xl p-12 rounded-[4rem] border ${config.border}`}>
               <div className="flex items-center gap-6 mb-8">
@@ -341,7 +342,6 @@ const VibeScreen = () => {
           </div>
         </div>
 
-        {/* Footer - Minimal & Clean */}
         <div className="mt-auto pt-12 flex justify-between items-end border-t border-white/5">
           <div className="flex items-center gap-6">
             <div className="w-12 h-12 border border-[#D4AF37] flex items-center justify-center rotate-45">

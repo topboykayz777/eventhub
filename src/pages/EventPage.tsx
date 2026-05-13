@@ -154,7 +154,15 @@ const EventPage = () => {
     earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", button: "bg-[#fb923c] hover:bg-[#ea580c] text-white", card: "bg-white/5 border-[#fb923c]/20 backdrop-blur-xl", rsvpCard: "bg-[#fb923c] text-white" },
     silver: { bg: "bg-[#1f2937]", text: "text-[#f9fafb]", accent: "text-[#9ca3af]", button: "bg-[#9ca3af] hover:bg-[#6b7280] text-white", card: "bg-white/5 border-[#9ca3af]/20 backdrop-blur-xl", rsvpCard: "bg-[#9ca3af] text-white" },
     dynasty: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
-    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", button: "bg-[#92400e] hover:bg-[#78350f] text-white", card: "bg-white/10 border-[#92400e]/20 backdrop-blur-xl", rsvpCard: "bg-[#92400e] text-white" }
+    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", button: "bg-[#92400e] hover:bg-[#78350f] text-white", card: "bg-white/10 border-[#92400e]/20 backdrop-blur-xl", rsvpCard: "bg-[#92400e] text-white" },
+    onyx: { bg: "bg-[#050505]", text: "text-white", accent: "text-[#06b6d4]", button: "bg-[#06b6d4] hover:bg-[#0891b2] text-black", card: "bg-white/5 border-[#06b6d4]/20 backdrop-blur-xl", rsvpCard: "bg-[#06b6d4] text-black" },
+    lavender: { bg: "bg-[#f5f3ff]", text: "text-[#4c1d95]", accent: "text-[#8b5cf6]", button: "bg-[#8b5cf6] hover:bg-[#7c3aed] text-white", card: "bg-white border-[#8b5cf6]/20 shadow-lg", rsvpCard: "bg-[#8b5cf6] text-white" },
+    midnight: { bg: "bg-[#020617]", text: "text-[#f8fafc]", accent: "text-[#38bdf8]", button: "bg-[#38bdf8] hover:bg-[#0ea5e9] text-black", card: "bg-white/5 border-[#38bdf8]/20 backdrop-blur-xl", rsvpCard: "bg-[#38bdf8] text-black" },
+    champagne: { bg: "bg-[#fafaf9]", text: "text-[#44403c]", accent: "text-[#d97706]", button: "bg-[#d97706] hover:bg-[#b45309] text-white", card: "bg-white border-[#d97706]/20 shadow-md", rsvpCard: "bg-[#d97706] text-white" },
+    forest: { bg: "bg-[#022c22]", text: "text-[#f0fdf4]", accent: "text-[#10b981]", button: "bg-[#10b981] hover:bg-[#059669] text-white", card: "bg-white/5 border-[#10b981]/20 backdrop-blur-xl", rsvpCard: "bg-[#10b981] text-white" },
+    sunset: { bg: "bg-[#451a03]", text: "text-[#fff7ed]", accent: "text-[#f97316]", button: "bg-[#f97316] hover:bg-[#ea580c] text-white", card: "bg-white/5 border-[#f97316]/20 backdrop-blur-xl", rsvpCard: "bg-[#f97316] text-white" },
+    marble: { bg: "bg-[#f9fafb]", text: "text-[#111827]", accent: "text-[#6b7280]", button: "bg-[#111827] hover:bg-black text-white", card: "bg-white border-[#e5e7eb] shadow-xl", rsvpCard: "bg-[#111827] text-white" },
+    platinum: { bg: "bg-[#f3f4f6]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", button: "bg-[#1f2937] hover:bg-[#111827] text-white", card: "bg-white border-[#d1d5db] shadow-lg", rsvpCard: "bg-[#1f2937] text-white" }
   };
 
   const config = themeConfigs[theme] || themeConfigs.modern;

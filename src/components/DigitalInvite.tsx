@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck, Flower2, Waves, Sun, Moon, PenTool, User, UserPlus, Ticket } from 'lucide-react';
+import { Download, Share2, Crown, Sparkles, Gem, Landmark, Star, Heart, ShieldCheck, Flower2, Waves, Sun, Moon, PenTool, User, UserPlus, Ticket, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import html2canvas from 'html2canvas';
 import { QRCodeSVG } from 'qrcode.react';
@@ -76,7 +76,15 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
     earth: { bg: "bg-[#431407]/85", accent: "text-[#fb923c]", border: "border-[#fb923c]/40", icon: Landmark, glow: "shadow-[#fb923c]/20", dark: true },
     silver: { bg: "bg-[#1f2937]/85", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/40", icon: Star, glow: "shadow-[#9ca3af]/20", dark: true },
     dynasty: { bg: "bg-[#7f1d1d]/85", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/40", icon: Crown, glow: "shadow-[#D4AF37]/20", dark: true },
-    vintage: { bg: "bg-[#fef3c7]/95", accent: "text-[#92400e]", border: "border-[#92400e]/40", icon: PenTool, glow: "shadow-[#92400e]/20", dark: false }
+    vintage: { bg: "bg-[#fef3c7]/95", accent: "text-[#92400e]", border: "border-[#92400e]/40", icon: PenTool, glow: "shadow-[#92400e]/20", dark: false },
+    onyx: { bg: "bg-black/90", accent: "text-[#06b6d4]", border: "border-[#06b6d4]/40", icon: Zap, glow: "shadow-[#06b6d4]/20", dark: true },
+    lavender: { bg: "bg-[#f5f3ff]/95", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/40", icon: Cloud, glow: "shadow-[#8b5cf6]/20", dark: false },
+    midnight: { bg: "bg-[#020617]/90", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/40", icon: Compass, glow: "shadow-[#38bdf8]/20", dark: true },
+    champagne: { bg: "bg-[#fafaf9]/95", accent: "text-[#d97706]", border: "border-[#d97706]/40", icon: GlassWater, glow: "shadow-[#d97706]/20", dark: false },
+    forest: { bg: "bg-[#022c22]/90", accent: "text-[#10b981]", border: "border-[#10b981]/40", icon: Trees, glow: "shadow-[#10b981]/20", dark: true },
+    sunset: { bg: "bg-[#451a03]/90", accent: "text-[#f97316]", border: "border-[#f97316]/40", icon: Sunrise, glow: "shadow-[#f97316]/20", dark: true },
+    marble: { bg: "bg-[#f9fafb]/95", accent: "text-[#111827]", border: "border-[#e5e7eb]/40", icon: Layers, glow: "shadow-black/10", dark: false },
+    platinum: { bg: "bg-[#f3f4f6]/95", accent: "text-[#1f2937]", border: "border-[#d1d5db]/40", icon: Shield, glow: "shadow-black/10", dark: false }
   };
 
   const config = themeConfigs[theme] || themeConfigs.modern;
@@ -92,7 +100,6 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
         ref={cardRef}
         className={`relative aspect-[4/6.5] w-full rounded-[3rem] overflow-hidden shadow-2xl border-2 ${config.border} ${config.glow} group`}
       >
-        {/* Background Layer */}
         <div className="absolute inset-0 z-0">
           <img 
             src={event.photo_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
@@ -102,9 +109,7 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
           <div className={`absolute inset-0 ${config.bg} backdrop-blur-xl`} />
         </div>
         
-        {/* Content Layer */}
         <div className="relative z-10 h-full flex flex-col p-8 text-center">
-          {/* Header Badge */}
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -113,7 +118,6 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
             <ShieldCheck size={16} className={config.accent} />
           </div>
 
-          {/* Event Title & Type */}
           <div className="mb-8">
             <div className={`inline-flex p-4 rounded-2xl bg-white/5 backdrop-blur-md mb-4 ${config.accent} border border-white/10`}>
               {isPlusOne ? <UserPlus size={24} /> : <Icon size={24} />}
@@ -127,7 +131,6 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
             <div className={`w-12 h-0.5 mx-auto ${config.accent} bg-current opacity-30`} />
           </div>
 
-          {/* QR Code Section */}
           <div className="flex-grow flex flex-col justify-center items-center">
             <div className="relative">
               <div className="absolute -inset-6 bg-gradient-to-r from-[#D4AF37] via-[#F9E4B7] to-[#D4AF37] rounded-[2.5rem] blur-xl opacity-20" />
@@ -150,7 +153,6 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
             </div>
           </div>
 
-          {/* Guest Info & Logistics */}
           <div className="mt-8 pt-8 border-t border-white/10 space-y-6">
             <div className="flex flex-col items-center gap-1">
               <p className={`text-[7px] font-bold uppercase tracking-[0.3em] ${config.dark ? 'text-gray-500' : 'text-gray-400'}`}>Guest of Honor</p>
@@ -187,7 +189,6 @@ const DigitalInvite = ({ event, rsvpId, guestName, plusOneName, isPlusOne = fals
         </div>
       </motion.div>
 
-      {/* Action Buttons */}
       <div className="flex gap-3 justify-center">
         <Button 
           onClick={handleDownload} 
