@@ -6,26 +6,53 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess, showError } from "@/utils/toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image as ImageIcon, Loader2, X, Upload, Plus, Camera } from "lucide-react";
+import { Image as ImageIcon, Loader2, X, Upload, Plus, Camera, Sparkles, Crown, Gem, Sun, Moon, Flower2, Waves, Heart, Landmark, Star, PenTool, Diamond, Wine, Anchor, Cloud, Leaf, Flame, Bird, Shield, Coffee, Wind, TreePine, Mountain } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import GlassCard from "@/components/ui/GlassCard";
 
 const THEME_OPTIONS = [
-  { id: "modern", label: "Midnight Noir", color: "bg-black" },
-  { id: "traditional", label: "Royal Heritage", color: "bg-[#064e3b]" },
-  { id: "elegant", label: "Pure Ivory", color: "bg-white" },
-  { id: "sahara", label: "Sahara Gold", color: "bg-[#78350f]" },
-  { id: "velvet", label: "Midnight Velvet", color: "bg-[#4c1d95]" },
-  { id: "garden", label: "Emerald Garden", color: "bg-[#065f46]" },
-  { id: "oceanic", label: "Oceanic Silk", color: "bg-[#1e3a8a]" },
-  { id: "rose", label: "Sunset Rose", color: "bg-[#9d174d]" },
-  { id: "earth", label: "Ancestral Earth", color: "bg-[#7c2d12]" },
-  { id: "silver", label: "Celestial Silver", color: "bg-[#374151]" },
-  { id: "dynasty", label: "Crimson Dynasty", color: "bg-[#991b1b]" },
-  { id: "vintage", label: "Vintage Parchment", color: "bg-[#fef3c7]" }
+  { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
+  { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
+  { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
+  { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
+  { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
+  { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
+  { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
+  { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
+  { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
+  { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
+  { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
+  { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool },
+  { id: 'onyx', label: 'Onyx Black', color: 'bg-[#1a1a1a]', icon: Diamond },
+  { id: 'champagne', label: 'Champagne Gold', color: 'bg-[#fdf2f8]', icon: Wine },
+  { id: 'pearl', label: 'Pearl White', color: 'bg-[#0f172a]', icon: Anchor },
+  { id: 'tuscan', label: 'Tuscan Sun', color: 'bg-[#fefce8]', icon: Sun },
+  { id: 'frost', label: 'Arctic Frost', color: 'bg-[#f0f9ff]', icon: Cloud },
+  { id: 'magenta', label: 'Royal Magenta', color: 'bg-[#fdf2f8]', icon: Heart },
+  { id: 'jade', label: 'Imperial Jade', color: 'bg-[#f0fdf4]', icon: Leaf },
+  { id: 'saffron', label: 'Saffron Spice', color: 'bg-[#fff7ed]', icon: Flame },
+  { id: 'slate', label: 'Slate Grey', color: 'bg-[#f8fafc]', icon: Landmark },
+  { id: 'lavender', label: 'Lavender Mist', color: 'bg-[#f5f3ff]', icon: Bird },
+  { id: 'ruby', label: 'Ruby Red', color: 'bg-[#fff1f2]', icon: Wine },
+  { id: 'golden', label: 'Golden Hour', color: 'bg-[#fffbeb]', icon: Sun },
+  { id: 'birch', label: 'Birch Wood', color: 'bg-[#f9fafb]', icon: TreePine },
+  { id: 'bronze', label: 'Antique Bronze', color: 'bg-[#fff7ed]', icon: Shield },
+  { id: 'plum', label: 'Royal Plum', color: 'bg-[#faf5ff]', icon: Coffee },
+  { id: 'teal', label: 'Deep Teal', color: 'bg-[#f0fdfa]', icon: Waves },
+  { id: 'charcoal', label: 'Charcoal Smoke', color: 'bg-[#111827]', icon: Heart },
+  { id: 'sand', label: 'Desert Sand', color: 'bg-[#fafaf9]', icon: Mountain },
+  { id: 'forest', label: 'Deep Forest', color: 'bg-[#022c22]', icon: TreePine },
+  { id: 'ember', label: 'Glowing Ember', color: 'bg-[#450a0a]', icon: Flame },
+  { id: 'blossom', label: 'Cherry Blossom', color: 'bg-[#fff1f2]', icon: Flower2 },
+  { id: 'solstice', label: 'Winter Solstice', color: 'bg-[#1e1b4b]', icon: Moon },
+  { id: 'breeze', label: 'Ocean Breeze', color: 'bg-[#f0f9ff]', icon: Wind },
+  { id: 'marble', label: 'Carrara Marble', color: 'bg-[#f3f4f6]', icon: Landmark },
+  { id: 'copper', label: 'Polished Copper', color: 'bg-[#7c2d12]', icon: Flame },
+  { id: 'indigo', label: 'Midnight Indigo', color: 'bg-[#312e81]', icon: Moon },
+  { id: 'mint', label: 'Fresh Mint', color: 'bg-[#ecfdf5]', icon: Leaf },
+  { id: 'coral', label: 'Sunset Coral', color: 'bg-[#fff1f2]', icon: Sun }
 ];
 
 const EditEvent = () => {
@@ -95,8 +122,13 @@ const EditEvent = () => {
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    setGalleryUploading(true);
     
+    if (event.gallery_urls.length + e.target.files.length > 50) {
+      showError("Maximum 50 images allowed in gallery.");
+      return;
+    }
+
+    setGalleryUploading(true);
     const files = Array.from(e.target.files);
     const newUrls: string[] = [];
 
@@ -261,7 +293,7 @@ const EditEvent = () => {
 
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Live Gallery</Label>
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Live Gallery ({event.gallery_urls.length}/50)</Label>
                       <Label htmlFor="gallery-upload" className="cursor-pointer">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline">
                           <Plus size={14} /> Add Photos
@@ -278,7 +310,7 @@ const EditEvent = () => {
                       />
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {galleryUploading && (
                         <div className="aspect-square border-2 border-dashed border-[#D4AF37]/30 flex items-center justify-center bg-white/5">
                           <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
@@ -323,7 +355,7 @@ const EditEvent = () => {
                   
                   <div className="space-y-6">
                     <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Theme Selection</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                       {THEME_OPTIONS.map((t) => (
                         <button
                           key={t.id}
@@ -336,7 +368,7 @@ const EditEvent = () => {
                           }`}
                         >
                           <div className="relative z-10 flex flex-col justify-between h-full">
-                            <Camera className={`w-5 h-5 ${event.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
+                            <t.icon className={`w-5 h-5 ${event.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
                             <span className="text-[8px] font-bold uppercase tracking-widest">{t.label}</span>
                           </div>
                           <div className={`absolute top-0 right-0 w-12 h-12 ${t.color} opacity-20 -mr-6 -mt-6 rotate-45`} />
