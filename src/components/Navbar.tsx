@@ -54,11 +54,11 @@ const Navbar = () => {
       <motion.nav 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 transition-all duration-300 ${
           isScrolled 
             ? 'bg-[#0f0f0f]/95 backdrop-blur-md shadow-lg' 
             : 'bg-[#0f0f0f]/90 backdrop-blur-md'
-        } text-white border-b border-white/5`}
+        } text-white border-b border-white/5 w-full`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3 md:px-6 md:py-4 lg:px-8">
           <Link to="/" className="flex items-center gap-2 md:gap-3 group">
