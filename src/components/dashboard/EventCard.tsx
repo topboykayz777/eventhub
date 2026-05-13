@@ -3,10 +3,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Edit, Copy, Check, CheckCircle2, Power } from 'lucide-react';
+import { Calendar, MapPin, Edit, Copy, Check, CheckCircle2, Power, ExternalLink } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EventCardProps {
   event: any;
@@ -21,7 +26,8 @@ const EventCard = ({ event }: EventCardProps) => {
 
   const isFinished = event.is_finished;
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const url = `${window.location.origin}/event/${event.slug}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
@@ -94,14 +100,32 @@ const EventCard = ({ event }: EventCardProps) => {
         >
           <Edit className="w-3 h-3 mr-2" /> Edit Details
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={handleCopy}
-          className="rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6"
-        >
-          {copied ? <Check className="w-3 h-3 mr-2" /> : <Copy className="w-3 h-3 mr-2" />}
-          {copied ? 'Copied' : 'Copy Link'}
-        </Button>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => window.open(`/event/${event.slug}`, '_blank')}
+            className="flex-1 rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6"
+          >
+            <ExternalLink className="w-3 h-3 mr-2" /> Check Event Page
+          </Button>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                onClick={handleCopy}
+                className="rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] px-4 py-6 hover:bg-[#D4AF37]/10 transition-all"
+              >
+                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-[#1a1a1a] border-white/10 text-[#D4AF37] text-[8px] font-bold uppercase tracking-widest">
+              Copy link to event page
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
         <Button 
           variant="outline" 
           disabled={loading}
