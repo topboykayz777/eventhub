@@ -1,54 +1,51 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const Hero = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
   return (
-    <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden bg-[#0f0f0f]">
-      {/* Background Image with Slow Zoom and Optimization */}
+    <section className="relative min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden bg-[#0f0f0f]">
+      {/* Background Image with Slow Zoom */}
       <div className="absolute inset-0 overflow-hidden">
         <img 
-          src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1920" 
-          className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${isLoaded ? 'opacity-30 md:opacity-40' : 'opacity-0'} animate-slow-zoom`}
+          src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
+          className="w-full h-full object-cover opacity-40 animate-slow-zoom"
           alt="Luxury Event"
-          onLoad={() => setIsLoaded(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f0f] via-transparent to-[#0f0f0f]" />
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-6 text-center py-12 md:py-20">
+      <div className="max-w-7xl mx-auto relative z-10 px-6 text-center py-20">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 1, ease: "easeOut" }}
         >
-          <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-4 md:mb-8 block">
+          <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-6 md:mb-8 block">
             The Professional Orchestration Suite
           </span>
           
-          <h1 className="text-3xl sm:text-5xl md:text-8xl font-serif italic text-white mb-6 md:mb-10 leading-tight tracking-tight">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif italic text-white mb-8 md:mb-10 leading-tight tracking-tight">
             The Art of <br />
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-sm md:text-xl text-gray-400 mb-8 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-wide px-4">
+          <p className="text-base md:text-xl text-gray-400 mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
             Orchestrate weddings, galas, and elite events with precision.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 px-6 sm:px-0">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8">
             <Link to="/create-event" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[10px] px-8 md:px-12 py-6 md:py-8 rounded-none font-bold tracking-[0.3em] uppercase transition-all duration-500">
+              <Button size="lg" className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[10px] px-12 py-8 rounded-none font-bold tracking-[0.3em] uppercase transition-all duration-500 hover:px-16">
                 Start Orchestrating
               </Button>
             </Link>
             <Link to="/vendors" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 text-[10px] px-8 md:px-12 py-6 md:py-8 rounded-none font-bold tracking-[0.3em] uppercase">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 text-[10px] px-12 py-8 rounded-none font-bold tracking-[0.3em] uppercase">
                 Curated Directory
               </Button>
             </Link>

@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Play, SkipForward, Save, FileText, ArrowRight, Sparkles, Car, Camera, Gift, Shirt, Phone, PartyPopper } from 'lucide-react';
+import { X, Send, Users, CheckCircle2, Loader2, MessageSquare, CheckSquare, Square, Copy, Check, ArrowRight, Play, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
 
 interface WhatsAppBlastProps {
@@ -16,56 +15,50 @@ interface WhatsAppBlastProps {
   rsvps: any[];
 }
 
-const DEFAULT_TEMPLATES = [
-  { id: 't1', name: 'Event Reminder', content: 'Hello {{guest_name}}, this is a friendly reminder about {{event_name}} happening on {{event_date}} at {{venue}}. We look forward to seeing you there!' },
-  { id: 't2', name: 'Buffet Open', content: 'Hi {{guest_name}}, the buffet is now open at {{event_name}}. Come enjoy the feast! 🍽️' },
-  { id: 't3', name: 'Thank You', content: 'Dear {{guest_name}}, thank you for gracing {{event_name}} with your presence. It was a pleasure having you!' },
-  { id: 't4', name: 'Welcome', content: 'Welcome {{guest_name}} to {{event_name}}! We are thrilled to have you here at {{venue}}.' },
-];
-
 const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) => {
   const [message, setMessage] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isLooping, setIsLooping] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [templates, setTemplates] = useState<any[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedIds(rsvps.map(r => r.id));
       setIsLooping(false);
       setCurrentIndex(0);
-      const saved = localStorage.getItem('eventhub_wa_templates');
-      if (saved) setTemplates([...DEFAULT_TEMPLATES, ...JSON.parse(saved)]);
-      else setTemplates([...DEFAULT_TEMPLATES]);
     }
   }, [isOpen, rsvps]);
 
   const formatPhone = (phone: string) => {
     let cleaned = phone.replace(/\D/g, '');
-    if (cleaned.startsWith('0')) cleaned = '234' + cleaned.substring(1);
-    if (cleaned.length === 10) cleaned = '234' + cleaned;
+    // Nigeria specific: if starts with 0, replace with 234
+    if (cleaned.startsWith('0')) {
+      cleaned = '234' + cleaned.substring(1);
+    }
+    // If it's just 10 digits (e.g. 803...), add 234
+    if (cleaned.length === 10) {
+      cleaned = '234' + cleaned;
+    }
     return cleaned;
   };
 
-  const replaceVariables = (content: string, guest: any) => {
-    return content
-      .replace(/{{guest_name}}/g, guest.guest_name)
-      .replace(/{{event_name}}/g, event.event_name)
-      .replace(/{{event_date}}/g, new Date(event.event_date).toLocaleDateString())
-      .replace(/{{venue}}/g, event.venue);
+  const toggleSelectAll = () => {
+    if (selectedIds.length === rsvps.length) setSelectedIds([]);
+    else setSelectedIds(rsvps.map(r => r.id));
   };
 
-  const handleSaveTemplate = () => {
-    if (!message.trim()) return;
-    const name = prompt("Enter template name:");
-    if (!name) return;
-    const newTemplate = { id: Date.now().toString(), name, content: message };
-    const updated = [...templates, newTemplate];
-    setTemplates(updated);
-    const customOnly = updated.filter(t => !DEFAULT_TEMPLATES.some(dt => dt.id === t.id));
-    localStorage.setItem('eventhub_wa_templates', JSON.stringify(customOnly));
-    showSuccess("Template saved to library.");
+  const handleStartLoop = () => {
+    if (!message.trim()) {
+      showError("Please enter a message.");
+      return;
+    }
+    if (selectedIds.length === 0) {
+      showError("Please select at least one guest.");
+      return;
+    }
+    setIsLooping(true);
+    setCurrentIndex(0);
+    showSuccess("Blast Loop Started.");
   };
 
   const selectedGuests = rsvps.filter(r => selectedIds.includes(r.id));
@@ -73,144 +66,143 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
 
   const sendAndNext = () => {
     if (!currentGuest) return;
-    const personalizedMessage = replaceVariables(message, currentGuest);
+
     const formattedPhone = formatPhone(currentGuest.guest_phone);
-    const text = encodeURIComponent(`${personalizedMessage}\n\nView Event: ${window.location.origin}/event/${event.slug}`);
+    const text = encodeURIComponent(`${message}\n\nView Event: ${window.location.origin}/event/${event.slug}`);
+    
+    // Open WhatsApp
     window.open(`https://api.whatsapp.com/send?phone=${formattedPhone}&text=${text}`, '_blank');
-    if (currentIndex < selectedGuests.length - 1) setCurrentIndex(prev => prev + 1);
-    else {
+
+    // Move to next guest automatically
+    if (currentIndex < selectedGuests.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
       showSuccess("Blast Sequence Complete!");
       setIsLooping(false);
     }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          exit={{ opacity: 0 }} 
-          className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 overflow-y-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6"
         >
           <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }} 
-            className="max-w-3xl w-full bg-[#0f0f0f] border border-white/10 p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-2xl my-auto flex flex-col max-h-[90vh]"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="max-w-2xl w-full bg-[#0f0f0f] border border-white/10 p-8 md:p-12 rounded-none shadow-2xl max-h-[90vh] flex flex-col"
           >
-            <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
+            <div className="flex justify-between items-center mb-8 shrink-0">
               <div>
-                <span className="text-[#25D366] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.4em] uppercase block mb-1 md:mb-2">Mass Communication</span>
-                <h3 className="text-xl md:text-3xl font-serif italic text-white">WhatsApp Blast</h3>
+                <span className="text-[#25D366] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">Mass Communication</span>
+                <h3 className="text-2xl md:text-3xl font-serif italic text-white">WhatsApp Blast</h3>
               </div>
-              <button onClick={onClose} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"><X size={18} /></button>
+              <button 
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[60vh]">
+            <div className="flex-grow overflow-y-auto custom-scrollbar pr-2">
               {!isLooping ? (
-                <div className="space-y-8 md:space-y-10">
-                  <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                    <div className="space-y-3 md:space-y-4">
-                      <div className="flex justify-between items-center">
-                        <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Template Library</Label>
-                        <button onClick={handleSaveTemplate} className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-[#D4AF37] flex items-center gap-1 md:gap-2"><Save size={10} /> Save Current</button>
-                      </div>
-                      <Select onValueChange={(v) => {
-                        const template = templates.find(t => t.id === v);
-                        if (template) setMessage(template.content);
-                      }}>
-                        <SelectTrigger className="h-12 md:h-14 bg-white/5 border-white/10 rounded-none"><SelectValue placeholder="Select a template" /></SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white max-h-[250px]">
-                          <div className="px-2 py-1 text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-500">Default Templates</div>
-                          {DEFAULT_TEMPLATES.map(t => (
-                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                          ))}
-                          {templates.length > DEFAULT_TEMPLATES.length && (
-                            <>
-                              <div className="px-2 py-1 text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-500 mt-2">Custom Templates</div>
-                              {templates.filter(t => !DEFAULT_TEMPLATES.some(dt => dt.id === t.id)).map(t => (
-                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                              ))}
-                            </>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-3 md:space-y-4">
-                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Variables</Label>
-                      <div className="flex flex-wrap gap-1.5 md:gap-2">
-                        {['guest_name', 'event_name', 'event_date', 'venue'].map(v => (
-                          <button key={v} onClick={() => setMessage(prev => prev + ` {{${v}}}`)} className="px-2 py-1 md:px-3 md:py-1.5 bg-white/5 border border-white/10 text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-400 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 transition-all">{v.replace('_', ' ')}</button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3 md:space-y-4">
-                    <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Message Content</Label>
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Your Message</Label>
                     <Textarea 
-                      placeholder="Compose your message..." 
-                      className="min-h-[140px] md:min-h-[180px] bg-white/5 border-white/10 rounded-none focus:border-[#25D366]/50 text-base md:text-lg font-light resize-none" 
-                      value={message} 
-                      onChange={(e) => setMessage(e.target.value)} 
+                      placeholder="e.g. The Buffet is now open! Please proceed to the dining hall."
+                      className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#25D366]/50 text-lg font-light resize-none"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
-                  <div className="space-y-3 md:space-y-4">
+
+                  <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <Label className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Recipients ({selectedIds.length})</Label>
-                      <button onClick={() => setSelectedIds(selectedIds.length === rsvps.length ? [] : rsvps.map(r => r.id))} className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">{selectedIds.length === rsvps.length ? 'Deselect All' : 'Select All'}</button>
+                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Recipients ({selectedIds.length})</Label>
+                      <button onClick={toggleSelectAll} className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">
+                        {selectedIds.length === rsvps.length ? 'Deselect All' : 'Select All'}
+                      </button>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3 max-h-[150px] md:max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                      {rsvps.map((rsvp: any) => (
+                    <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
+                      {rsvps.map((rsvp) => (
                         <div 
                           key={rsvp.id} 
-                          onClick={() => toggleSelect(rsvp.id)} 
-                          className={`p-3 md:p-4 border cursor-pointer transition-all ${selectedIds.includes(rsvp.id) ? 'bg-[#25D366]/10 border-[#25D366]/30' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
+                          onClick={() => setSelectedIds(prev => prev.includes(rsvp.id) ? prev.filter(i => i !== rsvp.id) : [...prev, rsvp.id])}
+                          className={`p-3 border cursor-pointer text-[8px] font-bold uppercase tracking-widest transition-all ${
+                            selectedIds.includes(rsvp.id) ? 'bg-[#25D366]/10 border-[#25D366]/30 text-white' : 'bg-white/5 border-white/5 text-gray-500'
+                          }`}
                         >
-                          <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] mb-1 md:mb-1 ${selectedIds.includes(rsvp.id) ? 'text-white' : 'text-gray-500'}`}>{rsvp.guest_name}</p>
-                          <p className="text-[7px] md:text-[8px] text-gray-600 font-mono">{rsvp.guest_phone}</p>
+                          {rsvp.guest_name}
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center py-8 md:py-12">
-                  <div className="w-full bg-white/5 h-1 md:h-1.5 mb-12 md:mb-16 rounded-full overflow-hidden">
+                <div className="h-full flex flex-col items-center justify-center text-center py-12">
+                  <div className="w-full bg-white/5 h-1 mb-12">
                     <motion.div 
-                      className="bg-[#25D366] h-full shadow-[0_0_15px_rgba(37,211,102,0.5)]" 
-                      initial={{ width: 0 }} 
-                      animate={{ width: `${((currentIndex + 1) / selectedGuests.length) * 100}%` }} 
+                      className="bg-[#25D366] h-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${((currentIndex + 1) / selectedGuests.length) * 100}%` }}
                     />
                   </div>
-                  <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] uppercase mb-4 md:mb-6 block">Guest {currentIndex + 1} of {selectedGuests.length}</span>
-                  <h2 className="text-3xl md:text-7xl font-serif italic text-white mb-4 md:mb-6">{currentGuest?.guest_name}</h2>
-                  <div className="glass-premium p-6 md:p-10 mb-12 md:mb-16 max-w-xl w-full text-left border-[#25D366]/20">
-                    <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[#25D366] mb-3 md:mb-4 flex items-center gap-1.5 md:gap-2"><FileText size={10} /> Preview Message</p>
-                    <p className="text-base md:text-lg font-light text-gray-300 leading-relaxed italic">"{replaceVariables(message, currentGuest)}"</p>
+                  
+                  <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">
+                    Guest {currentIndex + 1} of {selectedGuests.length}
+                  </span>
+                  
+                  <h2 className="text-4xl md:text-6xl font-serif italic text-white mb-4">
+                    {currentGuest?.guest_name}
+                  </h2>
+                  <p className="text-gray-500 font-mono mb-12">{currentGuest?.guest_phone}</p>
+
+                  <div className="bg-[#25D366]/5 border border-[#25D366]/20 p-6 mb-12 max-w-md">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#25D366] mb-2">The Loop Strategy</p>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      Click the button below. WhatsApp will open with the message ready. Send it, then come back here—the next guest will be waiting.
+                    </p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="pt-6 md:pt-10 shrink-0">
+            <div className="pt-8 shrink-0">
               {!isLooping ? (
                 <Button 
-                  onClick={() => { if (!message.trim() || selectedIds.length === 0) return; setIsLooping(true); }} 
-                  className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-8 md:py-10 rounded-none text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] uppercase shadow-2xl shadow-[#25D366]/10"
+                  onClick={handleStartLoop}
+                  className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase"
                 >
-                  <Play className="w-3 h-3 md:w-4 md:h-4 mr-2" /> Initialize Blast Sequence
+                  <Play className="w-4 h-4 mr-2" /> Start Blast Loop
                 </Button>
               ) : (
-                <div className="grid grid-cols-4 gap-4 md:gap-6">
-                  <Button variant="outline" onClick={() => setIsLooping(false)} className="col-span-1 border-white/10 bg-white/5 text-white py-8 md:py-10 rounded-none text-[8px] md:text-[10px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] uppercase">Abort</Button>
-                  <Button onClick={sendAndNext} className="col-span-2 bg-[#25D366] hover:bg-[#128C7E] text-white py-8 md:py-10 rounded-none text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] uppercase">Send & Next <ArrowRight className="ml-1.5 md:ml-2 w-3 h-3 md:w-4 md:h-4" /></Button>
-                  <Button variant="ghost" onClick={() => currentIndex < selectedGuests.length - 1 && setCurrentIndex(prev => prev + 1)} className="col-span-1 text-gray-500 hover:text-white py-8 md:py-10 rounded-none text-[8px] md:text-[10px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] uppercase">Skip <SkipForward className="ml-1.5 md:ml-2 w-2.5 h-2.5 md:w-3 md:h-3" /></Button>
+                <div className="grid grid-cols-4 gap-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsLooping(false)}
+                    className="col-span-1 border-white/10 bg-white/5 text-white py-10 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    Stop
+                  </Button>
+                  <Button 
+                    onClick={sendAndNext}
+                    className="col-span-2 bg-[#25D366] hover:bg-[#128C7E] text-white py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase"
+                  >
+                    Send & Next <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => currentIndex < selectedGuests.length - 1 && setCurrentIndex(prev => prev + 1)}
+                    className="col-span-1 text-gray-500 hover:text-white py-10 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase"
+                  >
+                    Skip <SkipForward className="ml-2 w-3 h-3" />
+                  </Button>
                 </div>
               )}
             </div>

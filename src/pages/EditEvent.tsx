@@ -1,396 +1,359 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { showSuccess, showError } from "@/utils/toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { Image as ImageIcon, Loader2, X, Upload, Plus, Camera, Sparkles, Crown, Gem, Sun, Moon, Flower2, Waves, Heart, Landmark, Star, PenTool, Diamond, Wine, Anchor, Cloud, Leaf, Flame, Bird, Shield, Coffee, Wind, TreePine, Mountain } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import GlassCard from "@/components/ui/GlassCard";
-
-const THEME_OPTIONS = [
-  { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
-  { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
-  { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
-  { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
-  { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
-  { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
-  { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
-  { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
-  { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
-  { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
-  { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
-  { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool },
-  { id: 'onyx', label: 'Onyx Black', color: 'bg-[#1a1a1a]', icon: Diamond },
-  { id: 'champagne', label: 'Champagne Gold', color: 'bg-[#fdf2f8]', icon: Wine },
-  { id: 'pearl', label: 'Pearl White', color: 'bg-[#0f172a]', icon: Anchor },
-  { id: 'tuscan', label: 'Tuscan Sun', color: 'bg-[#fefce8]', icon: Sun },
-  { id: 'frost', label: 'Arctic Frost', color: 'bg-[#f0f9ff]', icon: Cloud },
-  { id: 'magenta', label: 'Royal Magenta', color: 'bg-[#fdf2f8]', icon: Heart },
-  { id: 'jade', label: 'Imperial Jade', color: 'bg-[#f0fdf4]', icon: Leaf },
-  { id: 'saffron', label: 'Saffron Spice', color: 'bg-[#fff7ed]', icon: Flame },
-  { id: 'slate', label: 'Slate Grey', color: 'bg-[#f8fafc]', icon: Landmark },
-  { id: 'lavender', label: 'Lavender Mist', color: 'bg-[#f5f3ff]', icon: Bird },
-  { id: 'ruby', label: 'Ruby Red', color: 'bg-[#fff1f2]', icon: Wine },
-  { id: 'golden', label: 'Golden Hour', color: 'bg-[#fffbeb]', icon: Sun },
-  { id: 'birch', label: 'Birch Wood', color: 'bg-[#f9fafb]', icon: TreePine },
-  { id: 'bronze', label: 'Antique Bronze', color: 'bg-[#fff7ed]', icon: Shield },
-  { id: 'plum', label: 'Royal Plum', color: 'bg-[#faf5ff]', icon: Coffee },
-  { id: 'teal', label: 'Deep Teal', color: 'bg-[#f0fdfa]', icon: Waves },
-  { id: 'charcoal', label: 'Charcoal Smoke', color: 'bg-[#111827]', icon: Heart },
-  { id: 'sand', label: 'Desert Sand', color: 'bg-[#fafaf9]', icon: Mountain },
-  { id: 'forest', label: 'Deep Forest', color: 'bg-[#022c22]', icon: TreePine },
-  { id: 'ember', label: 'Glowing Ember', color: 'bg-[#450a0a]', icon: Flame },
-  { id: 'blossom', label: 'Cherry Blossom', color: 'bg-[#fff1f2]', icon: Flower2 },
-  { id: 'solstice', label: 'Winter Solstice', color: 'bg-[#1e1b4b]', icon: Moon },
-  { id: 'breeze', label: 'Ocean Breeze', color: 'bg-[#f0f9ff]', icon: Wind },
-  { id: 'marble', label: 'Carrara Marble', color: 'bg-[#f3f4f6]', icon: Landmark },
-  { id: 'copper', label: 'Polished Copper', color: 'bg-[#7c2d12]', icon: Flame },
-  { id: 'indigo', label: 'Midnight Indigo', color: 'bg-[#312e81]', icon: Moon },
-  { id: 'mint', label: 'Fresh Mint', color: 'bg-[#ecfdf5]', icon: Leaf },
-  { id: 'coral', label: 'Sunset Coral', color: 'bg-[#fff1f2]', icon: Sun }
-];
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import Navbar from '@/components/Navbar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import GlassCard from '@/components/ui/GlassCard';
+import { showSuccess, showError } from '@/utils/toast';
+import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const EditEvent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const [event, setEvent] = useState({
-    event_name: "",
-    event_date: "",
-    venue: "",
-    message: "",
-    theme: "modern",
-    photo_url: "",
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [eventPlan, setEventPlan] = useState('Basic');
+  const [formData, setFormData] = useState({
+    eventName: '',
+    eventDate: '',
+    venue: '',
+    message: '',
+    theme: 'modern',
+    photo_url: '',
     gallery_urls: [] as string[]
   });
 
-  const [uploading, setUploading] = useState(false);
-  const [galleryUploading, setGalleryUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const fetchEvent = async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", id)
-        .single();
+    fetchEvent();
+  }, [id]);
 
-      if (error) {
-        showError(error.message);
+  const fetchEvent = async () => {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      showError('Event not found');
+      navigate('/dashboard');
+      return;
+    }
+
+    setEventPlan(data.plan || 'Basic');
+    setFormData({
+      eventName: data.event_name,
+      eventDate: data.event_date,
+      venue: data.venue,
+      message: data.message || '',
+      theme: data.theme || 'modern',
+      photo_url: data.photo_url || '',
+      gallery_urls: data.gallery_urls || [] // Ensure this is always an array
+    });
+    setLoading(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isGallery = false) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    
+    const file = e.target.files[0];
+
+    if (file.size > 10 * 1024 * 1024) {
+      showError("File is too large. Maximum size is 10MB.");
+      return;
+    }
+
+    if (isGallery) {
+      const limit = eventPlan === 'Pro' ? 50 : eventPlan === 'Standard' ? 10 : 0;
+      if ((formData.gallery_urls?.length || 0) >= limit) {
+        showError(`Your ${eventPlan} plan is limited to ${limit} gallery items. Upgrade for more.`);
         return;
       }
-      setEvent({
-        ...data,
-        gallery_urls: data.gallery_urls || []
-      });
-      setLoading(false);
-    };
-    fetchEvent();
-  }, [id, navigate]);
+    }
 
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0]) return;
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
     setUploading(true);
-    const file = e.target.files[0];
-    const fileName = `cover-${Math.random()}.${file.name.split(".").pop()}`;
     
     try {
       const { error: uploadError } = await supabase.storage
-        .from("event-photos")
+        .from('event-photos')
         .upload(fileName, file);
       
       if (uploadError) throw uploadError;
       
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-photos")
-        .getPublicUrl(fileName);
-        
-      setEvent(prev => ({ ...prev, photo_url: publicUrl }));
-      showSuccess("Cover portrait updated.");
-    } catch (err: any) {
-      showError(err.message);
+      const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
+      
+      if (isGallery) {
+        setFormData(prev => ({ ...prev, gallery_urls: [...(prev.gallery_urls || []), publicUrl] }));
+      } else {
+        setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      }
+      showSuccess('Media uploaded to the vault.');
+    } catch (error: any) {
+      showError(error.message);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    
-    if (event.gallery_urls.length + e.target.files.length > 50) {
-      showError("Maximum 50 images allowed in gallery.");
-      return;
-    }
-
-    setGalleryUploading(true);
-    const files = Array.from(e.target.files);
-    const newUrls: string[] = [];
-
-    try {
-      for (const file of files) {
-        const fileName = `gallery-${Math.random()}.${file.name.split(".").pop()}`;
-        const { error: uploadError } = await supabase.storage
-          .from("event-photos")
-          .upload(fileName, file);
-        
-        if (uploadError) throw uploadError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from("event-photos")
-          .getPublicUrl(fileName);
-        
-        newUrls.push(publicUrl);
-      }
-      
-      setEvent(prev => ({ 
-        ...prev, 
-        gallery_urls: [...prev.gallery_urls, ...newUrls] 
-      }));
-      showSuccess(`${newUrls.length} photos added to gallery.`);
-    } catch (err: any) {
-      showError(err.message);
-    } finally {
-      setGalleryUploading(false);
-    }
-  };
-
-  const handleRemoveGalleryImage = (index: number) => {
-    setEvent(prev => ({
+  const removeGalleryPhoto = (url: string) => {
+    setFormData(prev => ({
       ...prev,
-      gallery_urls: prev.gallery_urls.filter((_, i) => i !== index)
+      gallery_urls: (prev.gallery_urls || []).filter(u => u !== url)
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
+
     try {
       const { error } = await supabase
-        .from("events")
+        .from('events')
         .update({
-          event_name: event.event_name,
-          event_date: event.event_date,
-          venue: event.venue,
-          message: event.message,
-          theme: event.theme,
-          photo_url: event.photo_url,
-          gallery_urls: event.gallery_urls
+          event_name: formData.eventName,
+          venue: formData.venue,
+          message: formData.message,
+          theme: formData.theme,
+          photo_url: formData.photo_url,
+          gallery_urls: formData.gallery_urls || []
         })
-        .eq("id", id);
+        .eq('id', id);
 
       if (error) throw error;
-      showSuccess("Event masterpiece updated.");
+      showSuccess('Masterpiece refined successfully.');
       navigate('/dashboard');
-    } catch (err: any) {
-      showError(err.message);
+    } catch (error: any) {
+      showError(error.message);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  const themes = [
+    { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
+    { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
+    { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
+    { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
+    { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
+    { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
+    { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
+    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
+    { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
+    { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
+    { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
+    { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool }
+  ];
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f] text-white">
+      <div className="w-10 h-10 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
-      <div className="max-w-5xl mx-auto py-24 px-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="text-center mb-20">
-            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block">The Atelier</span>
-            <h1 className="text-5xl md:text-7xl font-serif italic mb-6">
-              Refine Your <span className="text-[#D4AF37]">Event</span>
-            </h1>
+      
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
+      </div>
+
+      <div className="max-w-5xl mx-auto py-12 md:py-24 px-4 md:px-6 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')} 
+            className="text-gray-400 hover:text-[#D4AF37] transition-colors p-0"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+          </Button>
+          <div className="text-left md:text-right">
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase block mb-2">The Edit Suite</span>
+            <h1 className="text-4xl md:text-5xl font-serif italic">Refine Your Masterpiece</h1>
           </div>
+        </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-12">
-              <GlassCard className="p-12 border-white/5">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Core Details</h2>
-                <div className="grid md:grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Event Title</Label>
-                    <Input
-                      required
-                      className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                      value={event.event_name}
-                      onChange={(e) => setEvent(prev => ({ ...prev, event_name: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
-                    <Input
-                      type="datetime-local"
-                      required
-                      className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                      value={event.event_date.slice(0, 16)}
-                      onChange={(e) => setEvent(prev => ({ ...prev, event_date: e.target.value }))}
-                    />
-                  </div>
-                  <div className="md:col-span-2 space-y-3">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue</Label>
-                    <Input
-                      required
-                      className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                      value={event.venue}
-                      onChange={(e) => setEvent(prev => ({ ...prev, venue: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </GlassCard>
-
-              <GlassCard className="p-12 border-white/5">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Visual Identity</h2>
-                <div className="space-y-10">
-                  <div className="space-y-6">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait</Label>
-                    {event.photo_url ? (
-                      <div className="relative aspect-video w-full overflow-hidden border border-white/10">
-                        <img src={event.photo_url} className="w-full h-full object-cover" alt="Preview" />
-                        <button
-                          type="button"
-                          onClick={() => setEvent(prev => ({ ...prev, photo_url: "" }))}
-                          className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white hover:bg-red-500 transition-colors"
-                        >
-                          <X size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <Label htmlFor="photo-upload" className="cursor-pointer">
-                          <div className="h-64 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-4 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
-                            {uploading ? (
-                              <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
-                            ) : (
-                              <>
-                                <Upload className="text-gray-600 w-10 h-10" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Upload Cover Portrait</span>
-                              </>
-                            )}
-                          </div>
-                        </Label>
-                        <Input
-                          id="photo-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleCoverUpload}
-                          disabled={uploading}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Live Gallery ({event.gallery_urls.length}/50)</Label>
-                      <Label htmlFor="gallery-upload" className="cursor-pointer">
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline">
-                          <Plus size={14} /> Add Photos
-                        </div>
-                      </Label>
-                      <Input
-                        id="gallery-upload"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleGalleryUpload}
-                        disabled={galleryUploading}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      {galleryUploading && (
-                        <div className="aspect-square border-2 border-dashed border-[#D4AF37]/30 flex items-center justify-center bg-white/5">
-                          <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
-                        </div>
-                      )}
-                      <AnimatePresence>
-                        {event.gallery_urls.map((url, index) => (
-                          <motion.div
-                            key={url}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="relative aspect-square group overflow-hidden border border-white/10"
-                          >
-                            <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt="" />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveGalleryImage(index)}
-                              className="absolute top-2 right-2 bg-black/50 p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-all"
-                            >
-                              <X size={14} />
-                            </button>
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </div>
-              </GlassCard>
-
-              <GlassCard className="p-12 border-white/5">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Aesthetic & Message</h2>
-                <div className="space-y-10">
-                  <div className="space-y-3">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host's Message</Label>
-                    <textarea
-                      className="w-full min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light p-6 resize-none"
-                      value={event.message}
-                      onChange={(e) => setEvent(prev => ({ ...prev, message: e.target.value }))}
-                    />
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Theme Selection</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                      {THEME_OPTIONS.map((t) => (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => setEvent(prev => ({ ...prev, theme: t.id }))}
-                          className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
-                            event.theme === t.id 
-                              ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
-                              : 'border-white/5 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="relative z-10 flex flex-col justify-between h-full">
-                            <t.icon className={`w-5 h-5 ${event.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
-                            <span className="text-[8px] font-bold uppercase tracking-widest">{t.label}</span>
-                          </div>
-                          <div className={`absolute top-0 right-0 w-12 h-12 ${t.color} opacity-20 -mr-6 -mt-6 rotate-45`} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </GlassCard>
-
-              <div className="pt-12">
-                <Button
-                  type="submit"
-                  disabled={loading || uploading || galleryUploading}
-                  className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
-                >
-                  {loading ? 'Synchronizing...' : 'Save All Changes'}
-                </Button>
+        <form onSubmit={handleSubmit} className="space-y-12">
+          <GlassCard className="p-8 md:p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Type className="text-[#D4AF37] w-5 h-5" />
               </div>
-            </form>
-          )}
-        </motion.div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Event Identity</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-10">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Event Title</Label>
+                <Input 
+                  required 
+                  className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                  value={formData.eventName}
+                  onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Address</Label>
+                <Input 
+                  required 
+                  className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                />
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-8 md:p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Calendar className="text-[#D4AF37] w-5 h-5" />
+              </div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Event Schedule</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Scheduled Date & Time</Label>
+                <div className="min-h-16 bg-white/5 border border-white/10 flex items-center px-6 py-4 text-lg font-light text-gray-400">
+                  <div className="flex items-center gap-4">
+                    <Clock className="w-5 h-5 text-[#D4AF37]" />
+                    <span>
+                      {new Date(formData.eventDate).toLocaleString('en-NG', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[8px] text-[#D4AF37] font-bold uppercase tracking-widest mt-2">
+                  Contact support to reschedule this event.
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-8 md:p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <ImageIcon className="text-[#D4AF37] w-5 h-5" />
+              </div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Visual Assets</h2>
+            </div>
+            
+            <div className="space-y-10">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait</Label>
+                <div className="flex flex-col sm:flex-row items-center gap-8">
+                  {formData.photo_url && (
+                    <div className="w-full sm:w-32 h-48 sm:h-32 border border-white/10 overflow-hidden">
+                      <img src={formData.photo_url} className="w-full h-full object-cover" alt="Cover" />
+                    </div>
+                  )}
+                  <Label htmlFor="cover-upload" className="cursor-pointer h-32 w-full flex-1 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
+                    {uploading ? <Loader2 className="w-5 h-5 animate-spin text-[#D4AF37]" /> : <Upload className="w-5 h-5 text-gray-600" />}
+                    <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">Change Cover Portrait</span>
+                    <input id="cover-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e)} />
+                  </Label>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host's Message</Label>
+                <Textarea 
+                  placeholder="A personal note to your guests..."
+                  className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light resize-none"
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Media Gallery ({eventPlan})</Label>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">
+                    {(formData.gallery_urls?.length || 0)} / {eventPlan === 'Pro' ? '50' : eventPlan === 'Standard' ? '10' : '0'} Items
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                  {(formData.gallery_urls || []).map((url, i) => (
+                    <div key={i} className="relative aspect-square border border-white/10 group">
+                      <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
+                      <button 
+                        type="button"
+                        onClick={() => removeGalleryPhoto(url)}
+                        className="absolute top-2 right-2 bg-black/50 p-1.5 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {(eventPlan === 'Standard' || eventPlan === 'Pro') && (
+                    <Label htmlFor="gallery-upload" className="cursor-pointer aspect-square border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
+                      <Upload className="w-4 h-4 text-gray-600" />
+                      <span className="text-[7px] font-bold uppercase tracking-[0.1em] text-gray-500">Add Media</span>
+                      <input id="gallery-upload" type="file" className="hidden" onChange={(e) => handleFileUpload(e, true)} />
+                    </Label>
+                  )}
+                </div>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Max 10MB per file. Images and Videos supported.</p>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-8 md:p-12 border-white/5">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                <Palette className="text-[#D4AF37] w-5 h-5" />
+              </div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Aesthetic Theme</h2>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+              {themes.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, theme: t.id })}
+                  className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
+                    formData.theme === t.id 
+                      ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
+                      : 'border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <div className="relative z-10 flex flex-col justify-between h-full">
+                    <t.icon className={`w-5 h-5 ${formData.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
+                    <span className="text-[8px] font-bold uppercase tracking-widest">{t.label}</span>
+                  </div>
+                  <div className={`absolute top-0 right-0 w-12 h-12 ${t.color} opacity-20 -mr-6 -mt-6 rotate-45`} />
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+
+          <div className="pt-12">
+            <Button 
+              type="submit" 
+              disabled={saving || uploading}
+              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+            >
+              {saving ? 'Refining Masterpiece...' : 'Save Changes'} <Save className="ml-2 w-4 h-4" />
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

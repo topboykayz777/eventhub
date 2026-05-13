@@ -1,269 +1,368 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Heart, Coins, Loader2, Sparkles, Crown, Gem, Sun, Moon, Flower2, Waves, Landmark, Star, PenTool, Diamond, Wine, Anchor, Cloud, Leaf, Flame, Bird, Shield, Coffee, Wind, TreePine, Mountain, CheckCircle2, Share2 } from "lucide-react";
-import Countdown from "@/components/Countdown";
-import Navbar from "@/components/Navbar";
-import { showSuccess, showError } from "@/utils/toast";
-import MediaLightbox from "@/components/MediaLightbox";
-import RSVPForm from "@/components/RSVPForm";
-import DigitalInvite from "@/components/DigitalInvite";
-
-const THEME_CONFIGS: Record<string, any> = {
-  modern: { bg: "bg-[#050505]", card: "bg-white/[0.03]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Sparkles },
-  traditional: { bg: "bg-[#022c22]", card: "bg-white/[0.03]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/40", icon: Crown },
-  elegant: { bg: "bg-[#f8fafc]", card: "bg-black/[0.02]", accent: "text-black", border: "border-black/10", icon: Gem, dark: true },
-  sahara: { bg: "bg-[#451a03]", card: "bg-white/[0.03]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/30", icon: Sun },
-  velvet: { bg: "bg-[#1e1b4b]", card: "bg-white/[0.03]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Moon },
-  garden: { bg: "bg-[#064e3b]", card: "bg-white/[0.03]", accent: "text-[#10b981]", border: "border-[#10b981]/30", icon: Flower2 },
-  oceanic: { bg: "bg-[#172554]", card: "bg-white/[0.03]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/30", icon: Waves },
-  rose: { bg: "bg-[#500724]", card: "bg-white/[0.03]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/30", icon: Heart },
-  earth: { bg: "bg-[#2a0e07]", card: "bg-white/[0.03]", accent: "text-[#fb923c]", border: "border-[#fb923c]/30", icon: Landmark },
-  silver: { bg: "bg-[#111827]", card: "bg-white/[0.03]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/30", icon: Star },
-  dynasty: { bg: "bg-[#450a0a]", card: "bg-white/[0.03]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Crown },
-  vintage: { bg: "bg-[#fef3c7]", card: "bg-black/[0.02]", accent: "text-[#92400e]", border: "border-[#92400e]/30", icon: PenTool, dark: true },
-  onyx: { bg: "bg-[#0a0a0a]", card: "bg-white/[0.03]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", icon: Diamond },
-  champagne: { bg: "bg-[#fff1f2]", card: "bg-black/[0.02]", accent: "text-[#be185d]", border: "border-[#be185d]/20", icon: Wine, dark: true },
-  pearl: { bg: "bg-[#020617]", card: "bg-white/[0.03]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/30", icon: Anchor },
-  tuscan: { bg: "bg-[#fffbeb]", card: "bg-black/[0.02]", accent: "text-[#ca8a04]", border: "border-[#ca8a04]/20", icon: Sun, dark: true },
-  frost: { bg: "bg-[#f0f9ff]", card: "bg-black/[0.02]", accent: "text-[#0ea5e9]", border: "border-[#0ea5e9]/20", icon: Cloud, dark: true },
-  magenta: { bg: "bg-[#fdf2f8]", card: "bg-black/[0.02]", accent: "text-[#db2777]", border: "border-[#db2777]/20", icon: Heart, dark: true },
-  jade: { bg: "bg-[#f0fdf4]", card: "bg-black/[0.02]", accent: "text-[#15803d]", border: "border-[#15803d]/20", icon: Leaf, dark: true },
-  saffron: { bg: "bg-[#fff7ed]", card: "bg-black/[0.02]", accent: "text-[#ea580c]", border: "border-[#ea580c]/20", icon: Flame, dark: true },
-  slate: { bg: "bg-[#f8fafc]", card: "bg-black/[0.02]", accent: "text-[#475569]", border: "border-[#475569]/20", icon: Landmark, dark: true },
-  lavender: { bg: "bg-[#f5f3ff]", card: "bg-black/[0.02]", accent: "text-[#5b21b6]", border: "border-[#5b21b6]/20", icon: Bird, dark: true },
-  ruby: { bg: "bg-[#fff1f2]", card: "bg-black/[0.02]", accent: "text-[#e11d48]", border: "border-[#e11d48]/20", icon: Wine, dark: true },
-  golden: { bg: "bg-[#fffbeb]", card: "bg-black/[0.02]", accent: "text-[#d97706]", border: "border-[#d97706]/20", icon: Sun, dark: true },
-  birch: { bg: "bg-[#f9fafb]", card: "bg-black/[0.02]", accent: "text-[#4b5563]", border: "border-[#4b5563]/20", icon: TreePine, dark: true },
-  bronze: { bg: "bg-[#fff7ed]", card: "bg-black/[0.02]", accent: "text-[#9a3412]", border: "border-[#9a3412]/20", icon: Shield, dark: true },
-  plum: { bg: "bg-[#faf5ff]", card: "bg-black/[0.02]", accent: "text-[#6b21a8]", border: "border-[#6b21a8]/30", icon: Coffee, dark: true },
-  teal: { bg: "bg-[#f0fdfa]", card: "bg-black/[0.02]", accent: "text-[#0d9488]", border: "border-[#0d9488]/20", icon: Waves, dark: true },
-  charcoal: { bg: "bg-[#020617]", card: "bg-white/[0.03]", accent: "text-[#f43f5e]", border: "border-[#f43f5e]/30", icon: Heart },
-  sand: { bg: "bg-[#fafaf9]", card: "bg-black/[0.02]", accent: "text-[#78716c]", border: "border-[#78716c]/20", icon: Mountain, dark: true },
-  forest: { bg: "bg-[#022c22]", card: "bg-white/[0.03]", accent: "text-[#10b981]", border: "border-[#10b981]/30", icon: TreePine },
-  ember: { bg: "bg-[#450a0a]", card: "bg-white/[0.03]", accent: "text-[#ef4444]", border: "border-[#ef4444]/30", icon: Flame },
-  blossom: { bg: "bg-[#fff1f2]", card: "bg-black/[0.02]", accent: "text-[#fb7185]", border: "border-[#fb7185]/20", icon: Flower2, dark: true },
-  solstice: { bg: "bg-[#1e1b4b]", card: "bg-white/[0.03]", accent: "text-[#818cf8]", border: "border-[#818cf8]/30", icon: Moon },
-  breeze: { bg: "bg-[#f0f9ff]", card: "bg-black/[0.02]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/20", icon: Wind, dark: true }
-};
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import Countdown from '@/components/Countdown';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { showSuccess, showError } from '@/utils/toast';
+import { MapPin, Calendar, Sparkles, Loader2, Navigation, Music, UserPlus, Quote, Coins, Image as ImageIcon, Heart, Camera, Share2, Award, ExternalLink, Bookmark, Info, Users, CheckCircle2 } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'framer-motion';
+import DigitalInvite from '@/components/DigitalInvite';
+import MediaLightbox from '@/components/MediaLightbox';
+import GlassCard from '@/components/ui/GlassCard';
+import { usePaystackPayment } from 'react-paystack';
 
 const EventPage = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [rsvpData, setRsvpData] = useState<any>(null);
+  const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
+  const [tableMates, setTableMates] = useState<any[]>([]);
+  const [giftAmount, setGiftAmount] = useState('');
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    if (slug) fetchEvent();
+  }, [slug]);
+
+  const fetchEvent = async () => {
+    if (!slug) return;
+    setLoading(true);
+    try {
       const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("slug", slug)
-        .single();
+        .from('events')
+        .select('*')
+        .ilike('slug', slug.trim())
+        .maybeSingle();
 
-      if (error) {
-        showError("Event not found");
-        navigate("/");
-        return;
+      if (data) {
+        setEvent(data);
+        const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
+        if (savedRsvpId) {
+          const { data: rsvp } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
+          if (rsvp) {
+            setSubmittedRsvp(rsvp);
+            if (rsvp.table_number) {
+              fetchTableMates(data.id, rsvp.table_number);
+            }
+          }
+        }
       }
-      setEvent(data);
-      
-      // Check if user has already RSVP'd on this device
-      const savedRsvp = localStorage.getItem(`rsvp_${data.id}`);
-      if (savedRsvp) setRsvpData(JSON.parse(savedRsvp));
-      
+    } catch (err: any) {
+      console.error(err.message);
+    } finally {
       setLoading(false);
-    };
-    fetchEvent();
-  }, [slug, navigate]);
-
-  if (loading || !event) return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
-    </div>
-  );
-
-  const themeConfig = THEME_CONFIGS[event.theme?.toLowerCase()] || THEME_CONFIGS.modern;
-  const isDark = themeConfig.dark;
-  const hasStarted = new Date(event.event_date) <= new Date();
-  const isConcluded = event.is_concluded;
-
-  // Determine State
-  let state: 'countdown' | 'live' | 'concluded' = 'countdown';
-  if (isConcluded) state = 'concluded';
-  else if (hasStarted) state = 'live';
-
-  const handleRsvpSuccess = (data: any) => {
-    setRsvpData(data);
-    localStorage.setItem(`rsvp_${event.id}`, JSON.stringify(data));
+    }
   };
 
+  const fetchTableMates = async (eventId: string, tableNum: string) => {
+    const { data } = await supabase
+      .from('rsvps')
+      .select('guest_name, checked_in')
+      .eq('event_id', eventId)
+      .eq('table_number', tableNum);
+    setTableMates(data || []);
+  };
+
+  const handleRSVP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!event?.is_paid) {
+      showError("This event is currently pending activation.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.from('rsvps').insert({
+        event_id: event.id,
+        guest_name: rsvpData.name,
+        guest_phone: rsvpData.phone,
+        song_request: rsvpData.songRequest,
+        has_plus_one: rsvpData.hasPlusOne
+      }).select('*').single();
+
+      if (error) throw error;
+
+      localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      showSuccess('Welcome to the guest list!');
+      setSubmittedRsvp(data);
+    } catch (err: any) {
+      showError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGiftSuccess = () => {
+    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff'] });
+    showSuccess(`Thank you for spraying! The host has been notified.`);
+    setGiftAmount('');
+  };
+
+  const paystackConfig = {
+    reference: (new Date()).getTime().toString(),
+    email: submittedRsvp?.guest_phone ? `${submittedRsvp.guest_phone}@eventhub.ng` : "guest@eventhub.ng",
+    amount: parseInt(giftAmount) * 100,
+    publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
+    metadata: {
+      custom_fields: [
+        { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
+        { display_name: "Payment Type", variable_name: "payment_type", value: "gift" },
+        { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvp?.guest_name || "Anonymous" }
+      ]
+    }
+  };
+
+  const initializeGiftPayment = usePaystackPayment(paystackConfig);
+
+  if (loading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  if (!event) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white">Event not found.</div>;
+
+  const isEventOver = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
+  const theme = event.theme || 'modern';
+  const themeConfigs: Record<string, any> = {
+    modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-black" },
+    traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 shadow-xl", rsvpCard: "bg-[#D4AF37] text-black" },
+    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black hover:bg-gray-800 text-white", card: "bg-gray-50 border-gray-100 shadow-lg", rsvpCard: "bg-white border-4 border-black text-black" },
+    sahara: { bg: "bg-[#78350f]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", button: "bg-[#fbbf24] hover:bg-[#d97706] text-black", card: "bg-white/5 border-[#fbbf24]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbbf24] text-black" },
+    velvet: { bg: "bg-[#2e1065]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
+    garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", button: "bg-[#10b981] hover:bg-[#059669] text-white", card: "bg-white/5 border-[#10b981]/20 backdrop-blur-xl", rsvpCard: "bg-[#10b981] text-white" },
+    oceanic: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", button: "bg-[#93c5fd] hover:bg-[#60a5fa] text-black", card: "bg-white/5 border-[#93c5fd]/20 backdrop-blur-xl", rsvpCard: "bg-[#93c5fd] text-black" },
+    rose: { bg: "bg-[#831843]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", button: "bg-[#fbcfe8] hover:bg-[#f9a8d4] text-black", card: "bg-white/5 border-[#fbcfe8]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbcfe8] text-black" },
+    earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", button: "bg-[#fb923c] hover:bg-[#ea580c] text-white", card: "bg-white/5 border-[#fb923c]/20 backdrop-blur-xl", rsvpCard: "bg-[#fb923c] text-white" },
+    silver: { bg: "bg-[#1f2937]", text: "text-[#f9fafb]", accent: "text-[#9ca3af]", button: "bg-[#9ca3af] hover:bg-[#6b7280] text-white", card: "bg-white/5 border-[#9ca3af]/20 backdrop-blur-xl", rsvpCard: "bg-[#9ca3af] text-white" },
+    dynasty: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
+    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", button: "bg-[#92400e] hover:bg-[#78350f] text-white", card: "bg-white/10 border-[#92400e]/20 backdrop-blur-xl", rsvpCard: "bg-[#92400e] text-white" }
+  };
+
+  const config = themeConfigs[theme] || themeConfigs.modern;
+
   return (
-    <div className={`min-h-screen ${themeConfig.bg} ${isDark ? 'text-black' : 'text-white'} selection:bg-[#D4AF37] selection:text-black transition-colors duration-1000`}>
-      <Navbar />
-      
-      <div className="relative pt-24 md:pt-32 pb-20 px-4 md:px-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Header Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16 md:mb-24"
-          >
-            <span className={`text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block ${themeConfig.accent}`}>
-              {state === 'countdown' ? 'The Anticipation' : state === 'live' ? 'The Celebration' : 'A Beautiful Memory'}
-            </span>
-            <h1 className="text-4xl md:text-8xl font-serif italic mb-8 leading-tight">
-              {event.event_name}
-            </h1>
-            <div className={`flex flex-wrap justify-center gap-6 md:gap-10 text-[10px] font-bold uppercase tracking-[0.3em] ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>
-              <div className="flex items-center gap-2"><Calendar className={`w-4 h-4 ${themeConfig.accent}`} /> {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
-              <div className="flex items-center gap-2"><MapPin className={`w-4 h-4 ${themeConfig.accent}`} /> {event.venue}</div>
+    <div className={`min-h-screen ${config.bg} ${config.text} transition-colors duration-700 overflow-x-hidden`}>
+      <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden">
+        <motion.img 
+          initial={{ scale: 1.1, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }} 
+          transition={{ duration: 1.5 }} 
+          src={event.photo_url} 
+          className={`w-full h-full object-cover ${isEventOver ? 'grayscale' : 'brightness-75'}`} 
+          alt="" 
+        />
+        <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
+        
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16 max-w-6xl mx-auto text-center">
+          {!isEventOver ? (
+            <div className="max-w-3xl mx-auto scale-90 md:scale-100 mb-8">
+              <Countdown targetDate={event.event_date} />
             </div>
-          </motion.div>
+          ) : (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+              <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">The Celebration has Concluded</span>
+              <h1 className="text-4xl md:text-7xl font-serif italic mb-4">Thank You for <br /> <span className="text-[#D4AF37]">Celebrating</span> With Us</h1>
+            </motion.div>
+          )}
+        </div>
+      </div>
 
-          <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
-            {/* Left Column: Visuals & Countdown */}
-            <div className="lg:col-span-7 space-y-12">
-              <div className={`relative aspect-[4/5] rounded-[3rem] overflow-hidden border shadow-2xl ${themeConfig.border}`}>
-                <img src={event.photo_url} className="w-full h-full object-cover" alt="Cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                {state === 'countdown' && (
-                  <div className="absolute bottom-10 left-10 right-10">
-                    <Countdown targetDate={event.event_date} />
-                  </div>
-                )}
-                {state === 'live' && (
-                  <div className="absolute top-10 right-10">
-                    <span className="bg-green-500 text-black text-[8px] font-black px-4 py-2 uppercase tracking-widest rounded-full animate-pulse">Live Now</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Gallery Section */}
-              {event.gallery_urls && event.gallery_urls.length > 0 && (
-                <div className="space-y-8">
-                  <div className="flex justify-between items-center">
-                    <h3 className={`text-[10px] font-bold uppercase tracking-[0.4em] ${themeConfig.accent}`}>The Gallery ({event.gallery_urls.length})</h3>
-                    <span className={`text-[8px] font-bold uppercase tracking-widest ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>HD Quality</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {event.gallery_urls.map((url: string, i: number) => (
-                      <motion.div 
-                        key={i}
-                        whileHover={{ scale: 1.05 }}
-                        onClick={() => { setCurrentMediaIndex(i); setLightboxOpen(true); }}
-                        className={`aspect-square rounded-2xl overflow-hidden border cursor-pointer group ${themeConfig.border}`}
-                      >
-                        <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-                      </motion.div>
-                    ))}
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24">
+        <div className="grid md:grid-cols-5 gap-12 md:gap-20">
+          <div className="md:col-span-3 space-y-16 md:space-y-24">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`${config.card} p-8 md:p-16 rounded-[3rem] border`}>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-12 flex items-center gap-4"><Calendar className="w-4 h-4" /> The Particulars</h2>
+              <div className="space-y-12">
+                <div className="flex items-start gap-8 group">
+                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><Sparkles className="text-[#D4AF37] w-6 h-6" /></div>
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Celebration</p>
+                    <h1 className="text-3xl md:text-5xl font-serif italic leading-tight">{event.event_name}</h1>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Right Column: Interaction & Details */}
-            <div className="lg:col-span-5 space-y-12">
-              {/* Host Message */}
-              <div className={`p-10 border rounded-[3rem] backdrop-blur-xl ${themeConfig.card} ${themeConfig.border}`}>
-                <div className="flex items-center gap-4 mb-8">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-black/5' : 'bg-white/5'}`}>
-                    <Heart className={`w-5 h-5 ${themeConfig.accent}`} />
-                  </div>
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">Host's Message</h3>
-                </div>
-                <p className="text-xl font-serif italic leading-relaxed opacity-80">
-                  "{event.message}"
-                </p>
-              </div>
-
-              {/* State-Specific Content */}
-              <AnimatePresence mode="wait">
-                {state === 'concluded' ? (
-                  <motion.div 
-                    key="concluded"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className={`p-10 border rounded-[3rem] text-center ${themeConfig.card} ${themeConfig.border}`}
-                  >
-                    <CheckCircle2 className={`w-12 h-12 mx-auto mb-6 ${themeConfig.accent}`} />
-                    <h3 className="text-2xl font-serif italic mb-4">Celebration Concluded</h3>
-                    <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
-                      This event has successfully concluded. Thank you for being part of our story. The gallery remains open for you to relive the moments.
-                    </p>
-                  </motion.div>
-                ) : rsvpData ? (
-                  <motion.div 
-                    key="pass"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="space-y-8"
-                  >
-                    <div className="text-center">
-                      <p className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-6 ${themeConfig.accent}`}>Your Entry Pass</p>
-                      <DigitalInvite event={event} rsvpId={rsvpData.id} guestName={rsvpData.guest_name} />
-                    </div>
-                    {state === 'live' && (
-                      <Button 
-                        onClick={() => navigate(`/spray/${event.slug}`)}
-                        className={`w-full py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl ${
-                          isDark ? 'bg-black text-white hover:bg-black/80' : 'bg-[#D4AF37] text-black hover:bg-[#B8860B]'
-                        }`}
+                <div className="flex items-start gap-8 group">
+                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors shrink-0"><MapPin className="text-[#D4AF37] w-6 h-6" /></div>
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">The Venue</p>
+                    <p className="text-xl md:text-3xl font-light leading-relaxed mb-4">{event.venue}</p>
+                    {event.venue_map_url && (
+                      <a 
+                        href={event.venue_map_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline"
                       >
-                        <Coins className="w-4 h-4 mr-2" /> Digital Spray
-                      </Button>
+                        <Navigation size={12} /> View on Google Maps <ExternalLink size={10} />
+                      </a>
                     )}
-                  </motion.div>
-                ) : (
-                  <motion.div 
-                    key="rsvp"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`p-10 border rounded-[3rem] ${themeConfig.card} ${themeConfig.border}`}
-                  >
-                    <div className="text-center mb-10">
-                      <h3 className="text-2xl font-serif italic mb-2">RSVP Now</h3>
-                      <p className={`text-[8px] font-bold uppercase tracking-widest ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Secure your spot on the guest list</p>
-                    </div>
-                    <RSVPForm eventId={event.id} onSuccess={handleRsvpSuccess} themeConfig={themeConfig} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Share Section */}
-              <div className="flex items-center justify-center gap-4 pt-8">
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    showSuccess("Event link copied.");
-                  }}
-                  className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest hover:opacity-70 transition-opacity ${themeConfig.accent}`}
-                >
-                  <Share2 size={14} /> Share Event
-                </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
+
+            {event.message && (
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative">
+                <Quote className="absolute -top-8 -left-8 w-16 h-16 text-[#D4AF37]/10" />
+                <div className={`${config.card} p-10 md:p-16 rounded-[3rem] border italic text-xl md:text-3xl font-light leading-relaxed text-center`}>
+                  "{event.message}"
+                </div>
+              </motion.div>
+            )}
+
+            {event.gallery_urls && event.gallery_urls.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                <div className="flex justify-between items-end mb-12">
+                  <div>
+                    <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase mb-2 block">The Memory Wall</span>
+                    <h2 className="text-3xl md:text-5xl font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h2>
+                  </div>
+                  <ImageIcon className="text-gray-600 w-8 h-8" />
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                  {event.gallery_urls.map((url: string, i: number) => (
+                    <motion.div 
+                      key={i} 
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => { setLightboxIndex(i); setIsLightboxOpen(true); }}
+                      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group"
+                    >
+                      <img src={url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          <div className="md:col-span-2">
+            <AnimatePresence mode="wait">
+              {isEventOver ? (
+                <motion.div key="post-event" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
+                  <GlassCard className={`${config.card} p-10 md:p-16 rounded-[3.5rem] border text-center`}>
+                    <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8">
+                      <Heart className="text-[#D4AF37] w-10 h-10 fill-current" />
+                    </div>
+                    <h3 className="text-2xl font-serif italic mb-6">A Legacy of Love</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed mb-10">
+                      The celebration has concluded, but the memories remain. Thank you to everyone who joined us and made this day unforgettable.
+                    </p>
+                    <div className="pt-8 border-t border-white/5">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-600 mb-4">Share the Memories</p>
+                      <div className="flex justify-center gap-4">
+                        <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
+                          <Share2 size={18} />
+                        </Button>
+                        <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
+                          <Camera size={18} />
+                        </Button>
+                      </div>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              ) : submittedRsvp ? (
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-4">
+                      <Bookmark size={12} className="text-[#D4AF37]" />
+                      <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Instruction</span>
+                    </div>
+                    <p className="text-[11px] font-medium leading-relaxed opacity-70">
+                      Please <span className="text-[#D4AF37]">Bookmark</span> this page or <span className="text-[#D4AF37]">Add to Home Screen</span>. This is your live portal for event updates and your entry pass.
+                    </p>
+                  </div>
+
+                  <DigitalInvite event={event} rsvpId={submittedRsvp.id} guestName={submittedRsvp.guest_name} />
+                  
+                  {submittedRsvp.table_number && (
+                    <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
+                      <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] flex items-center gap-4"><Users className="w-4 h-4" /> Table Concierge</h2>
+                        <span className="text-2xl font-serif italic text-[#D4AF37]">Table {submittedRsvp.table_number}</span>
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-[9px] font-bold uppercase tracking-widest opacity-50 mb-4">Your Table Mates</p>
+                        <div className="grid gap-3">
+                          {tableMates.map((mate, i) => (
+                            <div key={i} className="flex justify-between items-center p-4 bg-white/5 border border-white/5 rounded-xl">
+                              <span className="text-sm font-light">{mate.guest_name}</span>
+                              {mate.checked_in && (
+                                <div className="flex items-center gap-2 text-green-500">
+                                  <span className="text-[7px] font-black uppercase tracking-widest">Seated</span>
+                                  <CheckCircle2 size={12} />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </GlassCard>
+                  )}
+
+                  <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
+                    <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4"><Coins className="w-4 h-4" /> Digital Spraying</h2>
+                    <div className="space-y-6">
+                      <div className="relative">
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-xl">₦</span>
+                        <Input type="number" placeholder="Amount" className="h-16 pl-12 bg-white/5 border-white/10 rounded-none text-lg font-light" value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} />
+                      </div>
+                      <Button 
+                        onClick={() => {
+                          if (!giftAmount || parseInt(giftAmount) < 100) {
+                            showError("Minimum spray is ₦100");
+                            return;
+                          }
+                          initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
+                        }} 
+                        className={`w-full h-16 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
+                      >
+                        Spray the Host
+                      </Button>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              ) : (
+                <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`${config.rsvpCard} p-10 md:p-16 rounded-[3.5rem] shadow-2xl sticky top-32 border border-black/5`}>
+                  <h2 className="text-4xl font-serif italic tracking-tight mb-10">The Registry</h2>
+                  <form onSubmit={handleRSVP} className="space-y-10">
+                    <div className="space-y-2">
+                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Full Name</Label>
+                      <Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="e.g. Chidi Benson" value={rsvpData.name} onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">WhatsApp Number</Label>
+                      <Input required className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="080..." value={rsvpData.phone} onChange={(e) => setRsvpData({ ...rsvpData, phone: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[8px] font-bold uppercase tracking-widest opacity-50">Song Request (Optional)</Label>
+                      <Input className="bg-black/5 border-none h-16 rounded-none text-xl px-6" placeholder="Your favorite vibe..." value={rsvpData.songRequest} onChange={(e) => setRsvpData({ ...rsvpData, songRequest: e.target.value })} />
+                    </div>
+                    <div className="flex items-center justify-between p-6 bg-black/5">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest">Bringing a Plus One?</Label>
+                      <Switch checked={rsvpData.hasPlusOne} onCheckedChange={(v) => setRsvpData({ ...rsvpData, hasPlusOne: v })} />
+                    </div>
+                    <Button type="submit" disabled={isSubmitting} className={`w-full ${config.button} h-24 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl`}>
+                      {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Attendance'}
+                    </Button>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      {event.gallery_urls && (
-        <MediaLightbox 
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          mediaUrls={event.gallery_urls}
-          currentIndex={currentMediaIndex}
-          onNavigate={setCurrentMediaIndex}
-        />
-      )}
+      <MediaLightbox 
+        isOpen={isLightboxOpen} 
+        onClose={() => setIsLightboxOpen(false)} 
+        mediaUrls={event.gallery_urls || []} 
+        currentIndex={lightboxIndex} 
+        onNavigate={setLightboxIndex} 
+      />
     </div>
   );
 };

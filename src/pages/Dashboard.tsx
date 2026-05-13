@@ -1,299 +1,283 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { showSuccess, showError } from "@/utils/toast";
-import { Plus, Loader2, LayoutDashboard, Power, Calendar, MapPin } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "@/components/SessionProvider";
+import React, { useEffect, useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import Navbar from '@/components/Navbar';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { showSuccess, showError } from '@/utils/toast';
+import { RefreshCw, Plus, Loader2, Coins, CheckCircle2, Clock, LayoutDashboard, Users, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import confetti from 'canvas-confetti';
 
-import EventCard from "@/components/dashboard/EventCard";
-import GuestList from "@/components/dashboard/GuestList";
-import ConciergeTools from "@/components/dashboard/ConciergeTools";
-import QRScannerOverlay from "@/components/dashboard/QRScannerOverlay";
-import BroadcastBox from "@/components/dashboard/BroadcastBox";
-import WhatsAppBlast from "@/components/dashboard/WhatsAppBlast";
-import DigitalSpray from "@/components/dashboard/DigitalSpray";
+import EventCard from '@/components/dashboard/EventCard';
+import GuestList from '@/components/dashboard/GuestList';
+import ConciergeTools from '@/components/dashboard/ConciergeTools';
+import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
+import BroadcastBox from '@/components/dashboard/BroadcastBox';
+import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, loading: sessionLoading } = useSession();
-  const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
-  const [eventDetails, setEventDetails] = useState<Record<string, any>>({});
+  const [lastSpray, setLastSpray] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const eventsRef = useRef<any[]>([]);
 
-  const { data: events = [], isLoading: eventsLoading, refetch, error: fetchError } = useQuery({
-    queryKey: ["host-events-list", user?.id],
-    enabled: !!user?.id,
+  const { data: events = [], isLoading, refetch } = useQuery({
+    queryKey: ['host-dashboard-data'],
     queryFn: async () => {
-      // We fetch columns explicitly. If is_concluded fails, we fallback to a query without it
-      try {
-        const { data, error } = await supabase
-          .from("events")
-          .select("id, event_name, event_date, photo_url, is_paid, plan, slug, broadcast_message, is_concluded, venue")
-          .eq("host_id", user!.id)
-          .order("created_at", { ascending: false });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate('/login'); return []; }
 
-        if (error) throw error;
-        return data || [];
-      } catch (err) {
-        console.error("Primary fetch failed, trying fallback:", err);
-        const { data, error } = await supabase
-          .from("events")
-          .select("id, event_name, event_date, photo_url, is_paid, plan, slug, broadcast_message, venue")
-          .eq("host_id", user!.id)
-          .order("created_at", { ascending: false });
-        if (error) throw error;
-        return (data || []).map(e => ({ ...e, is_concluded: false }));
-      }
+      const { data: eventsData, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('host_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const enriched = await Promise.all((eventsData || []).map(async (event) => {
+        const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
+        const { data: toasts } = await supabase.from('toasts').select('*').eq('event_id', event.id);
+        const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
+        return { ...event, rsvps: rsvps || [], toasts: toasts || [], isCompleted };
+      }));
+
+      eventsRef.current = enriched;
+      return enriched;
     },
-    retry: 1,
-    staleTime: 30000, // Cache for 30 seconds to speed up navigation
+    refetchInterval: 15000,
   });
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+    setTimeout(() => setIsRefreshing(false), 1000);
+    showSuccess("Dashboard Synchronized.");
+  };
+
   useEffect(() => {
-    if (!sessionLoading && !user) {
-      navigate("/login");
-    }
-  }, [user, sessionLoading, navigate]);
+    const channel = supabase
+      .channel('dashboard-realtime-v2')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'budget_items' },
+        (payload) => {
+          const newItem = payload.new;
+          const isMyEvent = eventsRef.current.some(e => e.id === newItem.event_id);
+          
+          if (isMyEvent && newItem.type === 'income' && newItem.description.includes('Digital Spray')) {
+            confetti({ 
+              particleCount: 150, 
+              spread: 70, 
+              origin: { y: 0.6 }, 
+              colors: ['#D4AF37', '#ffffff', '#F9E4B7'] 
+            });
+            setLastSpray(newItem);
+            setTimeout(() => setLastSpray(null), 8000);
+            queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rsvps' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+        }
+      )
+      .subscribe();
 
-  const handleConcludeEvent = async (eventId: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('events')
-      .update({ is_concluded: !currentStatus })
-      .eq('id', eventId);
-
-    if (error) {
-      showError("Could not update event status. Please try again.");
-    } else {
-      showSuccess(currentStatus ? "Event reopened." : "Event concluded successfully.");
-      refetch();
-    }
-  };
-
-  const fetchEventDetails = async (eventId: string) => {
-    const { data: rsvps } = await supabase
-      .from("rsvps")
-      .select("id, guest_name, guest_phone, checked_in, table_number, has_plus_one, song_request, created_at")
-      .eq("event_id", eventId)
-      .order("created_at", { ascending: false });
-
-    setEventDetails((prev) => ({ ...prev, [eventId]: rsvps || [] }));
-  };
-
-  const toggleExpand = async (eventId: string) => {
-    const newExpanded = new Set(expandedEvents);
-    if (newExpanded.has(eventId)) {
-      newExpanded.delete(eventId);
-    } else {
-      newExpanded.add(eventId);
-      if (!eventDetails[eventId]) {
-        await fetchEventDetails(eventId);
-      }
-    }
-    setExpandedEvents(newExpanded);
-  };
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const handleQRScan = async (scannedText: string) => {
     let rsvpId = scannedText;
-    if (scannedText.includes("/")) {
-      const parts = scannedText.split("/");
+    if (scannedText.includes('/')) {
+      const parts = scannedText.split('/');
       rsvpId = parts[parts.length - 1];
     }
 
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(rsvpId)) {
+      showError("Invalid pass format.");
+      return;
+    }
+
     const { data, error } = await supabase
-      .from("rsvps")
+      .from('rsvps')
       .update({ checked_in: true })
-      .eq("id", rsvpId)
-      .select("guest_name, event_id")
+      .eq('id', rsvpId)
+      .select('guest_name')
       .maybeSingle();
 
     if (error || !data) {
       showError("Pass not found or invalid.");
-    } else {
-      showSuccess(`${data.guest_name} verified.`);
-      await fetchEventDetails(data.event_id);
+    } else { 
+      showSuccess(`${data.guest_name} verified and checked in.`); 
+      queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
     }
   };
 
-  if (sessionLoading)
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
-      </div>
-    );
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
-      <DigitalSpray eventIds={events.map((e) => e.id)} />
-
-      <div className="py-12 md:py-20">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-20">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">
-              Planner Command Center
-            </span>
-            <h1 className="text-4xl md:text-7xl font-serif italic">
-              The <span className="text-[#D4AF37]">Orchestration</span>
-            </h1>
+      
+      <AnimatePresence>
+        {lastSpray && (
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md px-6">
+            <div className="bg-[#D4AF37] text-black p-8 rounded-[2rem] shadow-2xl flex items-center gap-6 border-4 border-white/20">
+              <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center shrink-0">
+                <Coins className="w-8 h-8 animate-bounce" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-1">New Digital Spray!</p>
+                <h4 className="text-2xl font-serif italic">₦{lastSpray.amount.toLocaleString()}</h4>
+                <p className="text-[8px] font-bold opacity-60">{lastSpray.description}</p>
+              </div>
+            </div>
           </motion.div>
+        )}
+      </AnimatePresence>
 
-          <Link to="/create-event" className="w-full md:w-auto">
-            <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest">
-              <Plus className="w-4 h-4 mr-2" /> New Event
+      <div className="max-w-7xl mx-auto py-12 md:py-24 px-4 md:px-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-24">
+          <div>
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Planner Command Center</span>
+            <h1 className="text-4xl md:text-7xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
+          </div>
+          <div className="flex gap-4 w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              onClick={handleManualRefresh}
+              className="flex-1 md:flex-none border-white/10 bg-white/5 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync
             </Button>
-          </Link>
+            <Link to="/create-event" className="flex-1 md:flex-none">
+              <Button className="w-full bg-[#D4AF37] text-black rounded-none px-10 py-6 text-[10px] font-bold uppercase tracking-widest">
+                <Plus className="w-4 h-4 mr-2" /> New Event
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        {fetchError && (
-          <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm mb-8">
-            Failed to load events. Please refresh the page.
-          </div>
-        )}
-
-        <div className="space-y-8">
-          {eventsLoading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
-            </div>
-          ) : (
-            <>
-              {events.map((event: any, index: number) => {
-                const hasStarted = new Date(event.event_date) <= new Date();
-                
-                return (
-                  <motion.div
-                    key={event.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`border ${event.is_concluded ? "border-white/5 bg-white/[0.01]" : "border-white/10 bg-white/[0.03]"} rounded-[2rem] md:rounded-[3rem] overflow-hidden transition-all hover:border-[#D4AF37]/20`}
-                  >
-                    <div className="p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-8">
-                      <div onClick={() => toggleExpand(event.id)} className="flex items-center gap-6 md:gap-10 w-full md:w-auto cursor-pointer flex-1">
-                        <div className="relative w-20 h-24 md:w-28 md:h-36 shrink-0">
-                          <img
-                            src={event.photo_url}
-                            loading="lazy"
-                            className={`w-full h-full object-cover border border-white/10 rounded-2xl ${event.is_concluded ? "grayscale" : ""}`}
-                            alt=""
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h2 className={`text-2xl md:text-4xl font-serif italic truncate ${event.is_concluded ? "text-gray-500" : "text-white"}`}>
-                              {event.event_name}
-                            </h2>
-                            {event.is_concluded ? (
-                              <span className="text-[8px] font-black uppercase tracking-widest bg-white/10 text-gray-400 px-2 py-1 rounded-full">Concluded</span>
-                            ) : hasStarted ? (
-                              <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1">
-                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live
-                              </span>
-                            ) : (
-                              <span className="text-[8px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-500 px-2 py-1 rounded-full">Upcoming</span>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600 flex items-center gap-2">
-                              <Calendar size={12} /> {new Date(event.event_date).toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric" })}
-                            </p>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600 flex items-center gap-2 truncate">
-                              <MapPin size={12} /> {event.venue}
-                            </p>
-                          </div>
-                        </div>
+        <div className="space-y-12">
+          {events.map((event: any) => (
+            <div key={event.id} className={`border ${event.isCompleted ? 'border-white/5 bg-white/[0.01]' : 'border-white/10 bg-white/[0.03]'} rounded-[2rem] overflow-hidden transition-all`}>
+              <div onClick={() => {
+                const newExpanded = new Set(expandedEvents);
+                if (newExpanded.has(event.id)) newExpanded.delete(event.id);
+                else newExpanded.add(event.id);
+                setExpandedEvents(newExpanded);
+              }} className="p-10 flex justify-between items-center cursor-pointer hover:bg-white/[0.05]">
+                <div className="flex items-center gap-8">
+                  <div className="relative">
+                    <img src={event.photo_url} className={`w-20 h-24 object-cover border border-white/10 ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+                    {event.isCompleted && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <CheckCircle2 className="text-white w-6 h-6" />
                       </div>
-
-                      <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                        {hasStarted && (
-                          <Button
-                            onClick={(e) => { e.stopPropagation(); handleConcludeEvent(event.id, event.is_concluded); }}
-                            variant="outline"
-                            className={`rounded-none h-12 px-6 text-[8px] font-black uppercase tracking-widest transition-all ${
-                              event.is_concluded 
-                                ? "border-green-500/30 text-green-500 hover:bg-green-500/10" 
-                                : "border-red-500/30 text-red-500 hover:bg-red-500/10"
-                            }`}
-                          >
-                            <Power className="w-3 h-3 mr-2" />
-                            {event.is_concluded ? "Reopen Event" : "Conclude Event"}
-                          </Button>
-                        )}
-                        <Button
-                          onClick={() => toggleExpand(event.id)}
-                          variant="ghost"
-                          className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10"
-                        >
-                          {expandedEvents.has(event.id) ? "Close" : "Manage"}
-                        </Button>
-                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-4 mb-2">
+                      <h2 className={`text-3xl font-serif italic ${event.isCompleted ? 'text-gray-500' : 'text-white'}`}>{event.event_name}</h2>
+                      {event.isCompleted ? (
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-gray-800 text-gray-400 px-2 py-1 rounded">Completed</span>
+                      ) : (
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded flex items-center gap-1">
+                          <Clock size={10} /> Active
+                        </span>
+                      )}
                     </div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                      {new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+                <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest">
+                  {expandedEvents.has(event.id) ? 'Close' : 'Manage'}
+                </Button>
+              </div>
 
-                    <AnimatePresence>
-                      {expandedEvents.has(event.id) && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="p-8 md:p-12 lg:p-20 border-t border-white/5 bg-black/40">
-                            <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
-                              <EventCard event={event} onCopyLink={() => {}} />
-                              <div className="lg:col-span-8 space-y-12">
-                                <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
-                                <Tabs defaultValue="tools" className="w-full">
-                                  <div className="overflow-x-auto custom-scrollbar pb-2">
-                                    <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-8 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 min-w-max">
-                                      <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Concierge Tools</TabsTrigger>
-                                      <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-[0.4em] pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent">Guest Management</TabsTrigger>
-                                    </TabsList>
-                                  </div>
-                                  <TabsContent value="tools" className="mt-0">
-                                    <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
-                                  </TabsContent>
-                                  <TabsContent value="guests" className="mt-0">
-                                    {eventDetails[event.id] ? (
-                                      <GuestList rsvps={eventDetails[event.id]} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onExportCSV={() => {}} onToggleCheckIn={() => {}} onUpdate={async () => { await fetchEventDetails(event.id); }} />
-                                    ) : (
-                                      <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#D4AF37]" /></div>
-                                    )}
-                                  </TabsContent>
-                                </Tabs>
+              <AnimatePresence>
+                {expandedEvents.has(event.id) && (
+                  <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                    <div className="p-12 border-t border-white/5 bg-black/40">
+                      <div className="grid lg:grid-cols-12 gap-12">
+                        <EventCard event={event} onCopyLink={() => {}} />
+                        <div className="lg:col-span-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                            <div className="bg-white/5 border border-white/5 p-8 rounded-none">
+                              <div className="flex items-center gap-4 mb-4">
+                                <Users className="text-[#D4AF37] w-5 h-5" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Guest Engagement</span>
                               </div>
+                              <div className="text-3xl font-serif italic">{event.rsvps.length} RSVPs</div>
+                            </div>
+                            <div className="bg-white/5 border border-white/5 p-8 rounded-none">
+                              <div className="flex items-center gap-4 mb-4">
+                                <Sparkles className="text-[#D4AF37] w-5 h-5" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</span>
+                              </div>
+                              <div className="text-3xl font-serif italic">{event.plan} Suite</div>
                             </div>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          
+                          <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
+                          
+                          <Tabs defaultValue="tools" className="mt-12">
+                            <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-12 mb-12 rounded-none">
+                              <TabsTrigger value="tools" className="text-[10px] font-bold uppercase tracking-widest">Concierge Tools</TabsTrigger>
+                              <TabsTrigger value="guests" className="text-[10px] font-bold uppercase tracking-widest">Guest List</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="tools">
+                              <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
+                            </TabsContent>
+                            <TabsContent value="guests">
+                              <GuestList 
+                                rsvps={event.rsvps} 
+                                searchQuery={searchQuery} 
+                                onSearchChange={setSearchQuery} 
+                                onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
+                                onExportCSV={() => {}} 
+                                onToggleCheckIn={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })} 
+                                onUpdate={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })}
+                              />
+                            </TabsContent>
+                          </Tabs>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
-                );
-              })}
-
-              {events.length === 0 && (
-                <div className="text-center py-48 border border-dashed border-white/10 rounded-[4rem]">
-                  <LayoutDashboard className="text-gray-600 w-12 h-12 mx-auto mb-8" />
-                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
-                </div>
-              )}
-            </>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+          
+          {events.length === 0 && (
+            <div className="text-center py-40 border border-dashed border-white/10 rounded-[3rem]">
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em]">No celebrations found in your archive.</p>
+            </div>
           )}
         </div>
       </div>
-
       <QRScannerOverlay isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleQRScan} />
-      {activeEvent && <WhatsAppBlast isOpen={isBlastOpen} onClose={() => setIsBlastOpen(false)} event={activeEvent} rsvps={eventDetails[activeEvent.id] || []} />}
+      {activeEvent && <WhatsAppBlast isOpen={isBlastOpen} onClose={() => setIsBlastOpen(false)} event={activeEvent} rsvps={activeEvent.rsvps} />}
     </div>
   );
 };

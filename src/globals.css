@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --background: 0 0% 5%;
+    --background: 0 0% 5%; /* Deeper Obsidian */
     --foreground: 0 0% 98%;
     --card: 0 0% 8%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 45 60% 53%;
+    --primary: 45 60% 53%; /* Champagne Gold */
     --primary-foreground: 0 0% 5%;
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
@@ -24,20 +24,6 @@
     --input: 0 0% 15%;
     --ring: 45 60% 53%;
     --radius: 1rem;
-  }
-
-  * {
-    @apply border-border;
-    box-sizing: border-box;
-  }
-
-  html, body {
-    @apply bg-[#050505] text-white antialiased selection:bg-[#D4AF37] selection:text-black;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
-    width: 100%;
-    overflow-x: hidden;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -64,7 +50,6 @@
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 3px;
-    height: 3px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: #050505;
@@ -72,11 +57,6 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #D4AF37;
     border-radius: 10px;
-  }
-
-  /* Force all Radix/Shadcn popups to stay in viewport */
-  [data-radix-popper-content-wrapper] {
-    max-width: calc(100vw - 32px) !important;
   }
 }
 
@@ -90,15 +70,13 @@
   100% { transform: scale(1.2); }
 }
 
-#root {
-  @apply min-h-screen flex flex-col;
+html, body {
+  @apply bg-[#050505] text-white antialiased selection:bg-[#D4AF37] selection:text-black;
+  font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
   overflow-x: hidden;
 }
 
-/* Fix for mobile input zoom */
-@media screen and (max-width: 768px) {
-  input, textarea, select {
-    font-size: 16px !important;
-  }
+#root {
+  @apply overflow-x-hidden max-w-full w-full;
 }

@@ -18,19 +18,20 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
     <AnimatePresence>
       {isOpen && (
         <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          exit={{ opacity: 0 }} 
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 overflow-y-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-6"
         >
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }} 
-            className="max-w-md w-full bg-[#0f0f0f] border border-white/10 p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-2xl my-auto flex flex-col max-h-[90vh]"
-          >
-            <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
-              <h3 className="text-xl md:text-2xl font-serif italic text-white">Guest Check-in</h3>
-              <button onClick={onClose} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"><X size={20} /></button>
+          <div className="max-w-md w-full">
+            <div className="flex justify-between items-center mb-12">
+              <h3 className="text-2xl font-serif italic text-white">Guest Check-in</h3>
+              <button 
+                onClick={onClose}
+                className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+              >
+                <X size={24} />
+              </button>
             </div>
             
             <QRScanner 
@@ -40,29 +41,25 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
               }} 
             />
             
-            <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-white/5 space-y-6">
-              <div className="text-center">
-                <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-4">Manual Entry</p>
-                <div className="flex gap-2 md:gap-3">
-                  <Input 
-                    id="manual-rsvp"
-                    placeholder="Enter RSVP ID" 
-                    className="bg-white/5 border-white/10 h-12 md:h-14 rounded-none text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em]"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const input = document.getElementById('manual-rsvp') as HTMLInputElement;
-                        if (input) onScan(input.value);
-                        onClose();
-                      }
-                    }}
-                  />
-                  <Button onClick={() => { const input = document.getElementById('manual-rsvp') as HTMLInputElement; if (input) onScan(input.value); onClose(); }} className="bg-[#D4AF37] text-black rounded-none h-12 md:h-14 px-6 md:px-8 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em]">
-                    Verify
-                  </Button>
-                </div>
+            <div className="mt-12 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-4">Manual Entry</p>
+              <div className="flex gap-4">
+                <Input 
+                  placeholder="Enter RSVP ID" 
+                  className="bg-white/5 border-white/10 rounded-none h-14 text-[10px] font-bold uppercase tracking-[0.2em]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      onScan(e.currentTarget.value);
+                      onClose();
+                    }
+                  }}
+                />
+                <Button className="bg-[#D4AF37] text-black rounded-none h-14 px-8 text-[10px] font-bold uppercase tracking-[0.2em]">
+                  Verify
+                </Button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
