@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ImageIcon, Wallet, Send, Sparkles, Monitor } from 'lucide-react';
+import { ImageIcon, Wallet, Send, Sparkles, Monitor, Lock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import DigitalInvite from '@/components/DigitalInvite';
+import { showError } from '@/utils/toast';
 
 interface ConciergeToolsProps {
   event: any;
@@ -13,6 +14,22 @@ interface ConciergeToolsProps {
 
 const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => {
   const navigate = useNavigate();
+
+  const isStarted = new Date() >= new Date(event.event_date);
+  const isFinished = event.is_finished;
+  const isLive = isStarted && !isFinished;
+
+  const handleVibeClick = () => {
+    if (!isStarted) {
+      showError("The Vibe Screen activates once the event commences.");
+      return;
+    }
+    if (isFinished) {
+      showError("This event has concluded. The Vibe Screen is no longer active.");
+      return;
+    }
+    window.open(`/vibe/${event.slug}`, '_blank');
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -42,11 +59,21 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
       </button>
 
       <button 
-        onClick={() => window.open(`/vibe/${event.slug}`, '_blank')} 
-        className="bg-white/5 border border-white/5 p-10 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group"
+        onClick={handleVibeClick} 
+        className={`p-10 flex flex-col items-center justify-center gap-6 transition-all group border ${
+          isLive 
+            ? 'bg-white/5 border-white/5 hover:bg-white/10' 
+            : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'
+        }`}
       >
-        <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Vibe Screen</span>
+        {isLive ? (
+          <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+        ) : (
+          <Lock className="w-8 h-8 text-gray-600" />
+        )}
+        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">
+          {isFinished ? 'Vibe Concluded' : isStarted ? 'Vibe Screen' : 'Vibe Locked'}
+        </span>
       </button>
 
       {event.plan === 'Pro' ? (

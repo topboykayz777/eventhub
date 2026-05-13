@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, UserCheck, Sparkles, Heart, Camera, Music } from 'lucide-react';
+import { Coins, UserCheck, Sparkles, Heart, Camera, Music, Lock, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { Button } from '@/components/ui/button';
 
 interface VibeNotification {
   id: string;
@@ -18,9 +19,11 @@ interface VibeNotification {
 
 const VibeScreen = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [notifications, setNotifications] = useState<VibeNotification[]>([]);
   const [stats, setStats] = useState({ rsvps: 0, checkedIn: 0, totalSprayed: 0 });
+  const [isLive, setIsLive] = useState<boolean | null>(null);
 
   const fetchInitialData = useCallback(async () => {
     if (!slug) return;
@@ -33,8 +36,15 @@ const VibeScreen = () => {
         .maybeSingle();
 
       if (eventData) {
+        const started = new Date() >= new Date(eventData.event_date);
+        const finished = eventData.is_finished;
+        const live = started && !finished;
+        
+        setIsLive(live);
         setEvent(eventData);
         
+        if (!live) return;
+
         const { data: rsvps } = await supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id);
         const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('type', 'income');
         
@@ -90,6 +100,9 @@ const VibeScreen = () => {
             { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` },
             (payload) => {
               setEvent(payload.new);
+              // Check if event was just finished
+              if (payload.new.is_finished) setIsLive(false);
+              
               if (payload.new.gallery_urls?.length > payload.old.gallery_urls?.length) {
                 addNotification({
                   type: 'gallery',
@@ -130,10 +143,10 @@ const VibeScreen = () => {
 
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 20000); // Keep on screen longer for TV visibility
+    }, 20000);
   };
 
-  if (!event) return (
+  if (!event || isLive === null) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-8" />
@@ -141,6 +154,32 @@ const VibeScreen = () => {
       </div>
     </div>
   );
+
+  // Access Denied / Not Live View
+  if (!isLive) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+          <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-12 border border-white/10">
+            <Lock className="text-[#D4AF37] w-10 h-10" />
+          </div>
+          <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen <span className="text-[#D4AF37]">Inactive</span></h1>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-12">
+            {new Date() < new Date(event.event_date) 
+              ? `This broadcast will activate once the celebration commences on ${new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}.`
+              : "This celebration has concluded and the live broadcast is now archived."}
+          </p>
+          <Button 
+            onClick={() => navigate('/')}
+            variant="outline" 
+            className="border-white/10 text-white rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-[0.3em]"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Return to Portal
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Theme Configuration Mapping
   const theme = event.theme || 'modern';
