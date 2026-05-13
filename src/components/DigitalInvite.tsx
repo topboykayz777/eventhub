@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Calendar, MapPin, Clock, Share2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -12,15 +12,13 @@ interface DigitalInviteProps {
 const DigitalInvite = ({ event }: DigitalInviteProps) => {
   const eventDate = new Date(event.event_date);
   const eventUrl = `${window.location.origin}/event/${event.slug}`;
-
   const theme = event.theme || 'modern';
   
-  // Theme mapping for the invitation card
   const themeStyles: Record<string, any> = {
-    modern: { bg: "bg-[#1a1a1a]", text: "text-white", accent: "text-[#D4AF37]", border: "border-white/10", qrBg: "bg-white" },
-    traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", qrBg: "bg-white" },
-    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", border: "border-gray-200", qrBg: "bg-gray-50" },
-    sahara: { bg: "bg-[#78350f]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", qrBg: "bg-white" },
+    modern: { bg: "bg-[#050505]", text: "text-white", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", qrBg: "bg-white" },
+    traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", qrBg: "bg-white" },
+    elegant: { bg: "bg-[#fafaf9]", text: "text-gray-900", accent: "text-black", border: "border-black/10", qrBg: "bg-white" },
+    sahara: { bg: "bg-[#451a03]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", qrBg: "bg-white" },
     velvet: { bg: "bg-[#2e1065]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", qrBg: "bg-white" },
     garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", border: "border-[#10b981]/20", qrBg: "bg-white" },
     oceanic: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", qrBg: "bg-white" },
@@ -42,61 +40,46 @@ const DigitalInvite = ({ event }: DigitalInviteProps) => {
   const style = themeStyles[theme] || themeStyles.modern;
 
   return (
-    <div className={`w-full max-w-sm ${style.bg} border ${style.border} rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col`}>
-      {/* Hero Image */}
-      <div className="relative h-56 overflow-hidden">
-        {event.photo_url ? (
-          <img src={event.photo_url} alt={event.event_name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
-            <span className={`text-3xl font-serif italic ${style.accent}`}>Invitation</span>
+    <div className={`w-full max-w-sm ${style.bg} border-2 ${style.border} rounded-[3rem] overflow-hidden shadow-2xl flex flex-col relative p-10`}>
+      {/* Decorative Corner */}
+      <div className={`absolute top-0 right-0 w-32 h-32 ${style.accent.replace('text-', 'bg-')} opacity-5 rounded-bl-[5rem]`} />
+      
+      <div className={`relative z-10 flex flex-col items-center text-center ${style.text}`}>
+        <div className="mb-8">
+          <Sparkles className={`${style.accent} w-8 h-8 mb-4 mx-auto opacity-50`} />
+          <p className={`text-[10px] font-bold uppercase tracking-[0.5em] ${style.accent} mb-2`}>Invitation</p>
+          <h2 className="text-4xl font-serif italic leading-tight">{event.event_name}</h2>
+        </div>
+
+        <div className={`w-16 h-px ${style.accent.replace('text-', 'bg-')} opacity-20 mb-10`} />
+
+        <div className="space-y-6 mb-12 w-full">
+          <div className="flex flex-col items-center gap-1">
+            <Calendar size={14} className={`${style.accent} opacity-60`} />
+            <span className="text-sm font-light tracking-wide">{format(eventDate, 'EEEE, MMMM do, yyyy')}</span>
           </div>
-        )}
-        <div className={`absolute inset-0 bg-gradient-to-t from-${style.bg.replace('bg-', '')} via-transparent to-transparent`} />
-      </div>
-
-      {/* Content */}
-      <div className={`p-8 -mt-10 relative z-10 ${style.text}`}>
-        <div className="text-center space-y-6">
-          <div className="space-y-2">
-            <p className={`text-[9px] font-bold uppercase tracking-[0.4em] ${style.accent}`}>You are cordially invited to</p>
-            <h2 className="text-3xl font-serif italic leading-tight">{event.event_name}</h2>
+          <div className="flex flex-col items-center gap-1">
+            <Clock size={14} className={`${style.accent} opacity-60`} />
+            <span className="text-sm font-light tracking-wide">{format(eventDate, 'h:mm a')}</span>
           </div>
-
-          <div className={`h-px w-12 mx-auto opacity-30 ${style.accent.replace('text-', 'bg-')}`} />
-
-          <div className="space-y-4 text-sm opacity-80">
-            <div className="flex items-center justify-center gap-3">
-              <Calendar size={16} className={style.accent} />
-              <span>{format(eventDate, 'EEEE, MMMM do, yyyy')}</span>
-            </div>
-            <div className="flex items-center justify-center gap-3">
-              <Clock size={16} className={style.accent} />
-              <span>{format(eventDate, 'h:mm a')}</span>
-            </div>
-            <div className="flex items-center justify-center gap-3">
-              <MapPin size={16} className={style.accent} />
-              <span className="line-clamp-1">{event.venue}</span>
-            </div>
-          </div>
-
-          {/* QR Code for Sharing */}
-          <div className="pt-4 flex flex-col items-center gap-4">
-            <div className={`p-3 ${style.qrBg} rounded-2xl shadow-inner`}>
-              <QRCodeSVG value={eventUrl} size={100} level="M" />
-            </div>
-            <p className="text-[8px] font-bold uppercase tracking-widest opacity-40">Scan to view event page</p>
-          </div>
-
-          <div className="pt-4">
-            <div className={`inline-block px-8 py-3 border rounded-full text-[9px] font-bold uppercase tracking-widest ${style.accent} ${style.border}`}>
-              RSVP Required
-            </div>
+          <div className="flex flex-col items-center gap-1">
+            <MapPin size={14} className={`${style.accent} opacity-60`} />
+            <span className="text-sm font-light tracking-wide px-4">{event.venue}</span>
           </div>
         </div>
-      </div>
 
-      <div className={`h-1.5 bg-gradient-to-r from-transparent via-${style.accent.replace('text-', '')} to-transparent opacity-20`} />
+        <div className="relative group mb-10">
+          <div className={`absolute -inset-4 ${style.accent.replace('text-', 'bg-')} opacity-5 rounded-[2rem] blur-xl group-hover:opacity-10 transition-opacity`} />
+          <div className={`p-4 ${style.qrBg} rounded-3xl shadow-xl relative z-10`}>
+            <QRCodeSVG value={eventUrl} size={120} level="M" />
+          </div>
+          <p className="text-[8px] font-bold uppercase tracking-[0.3em] opacity-40 mt-4">Scan to RSVP</p>
+        </div>
+
+        <div className={`w-full py-4 border-t ${style.border} mt-auto`}>
+          <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-30">EventHub Nigeria</p>
+        </div>
+      </div>
     </div>
   );
 };

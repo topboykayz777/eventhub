@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Calendar, MapPin, User, Ticket } from 'lucide-react';
+import { Calendar, MapPin, User, Ticket, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface DigitalPassProps {
@@ -15,106 +15,88 @@ const DigitalPass = ({ event, rsvp, isPlusOne = false }: DigitalPassProps) => {
   const eventDate = new Date(event.event_date);
   const qrValue = isPlusOne ? `${rsvp.id}:plus-one` : rsvp.id;
   const displayName = isPlusOne ? (rsvp.plus_one_name || `${rsvp.guest_name}'s Guest`) : rsvp.guest_name;
-
   const theme = event.theme || 'modern';
   
-  // Theme mapping for the pass
   const themeStyles: Record<string, any> = {
-    modern: { headerBg: "bg-[#0f0f0f]", bodyBg: "bg-white", text: "text-black", accent: "text-[#D4AF37]", headerText: "text-white" },
-    traditional: { headerBg: "bg-[#064e3b]", bodyBg: "bg-[#fdfcf0]", text: "text-[#064e3b]", accent: "text-[#D4AF37]", headerText: "text-[#fdfcf0]" },
-    elegant: { headerBg: "bg-black", bodyBg: "bg-white", text: "text-black", accent: "text-gray-500", headerText: "text-white" },
-    sahara: { headerBg: "bg-[#451a03]", bodyBg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#fbbf24]", headerText: "text-[#fef3c7]" },
-    velvet: { headerBg: "bg-[#2e1065]", bodyBg: "bg-[#f5f3ff]", text: "text-[#2e1065]", accent: "text-[#D4AF37]", headerText: "text-[#f5f3ff]" },
-    garden: { headerBg: "bg-[#064e3b]", bodyBg: "bg-[#ecfdf5]", text: "text-[#064e3b]", accent: "text-[#10b981]", headerText: "text-[#ecfdf5]" },
-    oceanic: { headerBg: "bg-[#1e3a8a]", bodyBg: "bg-[#eff6ff]", text: "text-[#1e3a8a]", accent: "text-[#93c5fd]", headerText: "text-[#eff6ff]" },
-    rose: { headerBg: "bg-[#831843]", bodyBg: "bg-[#fdf2f8]", text: "text-[#831843]", accent: "text-[#fbcfe8]", headerText: "text-[#fdf2f8]" },
-    earth: { headerBg: "bg-[#431407]", bodyBg: "bg-[#fff7ed]", text: "text-[#431407]", accent: "text-[#fb923c]", headerText: "text-[#fff7ed]" },
-    silver: { headerBg: "bg-[#1f2937]", bodyBg: "bg-[#f9fafb]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", headerText: "text-[#f9fafb]" },
-    dynasty: { headerBg: "bg-[#7f1d1d]", bodyBg: "bg-[#fef2f2]", text: "text-[#7f1d1d]", accent: "text-[#D4AF37]", headerText: "text-[#fef2f2]" },
-    vintage: { headerBg: "bg-[#92400e]", bodyBg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", headerText: "text-[#fef3c7]" },
-    onyx: { headerBg: "bg-black", bodyBg: "bg-[#111111]", text: "text-white", accent: "text-[#06b6d4]", headerText: "text-white" },
-    lavender: { headerBg: "bg-[#8b5cf6]", bodyBg: "bg-[#f5f3ff]", text: "text-[#4c1d95]", accent: "text-[#8b5cf6]", headerText: "text-white" },
-    midnight: { headerBg: "bg-[#020617]", bodyBg: "bg-[#f8fafc]", text: "text-[#020617]", accent: "text-[#38bdf8]", headerText: "text-white" },
-    champagne: { headerBg: "bg-[#d97706]", bodyBg: "bg-[#fafaf9]", text: "text-[#44403c]", accent: "text-[#d97706]", headerText: "text-white" },
-    forest: { headerBg: "bg-[#064e3b]", bodyBg: "bg-[#f0fdf4]", text: "text-[#022c22]", accent: "text-[#10b981]", headerText: "text-white" },
-    sunset: { headerBg: "bg-[#f97316]", bodyBg: "bg-[#fff7ed]", text: "text-[#451a03]", accent: "text-[#f97316]", headerText: "text-white" },
-    marble: { headerBg: "bg-[#111827]", bodyBg: "bg-[#f9fafb]", text: "text-[#111827]", accent: "text-[#6b7280]", headerText: "text-white" },
-    platinum: { headerBg: "bg-[#1f2937]", bodyBg: "bg-[#f3f4f6]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", headerText: "text-white" }
+    modern: { bg: "bg-white", text: "text-black", accent: "text-[#D4AF37]", header: "bg-[#0f0f0f]", headerText: "text-white" },
+    traditional: { bg: "bg-[#fdfcf0]", text: "text-[#064e3b]", accent: "text-[#D4AF37]", header: "bg-[#064e3b]", headerText: "text-[#fdfcf0]" },
+    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", header: "bg-black", headerText: "text-white" },
+    sahara: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#fbbf24]", header: "bg-[#451a03]", headerText: "text-[#fef3c7]" },
+    velvet: { bg: "bg-[#f5f3ff]", text: "text-[#2e1065]", accent: "text-[#D4AF37]", header: "bg-[#2e1065]", headerText: "text-[#f5f3ff]" },
+    garden: { bg: "bg-[#ecfdf5]", text: "text-[#064e3b]", accent: "text-[#10b981]", header: "bg-[#064e3b]", headerText: "text-[#ecfdf5]" },
+    oceanic: { bg: "bg-[#eff6ff]", text: "text-[#1e3a8a]", accent: "text-[#93c5fd]", header: "bg-[#1e3a8a]", headerText: "text-[#eff6ff]" },
+    rose: { bg: "bg-[#fdf2f8]", text: "text-[#831843]", accent: "text-[#fbcfe8]", header: "bg-[#831843]", headerText: "text-[#fdf2f8]" },
+    earth: { bg: "bg-[#fff7ed]", text: "text-[#431407]", accent: "text-[#fb923c]", header: "bg-[#431407]", headerText: "text-[#fff7ed]" },
+    silver: { bg: "bg-[#f9fafb]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", header: "bg-[#1f2937]", headerText: "text-[#f9fafb]" },
+    dynasty: { bg: "bg-[#fef2f2]", text: "text-[#7f1d1d]", accent: "text-[#D4AF37]", header: "bg-[#7f1d1d]", headerText: "text-[#fef2f2]" },
+    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", header: "bg-[#92400e]", headerText: "text-[#fef3c7]" },
+    onyx: { bg: "bg-[#111111]", text: "text-white", accent: "text-[#06b6d4]", header: "bg-black", headerText: "text-white" },
+    lavender: { bg: "bg-[#f5f3ff]", text: "text-[#4c1d95]", accent: "text-[#8b5cf6]", header: "bg-[#8b5cf6]", headerText: "text-white" },
+    midnight: { bg: "bg-[#f8fafc]", text: "text-[#020617]", accent: "text-[#38bdf8]", header: "bg-[#020617]", headerText: "text-white" },
+    champagne: { bg: "bg-[#fafaf9]", text: "text-[#44403c]", accent: "text-[#d97706]", header: "bg-[#d97706]", headerText: "text-white" },
+    forest: { bg: "bg-[#f0fdf4]", text: "text-[#022c22]", accent: "text-[#10b981]", header: "bg-[#064e3b]", headerText: "text-white" },
+    sunset: { bg: "bg-[#fff7ed]", text: "text-[#451a03]", accent: "text-[#f97316]", header: "bg-[#f97316]", headerText: "text-white" },
+    marble: { bg: "bg-[#f9fafb]", text: "text-[#111827]", accent: "text-[#6b7280]", header: "bg-[#111827]", headerText: "text-white" },
+    platinum: { bg: "bg-[#f3f4f6]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", header: "bg-[#1f2937]", headerText: "text-white" }
   };
 
   const style = themeStyles[theme] || themeStyles.modern;
 
   return (
-    <div className={`w-full max-w-sm ${style.bodyBg} rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col border border-black/5`}>
-      {/* Top Section */}
-      <div className={`${style.headerBg} p-8 ${style.headerText} relative overflow-hidden`}>
-        <div className={`absolute -top-24 -right-24 w-48 h-48 ${style.accent.replace('text-', 'bg-')} opacity-10 rounded-full blur-3xl`} />
-        
-        <div className="relative z-10 space-y-6">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${style.accent}`}>
-                {isPlusOne ? 'Plus One Entry Pass' : 'Official Entry Pass'}
-              </p>
-              <h2 className="text-2xl font-serif italic">{event.event_name}</h2>
-            </div>
-            <Ticket className={style.accent} size={24} />
+    <div className={`w-full max-w-sm ${style.bg} rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col border border-black/5`}>
+      {/* Header */}
+      <div className={`${style.header} p-8 ${style.headerText} relative overflow-hidden`}>
+        <div className="relative z-10 flex justify-between items-start">
+          <div className="space-y-1">
+            <p className={`text-[10px] font-bold uppercase tracking-[0.4em] ${style.accent}`}>
+              {isPlusOne ? 'Plus One Pass' : 'Entry Pass'}
+            </p>
+            <h2 className="text-2xl font-serif italic">{event.event_name}</h2>
           </div>
-
-          <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-wider opacity-80">
-            <div className="space-y-1">
-              <p className="opacity-50">Date</p>
-              <p>{format(eventDate, 'MMM dd, yyyy')}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="opacity-50">Time</p>
-              <p>{format(eventDate, 'h:mm a')}</p>
-            </div>
-          </div>
+          <Ticket className={style.accent} size={24} />
         </div>
       </div>
 
-      {/* Perforated Line */}
-      <div className={`relative h-8 ${style.bodyBg} flex items-center`}>
-        <div className={`absolute left-0 -translate-x-1/2 w-8 h-8 ${style.headerBg} rounded-full`} />
-        <div className={`absolute right-0 translate-x-1/2 w-8 h-8 ${style.headerBg} rounded-full`} />
-        <div className="w-full border-t-2 border-dashed border-gray-200 mx-8 opacity-50" />
+      {/* Perforation */}
+      <div className={`relative h-10 ${style.bg} flex items-center`}>
+        <div className={`absolute left-0 -translate-x-1/2 w-10 h-10 ${style.header} rounded-full`} />
+        <div className={`absolute right-0 translate-x-1/2 w-10 h-10 ${style.header} rounded-full`} />
+        <div className="w-full border-t-2 border-dashed border-gray-200 mx-10 opacity-50" />
       </div>
 
-      {/* Bottom Section */}
-      <div className={`p-8 pt-4 ${style.bodyBg} ${style.text} flex flex-col items-center space-y-8`}>
-        <div className="text-center space-y-1">
-          <div className={`flex items-center justify-center gap-2 ${style.accent} mb-1`}>
+      {/* Body */}
+      <div className={`p-8 pt-2 ${style.bg} ${style.text} flex flex-col items-center`}>
+        <div className="text-center mb-8">
+          <div className={`flex items-center justify-center gap-2 ${style.accent} mb-2`}>
             <User size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Guest Name</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Guest</span>
           </div>
-          <p className="text-xl font-medium">{displayName}</p>
+          <p className="text-2xl font-medium tracking-tight">{displayName}</p>
           {rsvp.table_number && (
-            <p className="text-sm opacity-60">Table {rsvp.table_number}</p>
+            <div className="mt-2 inline-block px-4 py-1 bg-black/5 rounded-full">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Table {rsvp.table_number}</p>
+            </div>
           )}
         </div>
 
-        <div className="p-4 bg-white rounded-3xl border border-gray-100 shadow-inner">
-          <QRCodeSVG 
-            value={qrValue}
-            size={160}
-            level="H"
-            includeMargin={false}
-            className="rounded-lg"
-          />
+        <div className="p-4 bg-white rounded-[2rem] shadow-inner border border-gray-100 mb-8">
+          <QRCodeSVG value={qrValue} size={160} level="H" />
         </div>
 
-        <div className="text-center space-y-2 opacity-60">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em]">Scan at the entrance</p>
-          <div className="flex items-center justify-center gap-2">
-            <MapPin size={12} />
-            <span className="text-[10px]">{event.venue}</span>
+        <div className="grid grid-cols-2 gap-8 w-full border-t border-gray-100 pt-8 mb-4">
+          <div className="space-y-1">
+            <p className="text-[8px] font-bold uppercase tracking-widest opacity-40">Date</p>
+            <p className="text-xs font-bold">{format(eventDate, 'MMM dd, yyyy')}</p>
+          </div>
+          <div className="space-y-1 text-right">
+            <p className="text-[8px] font-bold uppercase tracking-widest opacity-40">Venue</p>
+            <p className="text-xs font-bold truncate">{event.venue}</p>
           </div>
         </div>
       </div>
 
-      <div className="py-4 text-center border-t border-gray-100 opacity-30">
-        <p className="text-[8px] font-bold uppercase tracking-widest">Powered by EventHub NG</p>
+      <div className="py-4 text-center opacity-20">
+        <p className="text-[8px] font-bold uppercase tracking-[0.3em]">Verified by EventHub NG</p>
       </div>
     </div>
   );
