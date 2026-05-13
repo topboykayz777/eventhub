@@ -44,12 +44,7 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
         <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-lg w-[95vw] p-0 overflow-hidden rounded-3xl">
           <div className="relative h-full max-h-[90vh] flex flex-col">
             <DialogHeader className="p-6 border-b border-white/5 shrink-0">
-              <div className="flex justify-between items-center">
-                <DialogTitle className="text-xl font-serif italic">The Digital Invitation</DialogTitle>
-                <DialogClose className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
-                  <X size={20} />
-                </DialogClose>
-              </div>
+              <DialogTitle className="text-xl font-serif italic">The Digital Invitation</DialogTitle>
             </DialogHeader>
             
             <ScrollArea className="flex-1 p-6">
