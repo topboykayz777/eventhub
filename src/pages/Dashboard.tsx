@@ -69,22 +69,29 @@ const Dashboard = () => {
   };
 
   const handleQRScan = async (scannedText: string) => {
-    let rsvpId = scannedText;
+    if (!scannedText) return;
+    
+    let rsvpId = scannedText.trim();
     let isPlusOne = false;
 
-    if (scannedText.includes(':plus-one')) {
-      rsvpId = scannedText.split(':plus-one')[0];
+    // Handle plus-one suffix
+    if (rsvpId.includes(':plus-one')) {
+      rsvpId = rsvpId.split(':plus-one')[0];
       isPlusOne = true;
     }
 
+    // Handle full URLs if scanned from a browser link
     if (rsvpId.includes('/')) {
       const parts = rsvpId.split('/');
       rsvpId = parts[parts.length - 1];
     }
 
+    // Clean any potential query params or fragments
+    rsvpId = rsvpId.split('?')[0].split('#')[0];
+
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(rsvpId)) {
-      showError("Invalid pass format.");
+      showError("Invalid pass format. Please scan a guest's digital pass.");
       return;
     }
 

@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ImageIcon, Wallet, Send, Sparkles, Monitor, Lock } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ImageIcon, Wallet, Send, Sparkles, Monitor, Lock, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import DigitalInvite from '@/components/DigitalInvite';
 import { showError } from '@/utils/toast';
 
@@ -40,12 +41,30 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Digital Invite</span>
           </button>
         </DialogTrigger>
-        <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-md rounded-none">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-serif italic text-center mb-8">The Digital Invitation</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <DigitalInvite event={event} />
+        <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-lg w-[95vw] p-0 overflow-hidden rounded-3xl">
+          <div className="relative h-full max-h-[90vh] flex flex-col">
+            <DialogHeader className="p-6 border-b border-white/5 shrink-0">
+              <div className="flex justify-between items-center">
+                <DialogTitle className="text-xl font-serif italic">The Digital Invitation</DialogTitle>
+                <DialogClose className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
+                  <X size={20} />
+                </DialogClose>
+              </div>
+            </DialogHeader>
+            
+            <ScrollArea className="flex-1 p-6">
+              <div className="pb-12 flex justify-center">
+                <DigitalInvite event={event} />
+              </div>
+            </ScrollArea>
+
+            <div className="p-6 border-t border-white/5 bg-black/40 shrink-0">
+              <DialogClose asChild>
+                <button className="w-full py-4 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest transition-all rounded-xl">
+                  Close Preview
+                </button>
+              </DialogClose>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
