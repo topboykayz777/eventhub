@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface DigitalInviteProps {
   event: any;
@@ -31,7 +31,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
     lavender: { bg: "bg-[#f5f3ff]", text: "text-[#4c1d95]", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/20", pattern: "opacity-10" },
     midnight: { bg: "bg-[#020617]", text: "text-[#f8fafc]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/20", pattern: "opacity-10" },
     champagne: { bg: "bg-[#fafaf9]", text: "text-[#44403c]", accent: "text-[#d97706]", border: "border-[#d97706]/20", pattern: "opacity-10" },
-    forest: { bg: "bg-[#022c22]", text: "text-[#10b981]", border: "border-[#10b981]/20", pattern: "opacity-10" },
+    forest: { bg: "bg-[#022c22]", text: "text-[#f0fdf4]", accent: "text-[#10b981]", border: "border-[#10b981]/20", pattern: "opacity-10" },
     sunset: { bg: "bg-[#451a03]", text: "text-[#fff7ed]", accent: "text-[#f97316]", border: "border-[#f97316]/20", pattern: "opacity-10" },
     marble: { bg: "bg-[#f9fafb]", text: "text-[#111827]", accent: "text-[#6b7280]", border: "border-[#e5e7eb]", pattern: "opacity-5" },
     platinum: { bg: "bg-[#f3f4f6]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#d1d5db]", pattern: "opacity-5" }
@@ -72,7 +72,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
 
         <div className="pt-6">
           <div className="inline-block p-5 bg-white rounded-[3rem] shadow-2xl border border-gray-100">
-            <QRCodeCanvas 
+            <QRCodeSVG 
               value={eventUrl} 
               size={140} 
               level="H" 

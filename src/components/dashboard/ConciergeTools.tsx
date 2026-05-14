@@ -40,18 +40,14 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
     setIsDownloading(true);
     
     try {
-      // Small delay to ensure the QR canvas is fully painted
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       const canvas = await html2canvas(inviteRef.current, {
         backgroundColor: null,
-        scale: 3, // Higher scale for better quality
+        scale: 2,
         useCORS: true,
-        allowTaint: true,
         logging: false,
       });
       
-      const image = canvas.toDataURL("image/png", 1.0);
+      const image = canvas.toDataURL("image/png");
       const link = document.createElement('a');
       link.href = image;
       link.download = `${event.event_name.replace(/\s+/g, '_')}_Invitation.png`;
