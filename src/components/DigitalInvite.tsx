@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Calendar, MapPin, Clock, ShieldCheck } from 'lucide-react';
+import { Calendar, MapPin, Clock, ShieldCheck, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface DigitalInviteProps {
@@ -15,113 +15,128 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
   const theme = event.theme || 'modern';
 
   const themeStyles: Record<string, any> = {
-    modern: { bg: "bg-[#0a0a0a]", text: "text-white", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", qrBg: "bg-white" },
-    traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/40", qrBg: "bg-white" },
-    elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", border: "border-black/20", qrBg: "bg-gray-50" },
-    sahara: { bg: "bg-[#451a03]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/30", qrBg: "bg-white" },
-    velvet: { bg: "bg-[#2e1065]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", qrBg: "bg-white" },
-    garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", border: "border-[#10b981]/30", qrBg: "bg-white" },
-    oceanic: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/30", qrBg: "bg-white" },
-    rose: { bg: "bg-[#831843]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/30", qrBg: "bg-white" },
-    earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", border: "border-[#fb923c]/30", qrBg: "bg-white" },
-    silver: { bg: "bg-[#1f2937]", text: "text-[#f9fafb]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/30", qrBg: "bg-white" },
-    dynasty: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", qrBg: "bg-white" },
-    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", border: "border-[#92400e]/30", qrBg: "bg-white" },
-    onyx: { bg: "bg-black", text: "text-white", accent: "text-[#06b6d4]", border: "border-[#06b6d4]/30", qrBg: "bg-white" },
-    lavender: { bg: "bg-[#f5f3ff]", text: "text-[#4c1d95]", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/30", qrBg: "bg-white" },
-    midnight: { bg: "bg-[#020617]", text: "text-white", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/30", qrBg: "bg-white" },
-    champagne: { bg: "bg-[#fafaf9]", text: "text-[#44403c]", accent: "text-[#d97706]", border: "border-[#d97706]/30", qrBg: "bg-white" },
-    forest: { bg: "bg-[#022c22]", text: "text-white", accent: "text-[#10b981]", border: "border-[#10b981]/30", qrBg: "bg-white" },
-    sunset: { bg: "bg-[#451a03]", text: "text-white", accent: "text-[#f97316]", border: "border-[#f97316]/30", qrBg: "bg-white" },
-    marble: { bg: "bg-[#f9fafb]", text: "text-[#111827]", accent: "text-[#6b7280]", border: "border-[#e5e7eb]", qrBg: "bg-white" },
-    platinum: { bg: "bg-[#f3f4f6]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#d1d5db]", qrBg: "bg-white" }
+    modern: { bg: "bg-[#0a0a0a]", accent: "#D4AF37", border: "rgba(212, 175, 55, 0.3)", glass: "rgba(255, 255, 255, 0.03)" },
+    traditional: { bg: "bg-[#064e3b]", accent: "#D4AF37", border: "rgba(212, 175, 55, 0.4)", glass: "rgba(0, 0, 0, 0.2)" },
+    elegant: { bg: "bg-[#f8f8f8]", accent: "#000000", border: "rgba(0, 0, 0, 0.1)", glass: "rgba(255, 255, 255, 0.8)" },
+    sahara: { bg: "bg-[#451a03]", accent: "#fbbf24", border: "rgba(251, 191, 36, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    velvet: { bg: "bg-[#2e1065]", accent: "#D4AF37", border: "rgba(212, 175, 55, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    garden: { bg: "bg-[#064e3b]", accent: "#10b981", border: "rgba(16, 185, 129, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    oceanic: { bg: "bg-[#1e3a8a]", accent: "#93c5fd", border: "rgba(147, 197, 253, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    rose: { bg: "bg-[#831843]", accent: "#fbcfe8", border: "rgba(251, 207, 232, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    earth: { bg: "bg-[#431407]", accent: "#fb923c", border: "rgba(251, 146, 60, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    silver: { bg: "bg-[#1f2937]", accent: "#9ca3af", border: "rgba(156, 163, 175, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    dynasty: { bg: "bg-[#7f1d1d]", accent: "#D4AF37", border: "rgba(212, 175, 55, 0.3)", glass: "rgba(0, 0, 0, 0.2)" },
+    vintage: { bg: "bg-[#fef3c7]", accent: "#92400e", border: "rgba(146, 64, 14, 0.3)", glass: "rgba(255, 255, 255, 0.4)" },
+    onyx: { bg: "bg-[#050505]", accent: "#06b6d4", border: "rgba(6, 182, 212, 0.3)", glass: "rgba(255, 255, 255, 0.05)" },
+    lavender: { bg: "bg-[#f5f3ff]", accent: "#8b5cf6", border: "rgba(139, 92, 246, 0.3)", glass: "rgba(255, 255, 255, 0.8)" },
+    midnight: { bg: "bg-[#020617]", accent: "#38bdf8", border: "rgba(56, 189, 248, 0.3)", glass: "rgba(255, 255, 255, 0.05)" },
+    champagne: { bg: "bg-[#fafaf9]", accent: "#d97706", border: "rgba(217, 119, 6, 0.3)", glass: "rgba(255, 255, 255, 0.8)" },
+    forest: { bg: "bg-[#022c22]", accent: "#10b981", border: "rgba(16, 185, 129, 0.3)", glass: "rgba(255, 255, 255, 0.05)" },
+    sunset: { bg: "bg-[#451a03]", accent: "#f97316", border: "rgba(249, 115, 22, 0.3)", glass: "rgba(255, 255, 255, 0.05)" },
+    marble: { bg: "bg-[#f9fafb]", accent: "#111827", border: "rgba(229, 231, 235, 1)", glass: "rgba(255, 255, 255, 0.8)" },
+    platinum: { bg: "bg-[#f3f4f6]", accent: "#1f2937", border: "rgba(209, 213, 219, 1)", glass: "rgba(255, 255, 255, 0.8)" }
   };
 
   const style = themeStyles[theme] || themeStyles.modern;
+  const isDark = !['elegant', 'vintage', 'lavender', 'champagne', 'marble', 'platinum'].includes(theme);
 
   return (
     <div 
       ref={ref}
-      className={`w-[400px] ${style.bg} ${style.text} border-8 ${style.border} p-12 relative overflow-hidden shadow-2xl flex flex-col items-center text-center`}
-      style={{ minHeight: '650px' }}
+      className={`w-[420px] ${style.bg} relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] flex flex-col items-center p-1`}
+      style={{ minHeight: '700px' }}
     >
-      {/* Decorative Corner Accents */}
-      <div className={`absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 ${style.border} -translate-x-2 -translate-y-2 opacity-60`} />
-      <div className={`absolute top-0 right-0 w-24 h-24 border-t-4 border-r-4 ${style.border} translate-x-2 -translate-y-2 opacity-60`} />
-      <div className={`absolute bottom-0 left-0 w-24 h-24 border-b-4 border-l-4 ${style.border} -translate-x-2 translate-y-2 opacity-60`} />
-      <div className={`absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 ${style.border} translate-x-2 translate-y-2 opacity-60`} />
-      
-      <div className="relative z-10 flex flex-col items-center w-full h-full">
-        {/* Header Logo */}
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 z-0">
+        <img src={event.photo_url} className="w-full h-full object-cover opacity-40 blur-[2px]" alt="" />
+        <div className={`absolute inset-0 ${isDark ? 'bg-black/60' : 'bg-white/40'}`} />
+      </div>
+
+      {/* Glass Container */}
+      <div 
+        className="relative z-10 w-full h-full flex-1 flex flex-col items-center text-center p-10 m-4 rounded-[3rem] border backdrop-blur-3xl"
+        style={{ 
+          backgroundColor: style.glass,
+          borderColor: style.border
+        }}
+      >
+        {/* Header */}
         <div className="mb-10">
-          <div className={`w-16 h-16 border-2 ${style.border} rotate-45 flex items-center justify-center mx-auto mb-6`}>
-            <span className={`${style.accent} font-serif italic text-2xl -rotate-45`}>E</span>
+          <div 
+            className="w-14 h-14 border-2 rotate-45 flex items-center justify-center mx-auto mb-6 shadow-xl"
+            style={{ borderColor: style.accent }}
+          >
+            <span className="font-serif italic text-xl -rotate-45" style={{ color: style.accent }}>E</span>
           </div>
-          <p className={`${style.accent} text-[10px] font-black uppercase tracking-[0.6em] mb-2`}>Official Invitation</p>
-          <div className={`h-[1px] w-16 ${style.accent} opacity-30 mx-auto`} />
+          <p className="text-[9px] font-black uppercase tracking-[0.6em] mb-2 opacity-70" style={{ color: style.accent }}>
+            Official Invitation
+          </p>
+          <div className="h-[1px] w-12 mx-auto opacity-30" style={{ backgroundColor: style.accent }} />
         </div>
 
         {/* Event Title */}
-        <h1 className="text-4xl font-serif italic mb-12 leading-tight px-4">
+        <h1 className={`text-4xl font-serif italic mb-12 leading-tight px-2 ${isDark ? 'text-white' : 'text-black'}`}>
           {event.event_name}
         </h1>
 
-        {/* Logistics Grid */}
-        <div className="space-y-8 mb-12 w-full px-6">
+        {/* Details */}
+        <div className="space-y-8 mb-12 w-full px-4">
           <div className="flex flex-col items-center gap-2">
-            <Calendar size={20} className={`${style.accent} opacity-70`} />
-            <span className="text-sm font-light tracking-[0.2em] uppercase">
+            <Calendar size={18} style={{ color: style.accent }} className="opacity-80" />
+            <span className={`text-xs font-bold tracking-[0.2em] uppercase ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {format(eventDate, 'EEEE, MMMM do, yyyy')}
             </span>
           </div>
           
           <div className="flex flex-col items-center gap-2">
-            <Clock size={20} className={`${style.accent} opacity-70`} />
-            <span className="text-sm font-light tracking-[0.2em] uppercase">
+            <Clock size={18} style={{ color: style.accent }} className="opacity-80" />
+            <span className={`text-xs font-bold tracking-[0.2em] uppercase ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {format(eventDate, 'h:mm a')}
             </span>
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <MapPin size={20} className={`${style.accent} opacity-70`} />
-            <span className="text-sm font-light tracking-[0.15em] uppercase leading-relaxed max-w-[280px]">
+            <MapPin size={18} style={{ color: style.accent }} className="opacity-80" />
+            <span className={`text-xs font-bold tracking-[0.15em] uppercase leading-relaxed max-w-[260px] ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {event.venue}
             </span>
           </div>
         </div>
 
-        {/* QR Code Section */}
-        <div className="mt-auto pt-10 border-t border-white/10 w-full flex flex-col items-center">
-          <div className={`${style.qrBg} p-5 rounded-[2.5rem] mb-6 shadow-2xl border ${style.border} group`}>
+        {/* QR Section */}
+        <div className="mt-auto pt-10 border-t w-full flex flex-col items-center" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+          <div className="bg-white p-4 rounded-[2.5rem] mb-6 shadow-2xl border-4 border-white/20">
             <QRCodeCanvas 
               value={eventUrl}
-              size={150}
+              size={140}
               level="H"
               includeMargin={false}
               imageSettings={{
                 src: "/favicon.svg",
-                x: undefined,
-                y: undefined,
                 height: 28,
                 width: 28,
                 excavate: true,
               }}
             />
           </div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-50 max-w-[200px] leading-loose">
+          <p className={`text-[8px] font-black uppercase tracking-[0.3em] opacity-50 leading-loose ${isDark ? 'text-white' : 'text-black'}`}>
             Scan to RSVP & Access <br /> Exclusive Event Details
           </p>
         </div>
 
-        {/* Security Badge */}
-        <div className="mt-8 flex items-center gap-2 opacity-20">
-          <ShieldCheck size={12} />
-          <span className="text-[7px] font-black uppercase tracking-[0.4em]">Verified by EventHub NG</span>
+        {/* Footer */}
+        <div className="mt-8 flex items-center gap-2 opacity-30">
+          <ShieldCheck size={12} style={{ color: style.accent }} />
+          <span className={`text-[7px] font-black uppercase tracking-[0.4em] ${isDark ? 'text-white' : 'text-black'}`}>
+            Verified by EventHub NG
+          </span>
         </div>
       </div>
 
-      {/* Subtle Background Texture */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+      {/* Decorative Sparkles */}
+      <div className="absolute top-10 right-10 opacity-20">
+        <Sparkles size={40} style={{ color: style.accent }} />
+      </div>
     </div>
   );
 });
