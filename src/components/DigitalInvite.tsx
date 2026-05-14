@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { QRCodeSVG } from 'qrcode.react';
@@ -9,7 +9,7 @@ interface DigitalInviteProps {
   event: any;
 }
 
-const DigitalInvite = ({ event }: DigitalInviteProps) => {
+const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event }, ref) => {
   const eventDate = new Date(event.event_date);
   const eventUrl = `${window.location.origin}/event/${event.slug}`;
   const theme = event.theme || 'modern';
@@ -40,7 +40,7 @@ const DigitalInvite = ({ event }: DigitalInviteProps) => {
   const style = themeStyles[theme] || themeStyles.modern;
 
   return (
-    <div className={`w-full max-w-sm ${style.bg} ${style.text} rounded-[3.5rem] p-12 shadow-2xl border ${style.border} relative overflow-hidden flex flex-col items-center text-center`}>
+    <div ref={ref} className={`w-full max-w-sm ${style.bg} ${style.text} rounded-[3.5rem] p-12 shadow-2xl border ${style.border} relative overflow-hidden flex flex-col items-center text-center`}>
       {/* Elegant Background Pattern */}
       <div className={`absolute inset-0 ${style.pattern} pointer-events-none`} style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
@@ -90,6 +90,8 @@ const DigitalInvite = ({ event }: DigitalInviteProps) => {
       </div>
     </div>
   );
-};
+});
+
+DigitalInvite.displayName = "DigitalInvite";
 
 export default DigitalInvite;
