@@ -46,10 +46,10 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-4 md:px-6 md:py-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3 md:gap-4 group">
-            <div className="w-10 h-10 md:w-12 md:h-12 border border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
-              <span className="text-[#D4AF37] font-serif text-base md:text-lg -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
+            <div className="w-10 h-10 md:w-12 md:h-12 border-2 border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
+              <span className="text-[#D4AF37] font-serif text-lg md:text-xl -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
             </div>
-            <span className="text-sm md:text-base lg:text-xl font-light tracking-[0.15em] md:tracking-[0.2em] lg:tracking-[0.3em] uppercase">
+            <span className="text-lg md:text-xl lg:text-2xl font-bold tracking-[0.1em] md:tracking-[0.15em] lg:tracking-[0.2em] uppercase">
               Event Hub <span className="text-[#D4AF37]">NG</span>
             </span>
           </Link>
@@ -60,7 +60,7 @@ const Navbar = () => {
               <Link 
                 key={link.path} 
                 to={link.path} 
-                className="text-sm lg:text-base font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] hover:text-[#D4AF37] transition-colors"
+                className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] hover:text-[#D4AF37] transition-colors"
               >
                 {link.name}
               </Link>
@@ -68,23 +68,23 @@ const Navbar = () => {
             
             {session ? (
               <div className="flex items-center gap-6 lg:gap-10">
-                <Link to="/profile" className="text-sm lg:text-base font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
-                  <UserCircle size={20} /> Profile
+                <Link to="/profile" className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
+                  <UserCircle size={22} /> Profile
                 </Link>
                 <button 
                   onClick={handleLogout}
-                  className="text-sm lg:text-base font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
+                  className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
                 >
-                  <LogOut size={18} /> Logout
+                  <LogOut size={20} /> Logout
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-6 lg:gap-10">
-                <Link to="/login" className="text-sm lg:text-base font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] hover:text-[#D4AF37] transition-colors">
+                <Link to="/login" className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] hover:text-[#D4AF37] transition-colors">
                   Sign In
                 </Link>
                 <Link to="/signup">
-                  <Button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-6 md:px-8 lg:px-10 py-4 md:py-6 lg:py-7 text-sm lg:text-base font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase">
+                  <Button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 md:px-10 lg:px-12 py-6 md:py-7 lg:py-8 text-base lg:text-lg font-black tracking-[0.1em] md:tracking-[0.15em] uppercase">
                     Get Started
                   </Button>
                 </Link>
@@ -98,7 +98,7 @@ const Navbar = () => {
             className="md:hidden text-white p-2"
             onClick={() => setIsMenuOpen(true)}
           >
-            <Menu size={28} />
+            <Menu size={32} />
           </Button>
         </div>
       </motion.nav>
@@ -115,17 +115,17 @@ const Navbar = () => {
           >
             <div className="flex justify-between items-center mb-16">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border border-[#D4AF37] flex items-center justify-center rotate-45">
-                  <span className="text-[#D4AF37] font-serif text-base -rotate-45">E</span>
+                <div className="w-10 h-10 border-2 border-[#D4AF37] flex items-center justify-center rotate-45">
+                  <span className="text-[#D4AF37] font-serif text-lg -rotate-45">E</span>
                 </div>
-                <span className="text-base font-light tracking-[0.2em] uppercase">Event Hub <span className="text-[#D4AF37]">NG</span></span>
+                <span className="text-xl font-bold tracking-[0.1em] uppercase">Event Hub <span className="text-[#D4AF37]">NG</span></span>
               </div>
               <Button 
                 variant="ghost" 
                 className="text-white p-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <X size={32} />
+                <X size={36} />
               </Button>
             </div>
 
@@ -135,7 +135,7 @@ const Navbar = () => {
                   key={link.path} 
                   to={link.path} 
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-3xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
+                  className="text-4xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -146,15 +146,15 @@ const Navbar = () => {
                   <Link 
                     to="/profile" 
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-3xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
+                    className="text-4xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
                   >
                     Profile
                   </Link>
                   <button 
                     onClick={handleLogout}
-                    className="text-3xl font-serif italic text-[#D4AF37] text-left flex items-center gap-4"
+                    className="text-4xl font-serif italic text-[#D4AF37] text-left flex items-center gap-4"
                   >
-                    <LogOut size={28} /> Logout
+                    <LogOut size={32} /> Logout
                   </button>
                 </>
               ) : (
@@ -162,12 +162,12 @@ const Navbar = () => {
                   <Link 
                     to="/login" 
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-lg font-bold uppercase tracking-[0.2em] text-white"
+                    className="text-2xl font-black uppercase tracking-[0.1em] text-white"
                   >
                     Sign In
                   </Link>
                   <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-6 text-sm font-bold tracking-[0.2em] uppercase">
+                    <Button className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none py-8 text-xl font-black tracking-[0.1em] uppercase">
                       Get Started
                     </Button>
                   </Link>
@@ -176,7 +176,7 @@ const Navbar = () => {
             </div>
 
             <div className="mt-auto text-center pb-6">
-              <p className="text-xs text-gray-600 uppercase tracking-[0.3em]">© 2026 Event Hub Nigeria</p>
+              <p className="text-sm text-gray-600 uppercase tracking-[0.3em]">© 2026 Event Hub Nigeria</p>
             </div>
           </motion.div>
         )}
