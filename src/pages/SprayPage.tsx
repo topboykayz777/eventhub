@@ -42,7 +42,7 @@ const SprayPage = () => {
     reference: (new Date()).getTime().toString(),
     email: "guest@eventhub.ng",
     amount: parseInt(amount) * 100,
-    publicKey: 'pk_test_8a5989e07b1762ec4037cc3318626f1e4fda67cb',
+    publicKey: 'pk_live_b34e33d09dceeebd5dfa469b9139257b308a2c9d',
     metadata: {
       custom_fields: [
         { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
