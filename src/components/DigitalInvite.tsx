@@ -1,97 +1,91 @@
 "use client";
 
 import React, { forwardRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { Calendar, MapPin, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { QRCodeSVG } from 'qrcode.react';
 
 interface DigitalInviteProps {
   event: any;
 }
 
 const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event }, ref) => {
+  const eventUrl = `${window.location.origin}/e/${event.slug}`;
   const eventDate = new Date(event.event_date);
-  const eventUrl = `${window.location.origin}/event/${event.slug}`;
-  const theme = event.theme || 'modern';
-  
-  const themeStyles: Record<string, any> = {
-    modern: { bg: "bg-[#050505]", text: "text-white", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", pattern: "opacity-10" },
-    traditional: { bg: "bg-[#064e3b]", text: "text-[#fdfcf0]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", pattern: "opacity-20" },
-    elegant: { bg: "bg-[#fafaf9]", text: "text-gray-900", accent: "text-black", border: "border-black/10", pattern: "opacity-5" },
-    sahara: { bg: "bg-[#451a03]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", pattern: "opacity-15" },
-    velvet: { bg: "bg-[#2e1065]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", pattern: "opacity-10" },
-    garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", border: "border-[#10b981]/20", pattern: "opacity-15" },
-    oceanic: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", pattern: "opacity-10" },
-    rose: { bg: "bg-[#831843]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/20", pattern: "opacity-10" },
-    earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", pattern: "opacity-15" },
-    silver: { bg: "bg-[#1f2937]", text: "text-[#f9fafb]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", pattern: "opacity-10" },
-    dynasty: { bg: "bg-[#7f1d1d]", text: "text-[#fef2f2]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", pattern: "opacity-10" },
-    vintage: { bg: "bg-[#fef3c7]", text: "text-[#451a03]", accent: "text-[#92400e]", border: "border-[#92400e]/20", pattern: "opacity-20" },
-    onyx: { bg: "bg-[#050505]", text: "text-white", accent: "text-[#06b6d4]", border: "border-[#06b6d4]/20", pattern: "opacity-10" },
-    lavender: { bg: "bg-[#f5f3ff]", text: "text-[#4c1d95]", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/20", pattern: "opacity-10" },
-    midnight: { bg: "bg-[#020617]", text: "text-[#f8fafc]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/20", pattern: "opacity-10" },
-    champagne: { bg: "bg-[#fafaf9]", text: "text-[#44403c]", accent: "text-[#d97706]", border: "border-[#d97706]/20", pattern: "opacity-10" },
-    forest: { bg: "bg-[#022c22]", text: "text-[#f0fdf4]", accent: "text-[#10b981]", border: "border-[#10b981]/20", pattern: "opacity-10" },
-    sunset: { bg: "bg-[#451a03]", text: "text-[#fff7ed]", accent: "text-[#f97316]", border: "border-[#f97316]/20", pattern: "opacity-10" },
-    marble: { bg: "bg-[#f9fafb]", text: "text-[#111827]", accent: "text-[#6b7280]", border: "border-[#e5e7eb]", pattern: "opacity-5" },
-    platinum: { bg: "bg-[#f3f4f6]", text: "text-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#d1d5db]", pattern: "opacity-5" }
-  };
-
-  const style = themeStyles[theme] || themeStyles.modern;
 
   return (
-    <div ref={ref} className={`w-full max-w-sm ${style.bg} ${style.text} rounded-[3.5rem] p-12 shadow-2xl border ${style.border} relative overflow-hidden flex flex-col items-center text-center`}>
-      {/* Elegant Background Pattern */}
-      <div className={`absolute inset-0 ${style.pattern} pointer-events-none`} style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+    <div 
+      ref={ref}
+      className="w-[380px] bg-[#0a0a0a] border border-[#D4AF37]/30 p-8 relative overflow-hidden shadow-2xl"
+      style={{ minHeight: '600px' }}
+    >
+      {/* Decorative Elements */}
+      <div className="absolute top-0 left-0 w-32 h-32 border-t-2 border-l-2 border-[#D4AF37]/20 -translate-x-4 -translate-y-4" />
+      <div className="absolute bottom-0 right-0 w-32 h-32 border-b-2 border-r-2 border-[#D4AF37]/20 translate-x-4 translate-y-4" />
       
-      <div className="relative z-10 w-full space-y-12">
-        <div className="space-y-6">
-          <div className="flex justify-center">
-            <div className={`w-12 h-12 rounded-full border ${style.border} flex items-center justify-center`}>
-              <Sparkles className={`${style.accent} w-5 h-5`} />
-            </div>
+      <div className="relative z-10 flex flex-col items-center text-center h-full">
+        <div className="mb-8">
+          <div className="w-16 h-16 border border-[#D4AF37] rotate-45 flex items-center justify-center mx-auto mb-6">
+            <span className="text-[#D4AF37] font-serif italic text-2xl -rotate-45">E</span>
           </div>
-          <p className={`text-[10px] font-black uppercase tracking-[0.6em] ${style.accent}`}>The Invitation</p>
-          <h2 className="text-4xl md:text-5xl font-serif italic leading-tight tracking-tight">
-            {event.event_name}
-          </h2>
+          <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] mb-2">Official Invitation</p>
+          <div className="h-[1px] w-12 bg-[#D4AF37]/30 mx-auto" />
         </div>
 
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <p className="text-[8px] font-bold uppercase tracking-[0.4em] opacity-40">Date & Time</p>
-            <p className="text-xl font-light">{format(eventDate, 'EEEE, MMMM do')}</p>
-            <p className="text-sm font-light opacity-60">{format(eventDate, 'h:mm a')}</p>
+        <h1 className="text-3xl font-serif italic text-white mb-8 leading-tight">
+          {event.event_name}
+        </h1>
+
+        <div className="space-y-6 mb-12 w-full">
+          <div className="flex items-center justify-center gap-4 text-gray-400">
+            <Calendar size={16} className="text-[#D4AF37]" />
+            <span className="text-xs font-light tracking-widest uppercase">
+              {format(eventDate, 'EEEE, MMMM do, yyyy')}
+            </span>
           </div>
-          
-          <div className="space-y-2">
-            <p className="text-[8px] font-bold uppercase tracking-[0.4em] opacity-40">The Venue</p>
-            <p className="text-xl font-light px-4 leading-snug">{event.venue}</p>
+          <div className="flex items-center justify-center gap-4 text-gray-400">
+            <Clock size={16} className="text-[#D4AF37]" />
+            <span className="text-xs font-light tracking-widest uppercase">
+              {format(eventDate, 'h:mm a')}
+            </span>
+          </div>
+          <div className="flex items-center justify-center gap-4 text-gray-400 px-4">
+            <MapPin size={16} className="text-[#D4AF37] shrink-0" />
+            <span className="text-xs font-light tracking-widest uppercase line-clamp-2">
+              {event.venue}
+            </span>
           </div>
         </div>
 
-        <div className="pt-6">
-          <div className="inline-block p-5 bg-white rounded-[3rem] shadow-2xl border border-gray-100">
-            <QRCodeSVG 
-              value={eventUrl} 
-              size={140} 
-              level="H" 
-              includeMargin={true}
-              bgColor="#ffffff"
-              fgColor="#000000"
+        <div className="mt-auto pt-8 border-t border-white/5 w-full flex flex-col items-center">
+          <div className="bg-white p-3 rounded-xl mb-4 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+            <QRCodeCanvas 
+              value={eventUrl}
+              size={140}
+              level="H"
+              includeMargin={false}
+              imageSettings={{
+                src: "/favicon.svg",
+                x: undefined,
+                y: undefined,
+                height: 24,
+                width: 24,
+                excavate: true,
+              }}
             />
           </div>
-          <p className={`mt-8 text-[8px] font-bold uppercase tracking-[0.5em] ${style.accent} opacity-60`}>Scan to RSVP</p>
-        </div>
-
-        <div className="pt-10 border-t border-white/5">
-          <p className="text-[9px] font-black uppercase tracking-[0.6em] opacity-20">EventHub Nigeria</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">
+            Scan to RSVP & Access Event Details
+          </p>
         </div>
       </div>
+
+      {/* Background Texture */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
     </div>
   );
 });
 
-DigitalInvite.displayName = "DigitalInvite";
+DigitalInvite.displayName = 'DigitalInvite';
 
 export default DigitalInvite;

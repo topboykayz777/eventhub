@@ -40,14 +40,23 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
     setIsDownloading(true);
     
     try {
+      // Small delay to ensure all sub-components (like QR canvas) are fully painted
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const canvas = await html2canvas(inviteRef.current, {
-        backgroundColor: null,
-        scale: 2,
+        backgroundColor: '#0a0a0a',
+        scale: 3, // Higher scale for better print quality
         useCORS: true,
+        allowTaint: true,
         logging: false,
+        onclone: (clonedDoc) => {
+          // Ensure the cloned element is visible for capture
+          const el = clonedDoc.querySelector('[ref]') as HTMLElement;
+          if (el) el.style.display = 'block';
+        }
       });
       
-      const image = canvas.toDataURL("image/png");
+      const image = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement('a');
       link.href = image;
       link.download = `${event.event_name.replace(/\s+/g, '_')}_Invitation.png`;
@@ -86,7 +95,7 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
               <button 
                 onClick={handleDownloadInvite}
                 disabled={isDownloading}
-                className="flex-1 py-4 bg-[#D4AF37] hover:bg-[#B8860B] text-black [10px] font-bold uppercase tracking-widest transition-all rounded-xl flex items-center justify-center gap-2"
+                className="flex-1 py-4 bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[10px] font-bold uppercase tracking-widest transition-all rounded-xl flex items-center justify-center gap-2"
               >
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={14} />}
                 {isDownloading ? 'Generating...' : 'Download IV'}
