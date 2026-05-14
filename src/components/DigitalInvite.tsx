@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 interface DigitalInviteProps {
   event: any;
@@ -72,7 +72,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
 
         <div className="pt-6">
           <div className="inline-block p-5 bg-white rounded-[3rem] shadow-2xl border border-gray-100">
-            <QRCodeSVG 
+            <QRCodeCanvas 
               value={eventUrl} 
               size={140} 
               level="H" 
