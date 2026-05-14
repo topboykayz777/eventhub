@@ -7,15 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GlassCard from '@/components/ui/GlassCard';
-import { Search, MapPin, Star, ArrowRight, Briefcase, ShieldCheck, Award, CheckCircle2, Loader2, Sparkles, X, Mail, Clock } from 'lucide-react';
+import { Search, MapPin, Star, ArrowLeft, Briefcase, ShieldCheck, Award, CheckCircle2, Loader2, Sparkles, X, Mail, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { showSuccess, showError } from '@/utils/toast';
+import { useNavigate } from 'react-router-dom';
 
 const categories = ["Catering", "Decor", "Photography", "Music", "Venues", "Planning"];
 const SUPPORT_EMAILS = "Topboykayz@gmail.com, Kaelfelix0120@gmail.com, Kaelfelix0121@gmail.com";
 
 const VendorDirectory = () => {
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,12 @@ const VendorDirectory = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.category) {
+      showError("Please select a category.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -39,7 +46,11 @@ const VendorDirectory = () => {
       }
 
       const { error } = await supabase.from('vendors').insert({
-        ...formData,
+        name: formData.name,
+        category: formData.category,
+        location: formData.location,
+        phone: formData.phone,
+        instagram: formData.instagram,
         user_id: user.id,
         is_featured: false
       });
@@ -69,37 +80,49 @@ const VendorDirectory = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 grayscale" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
 
-        <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-8">
-              <Clock className="text-[#D4AF37] w-4 h-4" />
-              <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.3em] uppercase">Launching Q3 2026</span>
-            </div>
-            <h1 className="text-5xl md:text-8xl font-serif italic mb-10 leading-tight">
-              The Vendor <span className="text-[#D4AF37]">Atelier</span>
-            </h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-16">
-              We are curating Nigeria's most prestigious directory of vetted event professionals. 
-              Apply now to secure your place in the elite network before our public launch.
-            </p>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="mb-12 text-left">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              className="text-gray-400 hover:text-[#D4AF37] p-0 flex items-center gap-2 transition-colors"
+            >
+              <ArrowLeft size={16} /> <span className="text-[10px] font-bold uppercase tracking-widest">Back to Portal</span>
+            </Button>
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-              <Button 
-                onClick={() => setIsRegistering(true)}
-                className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500"
-              >
-                Apply for Membership
-              </Button>
-              <div className="flex items-center gap-4 text-gray-500">
-                <ShieldCheck className="text-[#D4AF37] w-5 h-5" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Vetted Professionals Only</span>
+          <div className="text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-8">
+                <Clock className="text-[#D4AF37] w-4 h-4" />
+                <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.3em] uppercase">Launching Q3 2026</span>
               </div>
-            </div>
-          </motion.div>
+              <h1 className="text-5xl md:text-8xl font-serif italic mb-10 leading-tight">
+                The Vendor <span className="text-[#D4AF37]">Atelier</span>
+              </h1>
+              <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-16">
+                We are curating Nigeria's most prestigious directory of vetted event professionals. 
+                Apply now to secure your place in the elite network before our public launch.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+                <Button 
+                  onClick={() => setIsRegistering(true)}
+                  className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500"
+                >
+                  Apply for Membership
+                </Button>
+                <div className="flex items-center gap-4 text-gray-500">
+                  <ShieldCheck className="text-[#D4AF37] w-5 h-5" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Vetted Professionals Only</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -192,7 +215,7 @@ const VendorDirectory = () => {
             >
               <button 
                 onClick={() => { setIsRegistering(false); setIsSuccess(false); }}
-                className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+                className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors z-[110]"
               >
                 <X size={24} />
               </button>
@@ -228,7 +251,7 @@ const VendorDirectory = () => {
                     <h2 className="text-3xl font-serif italic">Brand Registration</h2>
                   </div>
 
-                  <form onSubmit={handleRegister} className="space-y-8">
+                  <form onSubmit={handleRegister} className="space-y-8 relative z-[105]">
                     <div className="grid md:grid-cols-2 gap-8">
                       <div className="space-y-3">
                         <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Brand Name</Label>
@@ -245,7 +268,7 @@ const VendorDirectory = () => {
                           <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                          <SelectContent className="bg-[#1a1a1a] border-white/10 text-white z-[150]">
                             {categories.map(cat => (
                               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                             ))}
