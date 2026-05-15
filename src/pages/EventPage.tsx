@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Loader2, Lock, ArrowLeft, PartyPopper, Search, Coins, Ticket } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { usePaystackPayment } from 'react-paystack';
 
 import EventHero from '@/components/event/EventHero';
 import EventDetails from '@/components/event/EventDetails';
@@ -19,13 +18,13 @@ import { Input } from '@/components/ui/input';
 
 const EventPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false, plusOneName: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
   const [tableMates, setTableMates] = useState<any[]>([]);
-  const [giftAmount, setGiftAmount] = useState('');
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [searchPhone, setSearchPhone] = useState('');
@@ -124,28 +123,6 @@ const EventPage = () => {
     }
   };
 
-  const handleGiftSuccess = () => {
-    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff'] });
-    showSuccess(`Thank you for spraying! The host has been notified.`);
-    setGiftAmount('');
-  };
-
-  const paystackConfig = {
-    reference: (new Date()).getTime().toString(),
-    email: submittedRsvp?.guest_phone ? `${submittedRsvp.guest_phone}@eventhub.ng` : "guest@eventhub.ng",
-    amount: parseInt(giftAmount) * 100,
-    publicKey: 'pk_live_b34e33d09dceeebd5dfa469b9139257b308a2c9d',
-    metadata: {
-      custom_fields: [
-        { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
-        { display_name: "Payment Type", variable_name: "payment_type", value: "gift" },
-        { display_name: "Guest Name", variable_name: "guest_name", value: submittedRsvp?.guest_name || "Anonymous" }
-      ]
-    }
-  };
-
-  const initializeGiftPayment = usePaystackPayment(paystackConfig);
-
   if (loading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
@@ -212,15 +189,9 @@ const EventPage = () => {
                 event={event}
                 submittedRsvp={submittedRsvp}
                 tableMates={tableMates}
-                giftAmount={giftAmount}
-                setGiftAmount={setGiftAmount}
-                onSpray={() => {
-                  if (!giftAmount || parseInt(giftAmount) < 100) {
-                    showError("Minimum spray is ₦100");
-                    return;
-                  }
-                  initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
-                }}
+                giftAmount="" // Not used anymore
+                setGiftAmount={() => {}} // Not used anymore
+                onSpray={() => navigate(`/spray/${event.slug}`)}
                 isFinished={isFinished}
                 config={config}
               />
@@ -258,31 +229,15 @@ const EventPage = () => {
                   </div>
                 </div>
 
-                <div className={`${config.card} p-10 md:p-12 rounded-[3rem] border`}>
-                  <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4">
+                <div className={`${config.card} p-10 md:p-12 rounded-[3rem] border text-center`}>
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center justify-center gap-4">
                     <Coins className="w-4 h-4" /> Digital Spraying
                   </h2>
                   <div className="space-y-6">
                     <p className="text-xs text-gray-400 leading-relaxed">You can still honor the host with a digital spray even if you aren't on the guest list.</p>
-                    <div className="relative">
-                      <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-xl">₦</span>
-                      <Input 
-                        type="number" 
-                        placeholder="Amount" 
-                        className="h-16 pl-12 bg-black/5 border-none rounded-none text-2xl font-light" 
-                        value={giftAmount} 
-                        onChange={(e) => setGiftAmount(e.target.value)} 
-                      />
-                    </div>
                     <Button 
-                      onClick={() => {
-                        if (!giftAmount || parseInt(giftAmount) < 100) {
-                          showError("Minimum spray is ₦100");
-                          return;
-                        }
-                        initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
-                      }} 
-                      className={`w-full h-16 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
+                      onClick={() => navigate(`/spray/${event.slug}`)} 
+                      className={`w-full h-20 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
                     >
                       Spray the Host
                     </Button>

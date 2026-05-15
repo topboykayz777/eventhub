@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Users, CheckCircle2, Coins, PartyPopper, Share2, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import GlassCard from '@/components/ui/GlassCard';
 import DigitalPass from '@/components/DigitalPass';
 
@@ -12,8 +11,8 @@ interface GuestPortalProps {
   event: any;
   submittedRsvp: any;
   tableMates: any[];
-  giftAmount: string;
-  setGiftAmount: (val: string) => void;
+  giftAmount: string; // Kept for prop compatibility but unused
+  setGiftAmount: (val: string) => void; // Kept for prop compatibility but unused
   onSpray: () => void;
   isFinished: boolean;
   config: any;
@@ -23,8 +22,6 @@ const GuestPortal = ({
   event, 
   submittedRsvp, 
   tableMates, 
-  giftAmount, 
-  setGiftAmount, 
   onSpray, 
   isFinished, 
   config 
@@ -132,24 +129,15 @@ const GuestPortal = ({
         </GlassCard>
       )}
 
-      <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border`}>
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4">
+      <GlassCard className={`${config.card} p-10 rounded-[2.5rem] border text-center`}>
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center justify-center gap-4">
           <Coins className="w-4 h-4" /> Digital Spraying
         </h2>
         <div className="space-y-6">
-          <div className="relative">
-            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-xl">₦</span>
-            <Input 
-              type="number" 
-              placeholder="Amount" 
-              className="h-16 pl-12 bg-white/5 border-white/10 rounded-none text-2xl font-light" 
-              value={giftAmount} 
-              onChange={(e) => setGiftAmount(e.target.value)} 
-            />
-          </div>
+          <p className="text-xs text-gray-400 leading-relaxed">Honor the host with a direct digital spray.</p>
           <Button 
             onClick={onSpray} 
-            className={`w-full h-16 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
+            className={`w-full h-20 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
           >
             Spray the Host
           </Button>
