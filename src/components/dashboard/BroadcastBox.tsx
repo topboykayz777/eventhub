@@ -48,11 +48,11 @@ const BroadcastBox = ({ eventId, currentMessage }: BroadcastBoxProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-white/[0.03] border-b border-white/10">
-      <div className="flex items-center justify-between">
+    <div className="p-6 border-b border-white/10 bg-white/[0.02]">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <MessageSquare className="text-[#D4AF37] w-3 h-3" />
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Live Broadcast Message</span>
+          <MessageSquare className="text-[#D4AF37] w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Live Broadcast Message</span>
         </div>
         {currentMessage && (
           <button 
@@ -63,10 +63,10 @@ const BroadcastBox = ({ eventId, currentMessage }: BroadcastBoxProps) => {
           </button>
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <Input 
           placeholder="Update message (e.g. 'The Buffet is Open!')" 
-          className="bg-black/40 border-white/5 h-10 rounded-none text-[10px] font-bold uppercase tracking-[0.1em] placeholder:text-gray-600 focus-visible:ring-[#D4AF37]/30"
+          className="bg-black/40 border-white/10 h-12 rounded-none text-[10px] font-bold uppercase tracking-[0.1em] placeholder:text-gray-600 focus-visible:ring-[#D4AF37]/30"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleUpdateMessage()}
@@ -74,7 +74,7 @@ const BroadcastBox = ({ eventId, currentMessage }: BroadcastBoxProps) => {
         <Button 
           onClick={handleUpdateMessage}
           disabled={loading || !message.trim()}
-          className="h-10 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-4"
+          className="h-12 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-6"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </Button>
