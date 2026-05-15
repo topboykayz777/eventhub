@@ -15,23 +15,23 @@ const VibeStats = ({ stats, config }: VibeStatsProps) => {
   const isDark = config.dark !== false;
 
   return (
-    <div className="flex gap-20">
+    <div className="grid grid-cols-2 gap-4">
       <motion.div 
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="text-right"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`p-4 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-black/5'}`}
       >
-        <p className={`text-sm font-bold uppercase tracking-[0.4em] opacity-40 mb-2 ${isDark ? 'text-white' : 'text-black'}`}>Verified Guests</p>
-        <p className="text-5xl lg:text-7xl font-serif italic">{stats.checkedIn}</p>
+        <p className={`text-[7px] font-black uppercase tracking-widest opacity-40 mb-1 ${isDark ? 'text-white' : 'text-black'}`}>Guests</p>
+        <p className="text-2xl font-serif italic">{stats.checkedIn}</p>
       </motion.div>
       <motion.div 
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-right"
+        className={`p-4 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-black/5'}`}
       >
-        <p className={`text-sm font-bold uppercase tracking-[0.4em] opacity-40 mb-2 ${isDark ? 'text-white' : 'text-black'}`}>Digital Sprays</p>
-        <p className={`${config.accent} text-5xl lg:text-7xl font-serif italic`}>₦{stats.totalSprayed.toLocaleString()}</p>
+        <p className={`text-[7px] font-black uppercase tracking-widest opacity-40 mb-1 ${isDark ? 'text-white' : 'text-black'}`}>Sprays</p>
+        <p className={`${config.accent} text-2xl font-serif italic`}>₦{stats.totalSprayed.toLocaleString()}</p>
       </motion.div>
     </div>
   );

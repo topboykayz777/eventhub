@@ -93,8 +93,8 @@ const VibeScreen = () => {
         const started = new Date() >= new Date(eventData.event_date);
         setIsLive(started && !eventData.is_finished);
 
-        const { data: rsvps } = await supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id);
-        const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income');
+        const { data: rsvps } = await supabase.from('rsvps').select('checked_in, guest_name').eq('event_id', eventData.id);
+        const { data: budget } = await supabase.from('budget_items').select('amount, description').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income');
         
         setStats({
           checkedIn: rsvps?.filter(r => r.checked_in).length || 0,
@@ -142,66 +142,61 @@ const VibeScreen = () => {
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
       <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
       
-      {/* Cinematic Scrims for Visibility */}
-      <div className="absolute inset-0 z-[5] pointer-events-none">
-        <div className={`absolute top-0 left-0 right-0 h-64 bg-gradient-to-b ${isDark ? 'from-black/80' : 'from-white/60'} to-transparent`} />
-        <div className={`absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t ${isDark ? 'from-black/80' : 'from-white/60'} to-transparent`} />
-      </div>
-
       <VibeHeroNotification event={activeNotification} />
 
       <div className="relative z-10 flex h-screen">
-        {/* Left Section: Pure Memory Wall (70%) */}
-        <div className="flex-1" />
+        {/* Left Section: Memory Wall (75%) */}
+        <div className="w-3/4" />
 
-        {/* Right Section: Live Sidebar (30%) */}
-        <div className={`w-[480px] ${config.glass} backdrop-blur-3xl border-l ${config.border} p-10 flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
-          {/* Sidebar Header: Event Identity */}
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-4">
-              <Sparkles className={config.accent} size={18} />
-              <span className={`${config.accent} text-[10px] font-black tracking-[0.5em] uppercase block`}>Live Celebration Feed</span>
+        {/* Right Section: Sidebar (25%) */}
+        <div className={`w-1/4 ${config.glass} backdrop-blur-3xl border-l ${config.border} flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
+          
+          {/* Top 25%: Details & Branding */}
+          <div className="h-1/4 p-8 flex flex-col justify-between border-b border-white/5">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className={config.accent} size={14} />
+                  <span className={`${config.accent} text-[8px] font-black tracking-[0.4em] uppercase`}>Live Feed</span>
+                </div>
+                <div className={`w-8 h-8 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45 shrink-0`}>
+                  <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-sm -rotate-45`}>E</span>
+                </div>
+              </div>
+              <h1 className="text-2xl lg:text-3xl font-serif italic leading-tight line-clamp-2">{event.event_name}</h1>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-serif italic leading-tight mb-6 drop-shadow-xl">{event.event_name}</h1>
-            <div className={`h-1 w-32 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
-          </div>
 
-          {/* Sidebar Stats */}
-          <div className="mb-10">
             <VibeStats stats={stats} config={config} />
           </div>
 
-          {/* Sidebar Activity Stream (Flexible) */}
-          <div className="flex-1 min-h-0 mb-10">
-            <VibeSidebar activities={activities} config={config} />
-          </div>
-
-          {/* Sidebar Footer: Host Message & Branding */}
-          <div className="space-y-8 pt-8 border-t border-white/10">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Heart className={config.accent} size={16} />
-                <span className="text-[8px] font-black uppercase tracking-widest opacity-50">The Host's Message</span>
-              </div>
-              <p className="text-xl font-light leading-relaxed italic opacity-90">"{event.message || 'Thank you for being part of our special day.'}"</p>
+          {/* Bottom 75%: Live Activity & Footer */}
+          <div className="h-3/4 flex flex-col">
+            <div className="flex-1 p-8 min-h-0">
+              <VibeSidebar activities={activities} config={config} />
             </div>
 
-            <div className="flex items-center gap-6 pt-4">
-              <div className={`w-12 h-12 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45 shrink-0`}>
-                <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-xl -rotate-45`}>E</span>
+            {/* Footer Info (Inside the 75% section but at the bottom) */}
+            <div className="p-8 pt-0 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 opacity-40">
+                  <Heart size={12} />
+                  <span className="text-[7px] font-black uppercase tracking-widest">Host's Message</span>
+                </div>
+                <p className="text-sm font-light italic opacity-80 line-clamp-3">"{event.message || 'Thank you for being part of our special day.'}"</p>
               </div>
-              <div className="space-y-0.5">
-                <span className="text-[7px] font-black uppercase tracking-[0.4em] opacity-40 block">Powered by EventHub Nigeria</span>
-                <p className="text-sm font-light tracking-[0.1em] uppercase opacity-80">Orchestration Suite</p>
-              </div>
-            </div>
 
-            <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-              <div className="flex items-center gap-3 mb-1">
-                <Globe size={12} className="opacity-30" />
-                <p className="text-[7px] font-black uppercase tracking-widest opacity-30">Live Portal</p>
+              <div className="space-y-3 pt-4 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-[6px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
+                    <p className="text-[8px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[6px] font-black uppercase tracking-widest opacity-30 mb-0.5">Live Portal</p>
+                    <p className="text-[9px] font-medium tracking-widest opacity-60">eventhub.ng/event/{event.slug}</p>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm font-medium tracking-widest truncate">eventhub.ng/event/{event.slug}</p>
             </div>
           </div>
         </div>
