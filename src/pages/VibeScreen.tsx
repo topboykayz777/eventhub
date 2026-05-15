@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Heart, Sparkles } from 'lucide-react';
+import { Lock, Heart, Sparkles, Globe } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 
@@ -53,8 +53,6 @@ const VibeScreen = () => {
     const next = notificationQueue.current.shift()!;
     
     setActiveNotification(next);
-    
-    // Add to persistent sidebar list
     setActivities(prev => [next, ...prev].slice(0, 10));
 
     if (next.type === 'spray') {
@@ -153,40 +151,58 @@ const VibeScreen = () => {
       <VibeHeroNotification event={activeNotification} />
 
       <div className="relative z-10 flex h-screen">
-        {/* Left Section: Main Content (70%) */}
-        <div className="flex-1 flex flex-col p-12 lg:p-24">
-          <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-            <div className="flex items-center gap-4 mb-6">
-              <Sparkles className={config.accent} size={24} />
-              <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase block`}>Live Celebration Feed</span>
-            </div>
-            <h1 className="text-7xl lg:text-[8rem] font-serif italic leading-none mb-8 drop-shadow-2xl">{event.event_name}</h1>
-            <div className={`h-1.5 w-96 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
-          </motion.div>
-
-          <div className="mt-auto flex justify-between items-end">
-            <div className="flex items-center gap-8">
-              <div className={`w-16 h-16 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45`}><span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-2xl -rotate-45`}>E</span></div>
-              <div className="space-y-1"><span className="text-xs font-bold uppercase tracking-[0.6em] opacity-40 block">Powered by EventHub Nigeria</span><p className="text-2xl font-light tracking-[0.2em] uppercase opacity-80">Orchestration Suite</p></div>
-            </div>
-            
-            <div className="text-right space-y-4">
-              <div className={`${config.glass} backdrop-blur-xl p-8 rounded-[3rem] border ${config.border} max-w-xl inline-block text-left shadow-2xl`}>
-                <div className="flex items-center gap-4 mb-4"><Heart className={config.accent} size={24} /><span className="text-[10px] font-black uppercase tracking-widest opacity-50">The Host's Message</span></div>
-                <p className="text-2xl font-light leading-relaxed italic opacity-90">"{event.message || 'Thank you for being part of our special day.'}"</p>
-              </div>
-              <div className="pt-4"><p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-1">Live Portal</p><p className="text-2xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p></div>
-            </div>
-          </div>
-        </div>
+        {/* Left Section: Pure Memory Wall (70%) */}
+        <div className="flex-1" />
 
         {/* Right Section: Live Sidebar (30%) */}
-        <div className={`w-[450px] ${config.glass} backdrop-blur-3xl border-l ${config.border} p-12 flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
-          <div className="mb-12">
+        <div className={`w-[480px] ${config.glass} backdrop-blur-3xl border-l ${config.border} p-10 flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
+          {/* Sidebar Header: Event Identity */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <Sparkles className={config.accent} size={18} />
+              <span className={`${config.accent} text-[10px] font-black tracking-[0.5em] uppercase block`}>Live Celebration Feed</span>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-serif italic leading-tight mb-6 drop-shadow-xl">{event.event_name}</h1>
+            <div className={`h-1 w-32 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
+          </div>
+
+          {/* Sidebar Stats */}
+          <div className="mb-10">
             <VibeStats stats={stats} config={config} />
           </div>
-          <div className="flex-1">
+
+          {/* Sidebar Activity Stream (Flexible) */}
+          <div className="flex-1 min-h-0 mb-10">
             <VibeSidebar activities={activities} config={config} />
+          </div>
+
+          {/* Sidebar Footer: Host Message & Branding */}
+          <div className="space-y-8 pt-8 border-t border-white/10">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Heart className={config.accent} size={16} />
+                <span className="text-[8px] font-black uppercase tracking-widest opacity-50">The Host's Message</span>
+              </div>
+              <p className="text-xl font-light leading-relaxed italic opacity-90">"{event.message || 'Thank you for being part of our special day.'}"</p>
+            </div>
+
+            <div className="flex items-center gap-6 pt-4">
+              <div className={`w-12 h-12 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45 shrink-0`}>
+                <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-xl -rotate-45`}>E</span>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[7px] font-black uppercase tracking-[0.4em] opacity-40 block">Powered by EventHub Nigeria</span>
+                <p className="text-sm font-light tracking-[0.1em] uppercase opacity-80">Orchestration Suite</p>
+              </div>
+            </div>
+
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-3 mb-1">
+                <Globe size={12} className="opacity-30" />
+                <p className="text-[7px] font-black uppercase tracking-widest opacity-30">Live Portal</p>
+              </div>
+              <p className="text-sm font-medium tracking-widest truncate">eventhub.ng/event/{event.slug}</p>
+            </div>
           </div>
         </div>
       </div>
