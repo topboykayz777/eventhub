@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { Coins, Loader2, ShieldCheck, Heart, ArrowLeft } from 'lucide-react';
+import { Coins, Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
 import confetti from 'canvas-confetti';
 
@@ -18,9 +18,10 @@ const SprayPage = () => {
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState('');
   const [guestName, setGuestName] = useState('');
+  const [subaccount, setSubaccount] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchEventAndConfig = async () => {
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -33,9 +34,23 @@ const SprayPage = () => {
         return;
       }
       setEvent(data);
+
+      // Fetch routing config (subaccount)
+      try {
+        const response = await fetch('https://vilknsbrvakthefsgfwg.supabase.co/functions/v1/event-security', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get-spray-config', payload: { eventId: data.id } })
+        });
+        const config = await response.json();
+        if (config.subaccount) setSubaccount(config.subaccount);
+      } catch (err) {
+        console.error("Config Error:", err);
+      }
+
       setLoading(false);
     };
-    fetchEvent();
+    fetchEventAndConfig();
   }, [slug, navigate]);
 
   const config = {
@@ -43,6 +58,7 @@ const SprayPage = () => {
     email: "guest@eventhub.ng",
     amount: parseInt(amount) * 100,
     publicKey: 'pk_live_b34e33d09dceeebd5dfa469b9139257b308a2c9d',
+    subaccount: subaccount || undefined, // This routes money to the host!
     metadata: {
       custom_fields: [
         { display_name: "Event ID", variable_name: "event_id", value: event?.id || "" },
@@ -75,6 +91,12 @@ const SprayPage = () => {
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 space-y-8">
+          {!subaccount && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-center">
+              <p className="text-[10px] text-amber-200 uppercase tracking-widest">Host has not set up settlement details. Funds will be held by the platform.</p>
+            </div>
+          )}
+
           <div className="space-y-3">
             <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Your Name (Optional)</Label>
             <Input 

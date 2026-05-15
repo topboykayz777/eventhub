@@ -7,28 +7,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Helper to verify Paystack signature using native Deno crypto
 async function verifySignature(body: string, signature: string, secret: string) {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(secret);
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-512" },
-    false,
-    ["sign"]
-  );
+  const key = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-512" }, false, ["sign"]);
   const bodyData = encoder.encode(body);
   const signatureBuffer = await crypto.subtle.sign("HMAC", key, bodyData);
   const hashArray = Array.from(new Uint8Array(signatureBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex === signature;
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('') === signature;
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -38,78 +28,47 @@ serve(async (req) => {
 
     const signature = req.headers.get('x-paystack-signature');
     const bodyText = await req.text();
-    
-    console.log("[paystack-webhook] Received event. Verifying signature...");
-
     const isValid = await verifySignature(bodyText, signature || '', paystackSecret);
 
     if (!isValid) {
-      console.error("[paystack-webhook] Signature mismatch. Check your PAYSTACK_SECRET_KEY.");
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+      console.error("[paystack-webhook] Invalid Signature");
+      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
     }
 
     const body = JSON.parse(bodyText);
-    console.log("[paystack-webhook] Event Type:", body.event);
+    console.log(`[paystack-webhook] Event: ${body.event}`);
 
     if (body.event === 'charge.success') {
       const data = body.data;
-      let metadata = data.metadata || {};
+      const metadata = data.metadata || {};
       
-      // Paystack often wraps metadata in custom_fields
-      if (metadata.custom_fields && Array.isArray(metadata.custom_fields)) {
-        metadata.custom_fields.forEach(field => {
-          metadata[field.variable_name] = field.value;
-        });
-      }
+      // Extract metadata from custom_fields if needed
+      const getMeta = (key) => metadata[key] || metadata.custom_fields?.find(f => f.variable_name === key)?.value;
 
-      const event_id = metadata.event_id;
-      const payment_type = metadata.payment_type;
-      const guest_name = metadata.guest_name;
-      const plan = metadata.plan;
+      const event_id = getMeta('event_id');
+      const payment_type = getMeta('payment_type');
+      const guest_name = getMeta('guest_name');
+      const plan = getMeta('plan');
       const amount = data.amount / 100;
 
-      console.log("[paystack-webhook] Metadata Extracted:", { event_id, payment_type, amount });
-
       if (payment_type === 'gift' && event_id) {
-        console.log(`[paystack-webhook] Recording Digital Spray: ₦${amount} for event ${event_id}`);
-        
-        // Insert into budget_items
-        const { error: insertError } = await supabase.from('budget_items').insert({
+        console.log(`[paystack-webhook] Recording Spray: ₦${amount} for ${event_id}`);
+        const { error } = await supabase.from('budget_items').insert({
           event_id,
           description: `Digital Spray from ${guest_name || 'Anonymous Guest'}`,
           amount,
           type: 'income'
         });
-
-        if (insertError) {
-          console.error("[paystack-webhook] Database Insert Error:", insertError);
-          throw insertError;
-        }
-        
-        console.log("[paystack-webhook] Digital Spray recorded successfully.");
+        if (error) console.error("[paystack-webhook] Ledger Error:", error);
       } else if (event_id) {
-        console.log(`[paystack-webhook] Activating event: ${event_id} with plan ${plan}`);
-        const { error: updateError } = await supabase.from('events').update({ 
-          is_paid: true, 
-          plan: plan || 'Basic' 
-        }).eq('id', event_id);
-        
-        if (updateError) {
-          console.error("[paystack-webhook] Event Update Error:", updateError);
-          throw updateError;
-        }
+        console.log(`[paystack-webhook] Activating Event: ${event_id}`);
+        await supabase.from('events').update({ is_paid: true, plan: plan || 'Basic' }).eq('id', event_id);
       }
     }
 
-    return new Response(JSON.stringify({ status: 'success' }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200 
-    });
+    return new Response(JSON.stringify({ status: 'success' }), { headers: corsHeaders, status: 200 });
   } catch (error) {
-    console.error("[paystack-webhook] CRITICAL ERROR:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400 
-    });
+    console.error("[paystack-webhook] Critical Error:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 400 });
   }
 })
