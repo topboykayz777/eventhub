@@ -47,22 +47,15 @@ const VibeScreen = () => {
 
   const processQueue = useCallback(async () => {
     if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
-    
     isProcessingQueue.current = true;
     const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
-
     if (next.type === 'spray') {
-      confetti({ 
-        particleCount: 200, spread: 90, origin: { y: 0.6 }, 
-        colors: ['#D4AF37', '#ffffff', '#F9E4B7'], zIndex: 200 
-      });
+      confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff', '#F9E4B7'], zIndex: 200 });
     }
-
     await new Promise(resolve => setTimeout(resolve, 6000));
     setActiveNotification(null);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
     isProcessingQueue.current = false;
     processQueue();
   }, []);
@@ -83,7 +76,7 @@ const VibeScreen = () => {
         setIsLive(started && !eventData.is_finished);
 
         const { data: rsvps } = await supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id);
-        const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('type', 'income');
+        const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income');
         
         setStats({
           checkedIn: rsvps?.filter(r => r.checked_in).length || 0,
@@ -92,8 +85,9 @@ const VibeScreen = () => {
 
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
-            if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+            // ONLY trigger if status changed from pending to approved
+            if (payload.new.status === 'approved' && payload.old.status === 'pending') {
               const guestName = payload.new.description.replace('Digital Spray from ', '');
               addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: `${guestName} honored the host`, amount: payload.new.amount });
               setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
@@ -120,33 +114,9 @@ const VibeScreen = () => {
     fetchInitial();
   }, [slug, addToQueue]);
 
-  if (!event || isLive === null) return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-8" />
-        <p className="text-[#D4AF37] font-serif italic text-3xl tracking-widest animate-pulse">Initializing Vibe...</p>
-      </div>
-    </div>
-  );
+  if (!event || isLive === null) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>;
 
-  if (!isLive) {
-    return (
-      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
-        <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-12 border border-white/10">
-          <Lock className="text-[#D4AF37] w-10 h-10" />
-        </div>
-        <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen <span className="text-[#D4AF37]">Inactive</span></h1>
-        <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-12">
-          {new Date() < new Date(event.event_date) 
-            ? `This broadcast will activate once the celebration commences.`
-            : "This celebration has concluded and the live broadcast is now archived."}
-        </p>
-        <Button onClick={() => navigate('/')} variant="outline" className="border-white/10 text-white rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-[0.3em]">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Return to Portal
-        </Button>
-      </div>
-    );
-  }
+  if (!isLive) return <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center"><Lock className="text-[#D4AF37] w-10 h-10 mb-12" /><h1 className="text-5xl font-serif italic mb-6">Vibe Screen Inactive</h1><Button onClick={() => navigate('/')} variant="outline">Return to Portal</Button></div>;
 
   const config = themeConfigs[event.theme || 'modern'];
   const isDark = config.dark !== false;
@@ -154,55 +124,27 @@ const VibeScreen = () => {
   return (
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
       <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
-      
       <VibeHeroNotification event={activeNotification} />
-
       <div className="relative z-10 flex flex-col h-screen p-12 lg:p-24">
         <div className="flex justify-between items-start">
-          <motion.div 
-            initial={{ opacity: 0, y: -50 }} 
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
-            <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase mb-6 block`}>
-              Live Celebration Feed
-            </span>
-            <h1 className="text-7xl lg:text-[10rem] font-serif italic leading-none mb-8">
-              {event.event_name}
-            </h1>
+          <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
+            <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase mb-6 block`}>Live Celebration Feed</span>
+            <h1 className="text-7xl lg:text-[10rem] font-serif italic leading-none mb-8">{event.event_name}</h1>
             <div className={`h-1.5 w-96 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
           </motion.div>
-
           <VibeStats stats={stats} config={config} />
         </div>
-
         <div className="mt-auto flex justify-between items-end">
           <div className="flex items-center gap-8">
-            <div className={`w-16 h-16 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45`}>
-              <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-2xl -rotate-45`}>E</span>
-            </div>
-            <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-[0.6em] opacity-40 block">
-                Powered by EventHub Nigeria
-              </span>
-              <p className="text-2xl font-light tracking-[0.2em] uppercase opacity-80">Orchestration Suite</p>
-            </div>
+            <div className={`w-16 h-16 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45`}><span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-2xl -rotate-45`}>E</span></div>
+            <div className="space-y-1"><span className="text-xs font-bold uppercase tracking-[0.6em] opacity-40 block">Powered by EventHub Nigeria</span><p className="text-2xl font-light tracking-[0.2em] uppercase opacity-80">Orchestration Suite</p></div>
           </div>
-
           <div className="text-right space-y-4">
             <div className={`${config.glass} backdrop-blur-xl p-8 rounded-[3rem] border ${config.border} max-w-xl inline-block text-left`}>
-              <div className="flex items-center gap-4 mb-4">
-                <Heart className={config.accent} size={24} />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-50">The Host's Message</span>
-              </div>
-              <p className="text-2xl font-light leading-relaxed italic opacity-90">
-                "{event.message || 'Thank you for being part of our special day.'}"
-              </p>
+              <div className="flex items-center gap-4 mb-4"><Heart className={config.accent} size={24} /><span className="text-[10px] font-black uppercase tracking-widest opacity-50">The Host's Message</span></div>
+              <p className="text-2xl font-light leading-relaxed italic opacity-90">"{event.message || 'Thank you for being part of our special day.'}"</p>
             </div>
-            <div className="pt-4">
-              <p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-1">Live Portal</p>
-              <p className="text-2xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p>
-            </div>
+            <div className="pt-4"><p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-1">Live Portal</p><p className="text-2xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p></div>
           </div>
         </div>
       </div>
