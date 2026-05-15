@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, ArrowLeft, PartyPopper } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { usePaystackPayment } from 'react-paystack';
 
@@ -14,6 +14,7 @@ import EventGallery from '@/components/event/EventGallery';
 import RSVPRegistry from '@/components/event/RSVPRegistry';
 import GuestPortal from '@/components/event/GuestPortal';
 import MediaLightbox from '@/components/MediaLightbox';
+import { Button } from '@/components/ui/button';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -138,6 +139,10 @@ const EventPage = () => {
   );
 
   const isFinished = event.is_finished;
+  const isStarted = new Date() >= new Date(event.event_date);
+  const isUpcoming = !isStarted && !isFinished;
+  const isOngoing = isStarted && !isFinished;
+
   const theme = event.theme || 'modern';
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#0a0a1a]", text: "text-white", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-white/10 backdrop-blur-xl", rsvpCard: "bg-white text-black" },
@@ -196,7 +201,7 @@ const EventPage = () => {
                 isFinished={isFinished}
                 config={config}
               />
-            ) : (
+            ) : isUpcoming ? (
               <RSVPRegistry 
                 rsvpData={rsvpData}
                 setRsvpData={setRsvpData}
@@ -204,6 +209,27 @@ const EventPage = () => {
                 onSubmit={handleRSVP}
                 config={config}
               />
+            ) : (
+              <div className={`${config.card} p-12 md:p-16 rounded-[3.5rem] border text-center space-y-8`}>
+                <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto">
+                  {isFinished ? <PartyPopper className="text-[#D4AF37] w-10 h-10" /> : <Lock className="text-[#D4AF37] w-10 h-10" />}
+                </div>
+                <div>
+                  <h2 className="text-3xl font-serif italic mb-4">
+                    {isFinished ? "Celebration Concluded" : "Registration Closed"}
+                  </h2>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {isFinished 
+                      ? "This event has successfully concluded. The host thanks you for your support and well wishes."
+                      : "The celebration has already commenced and new RSVPs are no longer being accepted. We look forward to seeing you at the next one!"}
+                  </p>
+                </div>
+                <Link to="/">
+                  <Button variant="outline" className="w-full border-white/10 text-white rounded-none py-8 text-[10px] font-bold uppercase tracking-widest">
+                    Return to Portal
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

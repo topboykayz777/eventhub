@@ -16,6 +16,9 @@ const EventHero = ({ event, isFinished, config }: EventHeroProps) => {
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
+  const isStarted = new Date() >= new Date(event.event_date);
+  const isOngoing = isStarted && !isFinished;
+
   return (
     <div className="relative h-[50vh] min-h-[400px] md:h-[60vh] md:min-h-[500px] lg:h-[85vh] w-full overflow-hidden">
       <motion.div 
@@ -38,6 +41,16 @@ const EventHero = ({ event, isFinished, config }: EventHeroProps) => {
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-2 block">The Celebration was Successful</span>
             <h1 className="text-3xl md:text-5xl lg:text-7xl font-serif italic mb-4">
               A Legacy of <br /> <span className="text-[#D4AF37]">Excellence</span>
+            </h1>
+          </motion.div>
+        ) : isOngoing ? (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-4 md:mb-8 lg:mb-12 text-center md:text-left">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full mb-6">
+              <div className="w-2 h-2 rounded-full bg-green-50 animate-pulse" />
+              <span className="text-green-50 text-[10px] font-black uppercase tracking-widest">Live Celebration</span>
+            </div>
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-serif italic mb-4">
+              The Art of <br /> <span className="text-[#D4AF37]">Celebration</span>
             </h1>
           </motion.div>
         ) : (
