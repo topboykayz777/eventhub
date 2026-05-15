@@ -1,241 +1,152 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Search, ScanLine, FileDown, CheckCircle2, Circle, Users, CheckSquare, Square, Music, UserPlus, Info, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError } from '@/utils/toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  CheckCircle2, 
+  Circle, 
+  MoreVertical, 
+  User,
+  Phone,
+  Music,
+  Users as UsersIcon
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
+import { showError, showSuccess } from '@/utils/toast';
 
 interface GuestListProps {
-  rsvps: any[];
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  onOpenScanner: () => void;
-  onExportCSV: () => void;
-  onToggleCheckIn: (rsvpId: string, currentStatus: boolean) => void;
-  onUpdate?: () => void;
+  eventId: string;
 }
 
-const GuestList = ({ 
-  rsvps, 
-  searchQuery, 
-  onSearchChange, 
-  onOpenScanner, 
-  onUpdate
-}: GuestListProps) => {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [tableNumber, setTableNumber] = useState('');
-  const [isAssigning, setIsAssigning] = useState(false);
+const GuestList = ({ eventId }: GuestListProps) => {
+  const [guests, setGuests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredRSVPs = rsvps.filter((r: any) => 
-    r.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.guest_phone.includes(searchQuery) ||
-    (r.plus_one_name && r.plus_one_name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
-  const selectAll = () => {
-    if (selectedIds.length === filteredRSVPs.length) setSelectedIds([]);
-    else setSelectedIds(filteredRSVPs.map(r => r.id));
-  };
-
-  const handleBulkSeating = async () => {
-    if (!tableNumber || selectedIds.length === 0) {
-      showError("Please enter a table number and select guests.");
-      return;
+  useEffect(() => {
+    if (eventId) {
+      fetchGuests();
     }
-    setIsAssigning(true);
+  }, [eventId]);
 
+  const fetchGuests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('rsvps')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setGuests(data || []);
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleCheckIn = async (guestId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
         .from('rsvps')
-        .update({ table_number: tableNumber })
-        .in('id', selectedIds);
+        .update({ checked_in: !currentStatus })
+        .eq('id', guestId);
 
       if (error) throw error;
-
-      showSuccess(`Assigned ${selectedIds.length} guests to Table ${tableNumber}`);
-      setSelectedIds([]);
-      setTableNumber('');
-      if (onUpdate) onUpdate();
-    } catch (err: any) {
-      showError(err.message);
-    } finally {
-      setIsAssigning(false);
+      
+      setGuests(guests.map(g => 
+        g.id === guestId ? { ...g, checked_in: !currentStatus } : g
+      ));
+      
+      showSuccess(currentStatus ? "Guest unchecked" : "Guest checked in");
+    } catch (error: any) {
+      showError(error.message);
     }
   };
 
-  const getTableMates = (tableNum: string) => {
-    return rsvps.filter(r => r.table_number === tableNum);
-  };
+  if (loading) {
+    return <div className="p-12 text-center text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Loading guests...</div>;
+  }
 
-  const exportSongRequests = () => {
-    const requests = rsvps.filter(r => r.song_request).map(r => [r.guest_name, r.song_request]);
-    if (requests.length === 0) {
-      showError("No song requests found.");
-      return;
-    }
-    const csvContent = ["Guest,Song Request", ...requests.map(e => e.join(","))].join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", "VibeList_SongRequests.csv");
-    link.click();
-    showSuccess("Vibe List exported for the DJ.");
-  };
-
-  const exportGuestList = () => {
-    if (rsvps.length === 0) {
-      showError("Guest list is empty.");
-      return;
-    }
-    const headers = ["Guest Name", "Phone", "Plus One", "Plus One Name", "Song Request", "Table Number", "Checked In"];
-    const rows = rsvps.map(r => [
-      `"${r.guest_name}"`,
-      `"${r.guest_phone}"`,
-      r.has_plus_one ? "Yes" : "No",
-      `"${r.plus_one_name || ""}"`,
-      `"${r.song_request || ""}"`,
-      r.table_number || "N/A",
-      r.checked_in ? "Yes" : "No"
-    ]);
-    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", "GuestList_Export.csv");
-    link.click();
-    showSuccess("Guest list exported successfully.");
-  };
+  if (guests.length === 0) {
+    return <div className="p-12 text-center text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">No guests found</div>;
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
-          <Input 
-            placeholder="Search the guest list..." 
-            className="pl-16 bg-white/5 border-white/10 h-16 rounded-none text-[10px] font-bold uppercase tracking-[0.2em]"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-4">
-          <Button variant="outline" onClick={onOpenScanner} className="h-16 rounded-none border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] px-8">
-            <ScanLine className="w-4 h-4 mr-2" /> Scan QR
-          </Button>
-          <Button variant="outline" onClick={exportSongRequests} className="h-16 rounded-none border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-[0.2em] px-8">
-            <Music className="w-4 h-4 mr-2" /> Vibe List
-          </Button>
-          <Button variant="outline" onClick={exportGuestList} className="h-16 rounded-none border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] px-8">
-            <FileDown className="w-4 h-4 mr-2" /> Export CSV
-          </Button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {selectedIds.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="bg-[#D4AF37] p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-4">
-              <Users className="text-black w-5 h-5" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-black">{selectedIds.length} Guests Selected</span>
+    <div className="divide-y divide-white/5">
+      {guests.map((guest) => (
+        <div key={guest.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
+          <div className="flex items-center gap-4">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
+              guest.checked_in ? 'bg-green-500/10 border-green-500/20' : 'bg-white/5 border-white/10'
+            }`}>
+              <User className={`w-4 h-4 ${guest.checked_in ? 'text-green-400' : 'text-gray-500'}`} />
             </div>
-            <div className="flex gap-4 w-full md:w-auto">
-              <Input 
-                placeholder="Table #" 
-                className="bg-black/10 border-black/20 h-12 w-24 rounded-none text-black placeholder:text-black/40 text-[10px] font-bold uppercase" 
-                value={tableNumber} 
-                onChange={(e) => setTableNumber(e.target.value)} 
-              />
-              <Button 
-                onClick={handleBulkSeating} 
-                disabled={isAssigning} 
-                className="bg-black text-white hover:bg-black/80 rounded-none h-12 px-8 text-[10px] font-bold uppercase tracking-widest"
-              >
-                {isAssigning ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Assign Seating'}
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="max-h-[500px] overflow-y-auto space-y-4 pr-4 custom-scrollbar">
-        <div className="flex items-center px-8 mb-4">
-          <button onClick={selectAll} className="flex items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
-            {selectedIds.length === filteredRSVPs.length ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-            Select All
-          </button>
-        </div>
-
-        {filteredRSVPs.map((rsvp: any) => (
-          <div key={rsvp.id} className={`flex justify-between items-center p-8 border transition-all group ${selectedIds.includes(rsvp.id) ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30' : 'bg-white/5 border-white/5 hover:border-[#D4AF37]/30'}`}>
-            <div className="flex items-center gap-6">
-              <button onClick={() => toggleSelect(rsvp.id)} className="text-[#D4AF37]">
-                {selectedIds.includes(rsvp.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 opacity-20 group-hover:opacity-100" />}
-              </button>
-              <div>
-                <p className="text-lg font-serif italic text-white mb-1">{rsvp.guest_name}</p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <p className="text-[8px] text-gray-500 font-bold uppercase tracking-[0.2em]">{rsvp.guest_phone}</p>
-                  {rsvp.has_plus_one && (
-                    <span className="text-[7px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1">
-                      <UserPlus size={10} /> +1 {rsvp.plus_one_name ? `(${rsvp.plus_one_name})` : ''}
-                    </span>
-                  )}
-                  {rsvp.song_request && <span className="text-[7px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1"><Music size={10} /> {rsvp.song_request}</span>}
-                  
-                  {rsvp.table_number && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 flex items-center gap-2 hover:bg-[#D4AF37]/20">
-                          Table {rsvp.table_number} <Info size={10} />
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-[#0f0f0f] border-white/10 text-white rounded-none">
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-serif italic">Table {rsvp.table_number} Concierge</DialogTitle>
-                        </DialogHeader>
-                        <div className="py-6 space-y-4">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Seated at this table:</p>
-                          <div className="grid gap-3">
-                            {getTableMates(rsvp.table_number).map(mate => (
-                              <div key={mate.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/5">
-                                <span className="text-sm font-light">{mate.guest_name}</span>
-                                {mate.checked_in && <CheckCircle2 size={14} className="text-green-500" />}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-[0.1em]">{guest.guest_name}</span>
+                {guest.has_plus_one && (
+                  <span className="text-[8px] bg-[#D4AF37]/10 text-[#D4AF37] px-1.5 py-0.5 font-black uppercase tracking-widest">
+                    +1
+                  </span>
+                )}
               </div>
-            </div>
-            
-            <div className="flex flex-col items-end gap-2">
-              <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.checked_in ? 'text-green-500 bg-green-500/5' : 'text-gray-600'}`}>
-                {rsvp.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                <span className="text-[8px] font-black uppercase tracking-[0.3em]">Main: {rsvp.checked_in ? 'Verified' : 'Pending'}</span>
+              <div className="flex items-center gap-4 text-[9px] font-bold uppercase tracking-[0.1em] text-gray-500">
+                <span className="flex items-center gap-1"><Phone className="w-2.5 h-2.5" /> {guest.guest_phone}</span>
+                {guest.song_request && (
+                  <span className="flex items-center gap-1 text-[#D4AF37]/70"><Music className="w-2.5 h-2.5" /> Request</span>
+                )}
               </div>
-              {rsvp.has_plus_one && (
-                <div className={`flex items-center gap-3 px-4 py-2 ${rsvp.plus_one_checked_in ? 'text-blue-500 bg-blue-500/5' : 'text-gray-600'}`}>
-                  {rsvp.plus_one_checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                  <span className="text-[8px] font-black uppercase tracking-[0.3em]">+1: {rsvp.plus_one_checked_in ? 'Verified' : 'Pending'}</span>
-                </div>
-              )}
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="flex items-center gap-6">
+            <div className="text-right hidden md:block">
+              <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-1">Status</div>
+              <div className={`text-[10px] font-black uppercase tracking-widest ${
+                guest.checked_in ? 'text-green-400' : 'text-gray-600'
+              }`}>
+                {guest.checked_in ? 'Checked In' : 'Pending'}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => toggleCheckIn(guest.id, guest.checked_in)}
+                className={`rounded-none h-10 w-10 ${
+                  guest.checked_in ? 'text-green-400 hover:text-green-300' : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                {guest.checked_in ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-none h-10 w-10 text-gray-500 hover:text-white">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-black border-white/10 rounded-none">
+                  <DropdownMenuItem className="text-[10px] font-bold uppercase tracking-[0.2em] focus:bg-white/10 focus:text-white">
+                    Edit Guest
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500 focus:bg-red-500/10 focus:text-red-500">
+                    Remove Guest
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
