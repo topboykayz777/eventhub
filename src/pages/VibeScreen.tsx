@@ -4,13 +4,14 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ArrowLeft, Heart } from 'lucide-react';
+import { Lock, Heart, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 
 import VibeBackground from '@/components/vibe/VibeBackground';
 import VibeHeroNotification, { VibeEvent } from '@/components/vibe/VibeHeroNotification';
 import VibeStats from '@/components/vibe/VibeStats';
+import VibeSidebar from '@/components/vibe/VibeSidebar';
 
 const VibeScreen = () => {
   const { slug } = useParams();
@@ -18,6 +19,7 @@ const VibeScreen = () => {
   const [event, setEvent] = useState<any>(null);
   const [isLive, setIsLive] = useState<boolean | null>(null);
   const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
+  const [activities, setActivities] = useState<any[]>([]);
   const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
   const notificationQueue = useRef<VibeEvent[]>([]);
   const isProcessingQueue = useRef(false);
@@ -49,10 +51,23 @@ const VibeScreen = () => {
     if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
     isProcessingQueue.current = true;
     const next = notificationQueue.current.shift()!;
+    
     setActiveNotification(next);
+    
+    // Add to persistent sidebar list
+    setActivities(prev => [next, ...prev].slice(0, 10));
+
     if (next.type === 'spray') {
-      confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff', '#F9E4B7'], zIndex: 200 });
+      confetti({ 
+        particleCount: 300, 
+        spread: 100, 
+        origin: { y: 0.6 }, 
+        colors: ['#D4AF37', '#ffffff', '#F9E4B7'], 
+        zIndex: 200,
+        scalar: 1.2
+      });
     }
+    
     await new Promise(resolve => setTimeout(resolve, 6000));
     setActiveNotification(null);
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -62,7 +77,12 @@ const VibeScreen = () => {
 
   const addToQueue = useCallback((notif: Omit<VibeEvent, 'id' | 'config'>) => {
     const config = themeConfigs[event?.theme || 'modern'];
-    notificationQueue.current.push({ ...notif, id: Math.random().toString(36).substring(7), config });
+    notificationQueue.current.push({ 
+      ...notif, 
+      id: Math.random().toString(36).substring(7), 
+      config,
+      timestamp: Date.now()
+    } as VibeEvent);
     processQueue();
   }, [event?.theme, processQueue]);
 
@@ -86,16 +106,15 @@ const VibeScreen = () => {
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
-            // ONLY trigger if status changed from pending to approved
             if (payload.new.status === 'approved' && payload.old.status === 'pending') {
               const guestName = payload.new.description.replace('Digital Spray from ', '');
-              addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: `${guestName} honored the host`, amount: payload.new.amount });
+              addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: guestName, amount: payload.new.amount });
               setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
             }
           })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
             if (payload.new.checked_in && !payload.old.checked_in) {
-              addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: `${payload.new.guest_name} has entered the celebration` });
+              addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
               setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
             }
           })
@@ -124,27 +143,50 @@ const VibeScreen = () => {
   return (
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
       <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
+      
+      {/* Cinematic Scrims for Visibility */}
+      <div className="absolute inset-0 z-[5] pointer-events-none">
+        <div className={`absolute top-0 left-0 right-0 h-64 bg-gradient-to-b ${isDark ? 'from-black/80' : 'from-white/60'} to-transparent`} />
+        <div className={`absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t ${isDark ? 'from-black/80' : 'from-white/60'} to-transparent`} />
+      </div>
+
       <VibeHeroNotification event={activeNotification} />
-      <div className="relative z-10 flex flex-col h-screen p-12 lg:p-24">
-        <div className="flex justify-between items-start">
+
+      <div className="relative z-10 flex h-screen">
+        {/* Left Section: Main Content (70%) */}
+        <div className="flex-1 flex flex-col p-12 lg:p-24">
           <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-            <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase mb-6 block`}>Live Celebration Feed</span>
-            <h1 className="text-7xl lg:text-[10rem] font-serif italic leading-none mb-8">{event.event_name}</h1>
+            <div className="flex items-center gap-4 mb-6">
+              <Sparkles className={config.accent} size={24} />
+              <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase block`}>Live Celebration Feed</span>
+            </div>
+            <h1 className="text-7xl lg:text-[8rem] font-serif italic leading-none mb-8 drop-shadow-2xl">{event.event_name}</h1>
             <div className={`h-1.5 w-96 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
           </motion.div>
-          <VibeStats stats={stats} config={config} />
-        </div>
-        <div className="mt-auto flex justify-between items-end">
-          <div className="flex items-center gap-8">
-            <div className={`w-16 h-16 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45`}><span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-2xl -rotate-45`}>E</span></div>
-            <div className="space-y-1"><span className="text-xs font-bold uppercase tracking-[0.6em] opacity-40 block">Powered by EventHub Nigeria</span><p className="text-2xl font-light tracking-[0.2em] uppercase opacity-80">Orchestration Suite</p></div>
-          </div>
-          <div className="text-right space-y-4">
-            <div className={`${config.glass} backdrop-blur-xl p-8 rounded-[3rem] border ${config.border} max-w-xl inline-block text-left`}>
-              <div className="flex items-center gap-4 mb-4"><Heart className={config.accent} size={24} /><span className="text-[10px] font-black uppercase tracking-widest opacity-50">The Host's Message</span></div>
-              <p className="text-2xl font-light leading-relaxed italic opacity-90">"{event.message || 'Thank you for being part of our special day.'}"</p>
+
+          <div className="mt-auto flex justify-between items-end">
+            <div className="flex items-center gap-8">
+              <div className={`w-16 h-16 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45`}><span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-2xl -rotate-45`}>E</span></div>
+              <div className="space-y-1"><span className="text-xs font-bold uppercase tracking-[0.6em] opacity-40 block">Powered by EventHub Nigeria</span><p className="text-2xl font-light tracking-[0.2em] uppercase opacity-80">Orchestration Suite</p></div>
             </div>
-            <div className="pt-4"><p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-1">Live Portal</p><p className="text-2xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p></div>
+            
+            <div className="text-right space-y-4">
+              <div className={`${config.glass} backdrop-blur-xl p-8 rounded-[3rem] border ${config.border} max-w-xl inline-block text-left shadow-2xl`}>
+                <div className="flex items-center gap-4 mb-4"><Heart className={config.accent} size={24} /><span className="text-[10px] font-black uppercase tracking-widest opacity-50">The Host's Message</span></div>
+                <p className="text-2xl font-light leading-relaxed italic opacity-90">"{event.message || 'Thank you for being part of our special day.'}"</p>
+              </div>
+              <div className="pt-4"><p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-1">Live Portal</p><p className="text-2xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section: Live Sidebar (30%) */}
+        <div className={`w-[450px] ${config.glass} backdrop-blur-3xl border-l ${config.border} p-12 flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
+          <div className="mb-12">
+            <VibeStats stats={stats} config={config} />
+          </div>
+          <div className="flex-1">
+            <VibeSidebar activities={activities} config={config} />
           </div>
         </div>
       </div>
