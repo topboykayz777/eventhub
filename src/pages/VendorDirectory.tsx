@@ -7,13 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GlassCard from '@/components/ui/GlassCard';
 import { Search, MapPin, Star, ArrowRight, Briefcase, ShieldCheck, Award, CheckCircle2, Loader2, Sparkles, X, Mail, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { showSuccess, showError } from '@/utils/toast';
 
 const categories = ["Catering", "Decor", "Photography", "Music", "Venues", "Planning"];
-const SUPPORT_EMAILS = "Topboykayz@gmail.com, Kaelfelix0120@gmail.com, Kaelfelix0121@gmail.com";
+const SUPPORT_EMAILS = "kaelfelix0120@gmail.com, kaelfelix0121@gmail.com, topboykayz@gmail.com";
 
 const VendorDirectory = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -29,6 +28,12 @@ const VendorDirectory = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.category) {
+      showError("Please select a service category.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -39,7 +44,11 @@ const VendorDirectory = () => {
       }
 
       const { error } = await supabase.from('vendors').insert({
-        ...formData,
+        name: formData.name,
+        category: formData.category,
+        location: formData.location,
+        phone: formData.phone,
+        instagram: formData.instagram,
         user_id: user.id,
         is_featured: false
       });
@@ -57,7 +66,7 @@ const VendorDirectory = () => {
 
   const openMailto = () => {
     const subject = encodeURIComponent(`Vendor Application: ${formData.name}`);
-    const body = encodeURIComponent(`Hello EventHub Team,\n\nI have just submitted my vendor application for ${formData.name} (${formData.category}).\n\nLocation: ${formData.location}\nPhone: ${formData.phone}\nInstagram: ${formData.instagram}\n\nPlease review my portfolio for the upcoming launch.`);
+    const body = encodeURIComponent(`Hello EventHub Team,\n\nI have just submitted my vendor application for ${formData.name} (${formData.category}).\n\n--- APPLICATION DETAILS ---\nBrand Name: ${formData.name}\nCategory: ${formData.category}\nLocation: ${formData.location}\nPhone: ${formData.phone}\nInstagram: ${formData.instagram}\n\nPlease review my portfolio for the upcoming launch.`);
     window.location.href = `mailto:${SUPPORT_EMAILS}?subject=${subject}&body=${body}`;
   };
 
@@ -209,9 +218,9 @@ const VendorDirectory = () => {
                   <div className="space-y-4">
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">Direct Support Channels</p>
                     <div className="flex flex-col gap-2 text-sm text-[#D4AF37] font-light">
-                      <span>Topboykayz@gmail.com</span>
-                      <span>Kaelfelix0120@gmail.com</span>
-                      <span>Kaelfelix0121@gmail.com</span>
+                      <span>kaelfelix0120@gmail.com</span>
+                      <span>kaelfelix0121@gmail.com</span>
+                      <span>topboykayz@gmail.com</span>
                     </div>
                     <Button 
                       onClick={openMailto}
@@ -241,7 +250,10 @@ const VendorDirectory = () => {
                       </div>
                       <div className="space-y-3">
                         <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Category</Label>
-                        <Select onValueChange={(v) => setFormData({ ...formData, category: v })}>
+                        <Select 
+                          value={formData.category}
+                          onValueChange={(v) => setFormData({ ...formData, category: v })}
+                        >
                           <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
