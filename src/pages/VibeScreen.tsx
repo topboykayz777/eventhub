@@ -103,22 +103,26 @@ const VibeScreen = () => {
 
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
-            if (payload.new.status === 'approved' && payload.old.status === 'pending') {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+            // Handle both new approved sprays and sprays that just got approved
+            const isNewlyApproved = (payload.eventType === 'INSERT' && payload.new.status === 'approved') || 
+                                   (payload.eventType === 'UPDATE' && payload.new.status === 'approved' && payload.old?.status !== 'approved');
+
+            if (isNewlyApproved && payload.new.type === 'income') {
               const guestName = payload.new.description.replace('Digital Spray from ', '');
               addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: guestName, amount: payload.new.amount });
               setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
             }
           })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
-            if (payload.new.checked_in && !payload.old.checked_in) {
+            if (payload.new.checked_in && !payload.old?.checked_in) {
               addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
               setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
             }
           })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` }, (payload) => {
             setEvent(payload.new);
-            if (payload.new.message !== payload.old.message && payload.new.message) {
+            if (payload.new.message !== payload.old?.message && payload.new.message) {
               addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
             }
             if (payload.new.is_finished) setIsLive(false);
