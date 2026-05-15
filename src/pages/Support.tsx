@@ -29,6 +29,7 @@ const Support = () => {
     window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
     
     showSuccess("Opening your email app...");
+    setFormData({ subject: '', message: '' });
   };
 
   return (

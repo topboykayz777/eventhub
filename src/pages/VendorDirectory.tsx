@@ -16,7 +16,6 @@ const SUPPORT_EMAIL = "kaelfelix0120@gmail.com";
 
 const VendorDirectory = () => {
   const [isRegistering, setIsRegistering] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -46,6 +45,7 @@ const VendorDirectory = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         showError("Please sign in to register as a vendor.");
+        setLoading(false);
         return;
       }
 
@@ -61,11 +61,12 @@ const VendorDirectory = () => {
 
       if (error) throw error;
 
-      setIsSuccess(true);
-      showSuccess("Application submitted to our curators.");
+      // Trigger mailto instantly
+      triggerMailto();
       
-      // Trigger the mailto after a short delay to let the success state show
-      setTimeout(triggerMailto, 1500);
+      showSuccess("Application recorded. Opening your email app...");
+      setIsRegistering(false);
+      setFormData({ name: '', category: '', location: '', phone: '', instagram: '' });
     } catch (err: any) {
       showError(err.message);
     } finally {
@@ -203,114 +204,88 @@ const VendorDirectory = () => {
               className="max-w-2xl w-full bg-[#0f0f0f] border border-white/10 p-8 md:p-12 rounded-[3rem] shadow-2xl relative overflow-y-auto max-h-[90vh]"
             >
               <button 
-                onClick={() => { setIsRegistering(false); setIsSuccess(false); }}
+                onClick={() => setIsRegistering(false)}
                 className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
               >
                 <X size={24} />
               </button>
 
-              {isSuccess ? (
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-8">
-                    <CheckCircle2 className="text-green-500 w-10 h-10" />
+              <div className="text-center mb-12">
+                <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Vendor Application</span>
+                <h2 className="text-3xl font-serif italic">Brand Registration</h2>
+              </div>
+
+              <form onSubmit={handleRegister} className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Brand Name</Label>
+                    <Input 
+                      required 
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
                   </div>
-                  <h2 className="text-3xl font-serif italic mb-6">Application Received</h2>
-                  <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-                    Your brand has been added to our vetting queue. Our curators will review your details and contact you shortly.
-                  </p>
-                  <div className="space-y-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">Direct Support Channel</p>
-                    <div className="flex flex-col gap-2 text-sm text-[#D4AF37] font-light">
-                      <span>{SUPPORT_EMAIL}</span>
-                    </div>
-                    <Button 
-                      onClick={triggerMailto}
-                      className="mt-8 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest"
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Category</Label>
+                    <Select 
+                      value={formData.category}
+                      onValueChange={(v) => setFormData({ ...formData, category: v })}
                     >
-                      <Mail className="w-4 h-4 mr-2" /> Send Portfolio Directly
-                    </Button>
+                      <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                      <SelectContent position="popper" className="bg-[#1a1a1a] border-white/10 text-white z-[150]">
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat} className="hover:bg-white/5 focus:bg-white/5 cursor-pointer">
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <div className="text-center mb-12">
-                    <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Vendor Application</span>
-                    <h2 className="text-3xl font-serif italic">Brand Registration</h2>
+
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Primary Location</Label>
+                  <Input 
+                    required 
+                    placeholder="e.g. Victoria Island, Lagos"
+                    className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">WhatsApp Number</Label>
+                    <Input 
+                      required 
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
                   </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Instagram Handle</Label>
+                    <Input 
+                      placeholder="@yourbrand"
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                    />
+                  </div>
+                </div>
 
-                  <form onSubmit={handleRegister} className="space-y-8">
-                    <div className="grid md:grid-cols-2 gap-8">
-                      <div className="space-y-3">
-                        <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Brand Name</Label>
-                        <Input 
-                          required 
-                          className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Category</Label>
-                        <Select 
-                          value={formData.category}
-                          onValueChange={(v) => setFormData({ ...formData, category: v })}
-                        >
-                          <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
-                            <SelectValue placeholder="Select Category" />
-                          </SelectTrigger>
-                          <SelectContent position="popper" className="bg-[#1a1a1a] border-white/10 text-white z-[150]">
-                            {categories.map(cat => (
-                              <SelectItem key={cat} value={cat} className="hover:bg-white/5 focus:bg-white/5 cursor-pointer">
-                                {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Primary Location</Label>
-                      <Input 
-                        required 
-                        placeholder="e.g. Victoria Island, Lagos"
-                        className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                      <div className="space-y-3">
-                        <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">WhatsApp Number</Label>
-                        <Input 
-                          required 
-                          className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Instagram Handle</Label>
-                        <Input 
-                          placeholder="@yourbrand"
-                          className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
-                          value={formData.instagram}
-                          onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                        />
-                      </div>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      disabled={loading}
-                      className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
-                    >
-                      {loading ? <Loader2 className="animate-spin" /> : 'Submit Application'}
-                    </Button>
-                  </form>
-                </>
-              )}
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+                >
+                  {loading ? <Loader2 className="animate-spin" /> : 'Submit Application'}
+                </Button>
+              </form>
             </motion.div>
           </motion.div>
         )}
