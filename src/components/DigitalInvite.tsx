@@ -15,38 +15,37 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
   const theme = event.theme || 'modern';
   const [qrImage, setQrImage] = useState<string>("");
 
-  // We convert the canvas to a dataURL image to ensure html2canvas captures it 100% of the time
   useEffect(() => {
     const timer = setTimeout(() => {
       const canvas = document.getElementById('invite-qr-canvas') as HTMLCanvasElement;
       if (canvas) {
         setQrImage(canvas.toDataURL("image/png"));
       }
-    }, 500);
+    }, 600);
     return () => clearTimeout(timer);
   }, [eventUrl]);
 
   const themeStyles: Record<string, any> = {
-    modern: { bg: "bg-[#050505]", accent: "#D4AF37", glass: "rgba(255, 255, 255, 0.03)", border: "rgba(212, 175, 55, 0.2)" },
-    traditional: { bg: "bg-[#064e3b]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.3)" },
-    elegant: { bg: "bg-[#f8f8f8]", accent: "#000000", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(0, 0, 0, 0.1)" },
-    sahara: { bg: "bg-[#451a03]", accent: "#fbbf24", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 191, 36, 0.2)" },
-    velvet: { bg: "bg-[#2e1065]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)" },
-    garden: { bg: "bg-[#064e3b]", accent: "#10b981", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(16, 185, 129, 0.2)" },
-    oceanic: { bg: "bg-[#1e3a8a]", accent: "#93c5fd", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(147, 197, 253, 0.2)" },
-    rose: { bg: "bg-[#831843]", accent: "#fbcfe8", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 207, 232, 0.2)" },
-    earth: { bg: "bg-[#431407]", accent: "#fb923c", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 146, 60, 0.2)" },
-    silver: { bg: "bg-[#1f2937]", accent: "#9ca3af", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(156, 163, 175, 0.2)" },
-    dynasty: { bg: "bg-[#7f1d1d]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)" },
-    vintage: { bg: "bg-[#fef3c7]", accent: "#92400e", glass: "rgba(255, 255, 255, 0.4)", border: "rgba(146, 64, 14, 0.2)" },
-    onyx: { bg: "bg-black", accent: "#06b6d4", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(6, 182, 212, 0.2)" },
-    lavender: { bg: "bg-[#f5f3ff]", accent: "#8b5cf6", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(139, 92, 246, 0.2)" },
-    midnight: { bg: "bg-[#020617]", accent: "#38bdf8", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(56, 189, 248, 0.2)" },
-    champagne: { bg: "bg-[#fafaf9]", accent: "#d97706", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(217, 119, 6, 0.2)" },
-    forest: { bg: "bg-[#022c22]", accent: "#10b981", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(16, 185, 129, 0.2)" },
-    sunset: { bg: "bg-[#451a03]", accent: "#f97316", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(249, 115, 22, 0.2)" },
-    marble: { bg: "bg-[#f9fafb]", accent: "#111827", glass: "rgba(255, 255, 255, 0.8)", border: "rgba(229, 231, 235, 1)" },
-    platinum: { bg: "bg-[#f3f4f6]", accent: "#1f2937", glass: "rgba(255, 255, 255, 0.8)", border: "rgba(209, 213, 219, 1)" }
+    modern: { bg: "bg-[#050505]", accent: "#D4AF37", glass: "rgba(255, 255, 255, 0.03)", border: "rgba(212, 175, 55, 0.2)", text: "text-white" },
+    traditional: { bg: "bg-[#064e3b]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.3)", text: "text-[#fdfcf0]" },
+    elegant: { bg: "bg-[#f8f8f8]", accent: "#000000", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(0, 0, 0, 0.1)", text: "text-gray-900" },
+    sahara: { bg: "bg-[#451a03]", accent: "#fbbf24", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 191, 36, 0.2)", text: "text-[#fef3c7]" },
+    velvet: { bg: "bg-[#2e1065]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)", text: "text-[#f5f3ff]" },
+    garden: { bg: "bg-[#064e3b]", accent: "#10b981", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(16, 185, 129, 0.2)", text: "text-[#ecfdf5]" },
+    oceanic: { bg: "bg-[#1e3a8a]", accent: "#93c5fd", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(147, 197, 253, 0.2)", text: "text-[#eff6ff]" },
+    rose: { bg: "bg-[#831843]", accent: "#fbcfe8", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 207, 232, 0.2)", text: "text-[#fdf2f8]" },
+    earth: { bg: "bg-[#431407]", accent: "#fb923c", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 146, 60, 0.2)", text: "text-[#fff7ed]" },
+    silver: { bg: "bg-[#1f2937]", accent: "#9ca3af", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(156, 163, 175, 0.2)", text: "text-[#f9fafb]" },
+    dynasty: { bg: "bg-[#7f1d1d]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)", text: "text-[#fef2f2]" },
+    vintage: { bg: "bg-[#fef3c7]", accent: "#92400e", glass: "rgba(255, 255, 255, 0.4)", border: "rgba(146, 64, 14, 0.2)", text: "text-[#451a03]" },
+    onyx: { bg: "bg-black", accent: "#06b6d4", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(6, 182, 212, 0.2)", text: "text-white" },
+    lavender: { bg: "bg-[#f5f3ff]", accent: "#8b5cf6", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(139, 92, 246, 0.2)", text: "text-[#4c1d95]" },
+    midnight: { bg: "bg-[#020617]", accent: "#38bdf8", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(56, 189, 248, 0.2)", text: "text-[#f8fafc]" },
+    champagne: { bg: "bg-[#fafaf9]", accent: "#d97706", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(217, 119, 6, 0.2)", text: "text-[#44403c]" },
+    forest: { bg: "bg-[#022c22]", accent: "#10b981", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(16, 185, 129, 0.2)", text: "text-[#f0fdf4]" },
+    sunset: { bg: "bg-[#451a03]", accent: "#f97316", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(249, 115, 22, 0.2)", text: "text-[#fff7ed]" },
+    marble: { bg: "bg-[#f9fafb]", accent: "#111827", glass: "rgba(255, 255, 255, 0.8)", border: "rgba(229, 231, 235, 1)", text: "text-[#111827]" },
+    platinum: { bg: "bg-[#f3f4f6]", accent: "#1f2937", glass: "rgba(255, 255, 255, 0.8)", border: "rgba(209, 213, 219, 1)", text: "text-[#1f2937]" }
   };
 
   const style = themeStyles[theme] || themeStyles.modern;
@@ -55,7 +54,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
   return (
     <div 
       ref={ref}
-      className={`w-[380px] ${style.bg} relative overflow-hidden shadow-2xl flex flex-col items-center p-6`}
+      className={`w-[380px] ${style.bg} relative overflow-hidden shadow-2xl flex flex-col items-center p-5`}
       style={{ height: '580px' }}
     >
       {/* Background Image with Blur */}
@@ -81,7 +80,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
         </div>
 
         {/* Event Title */}
-        <h1 className={`text-3xl font-serif italic mb-8 leading-tight px-2 ${isDark ? 'text-white' : 'text-black'}`}>
+        <h1 className={`text-3xl font-serif italic mb-8 leading-tight px-2 ${style.text}`}>
           {event.event_name}
         </h1>
 
@@ -122,7 +121,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
               />
             )}
           </div>
-          <p className={`text-[7px] font-black uppercase tracking-[0.3em] opacity-50 ${isDark ? 'text-white' : 'text-black'}`}>
+          <p className={`text-[7px] font-black uppercase tracking-[0.3em] opacity-50 ${style.text}`}>
             Scan to RSVP & Access Details
           </p>
         </div>
@@ -130,7 +129,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
         {/* Footer */}
         <div className="mt-6 flex items-center gap-2 opacity-30">
           <ShieldCheck size={10} style={{ color: style.accent }} />
-          <span className={`text-[6px] font-black uppercase tracking-[0.4em] ${isDark ? 'text-white' : 'text-black'}`}>
+          <span className={`text-[6px] font-black uppercase tracking-[0.4em] ${style.text}`}>
             Verified by EventHub NG
           </span>
         </div>
