@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Loader2, MessageSquare, X } from 'lucide-react';
+import { Send, Megaphone, Loader2, MessageSquare } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 
 interface BroadcastBoxProps {
@@ -48,36 +48,37 @@ const BroadcastBox = ({ eventId, currentMessage }: BroadcastBoxProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-white/5 border-b border-white/10">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="text-[#D4AF37] w-3 h-3" />
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Live Broadcast Message</span>
+    <div className="flex flex-col md:flex-row gap-4 items-center bg-white/5 border border-white/10 p-6 rounded-none">
+      <div className="flex items-center gap-4 shrink-0">
+        <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+          <MessageSquare className="text-[#D4AF37] w-5 h-5" />
         </div>
-        {currentMessage && (
-          <button 
-            onClick={clearMessage}
-            className="text-[9px] font-bold uppercase tracking-[0.2em] text-red-500/70 hover:text-red-500 flex items-center gap-1 transition-colors"
-          >
-            <X className="w-3 h-3" /> Clear
-          </button>
-        )}
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host's Message</span>
       </div>
-      <div className="flex gap-2">
+      <div className="flex-1 w-full flex gap-4">
         <Input 
-          placeholder="Update message (e.g. 'The Buffet is Open!')" 
-          className="bg-black/20 border-white/5 h-10 rounded-none text-[10px] font-bold uppercase tracking-[0.1em] placeholder:text-gray-600"
+          placeholder="Update your message to guests (e.g. 'The Buffet is Open!')" 
+          className="bg-white/5 border-white/10 h-14 rounded-none text-[10px] font-bold uppercase tracking-[0.2em]"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleUpdateMessage()}
         />
         <Button 
           onClick={handleUpdateMessage}
-          disabled={loading || !message.trim()}
-          className="h-10 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-4"
+          disabled={loading}
+          className="h-14 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 text-[10px] font-bold uppercase tracking-[0.2em]"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </Button>
+        {currentMessage && (
+          <Button 
+            variant="ghost"
+            onClick={clearMessage}
+            className="h-14 text-red-500 hover:bg-red-500/10 rounded-none text-[10px] font-bold uppercase tracking-[0.2em]"
+          >
+            Clear
+          </Button>
+        )}
       </div>
     </div>
   );
