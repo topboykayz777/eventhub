@@ -10,6 +10,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSession } from '@/components/SessionProvider';
 
 import EventCard from '@/components/dashboard/EventCard';
 import GuestList from '@/components/dashboard/GuestList';
@@ -22,6 +23,7 @@ import DigitalSpray from '@/components/dashboard/DigitalSpray';
 const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user, loading: sessionLoading } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
@@ -29,12 +31,17 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!sessionLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, sessionLoading, navigate]);
   
   const { data: events = [], isLoading } = useQuery({
-    queryKey: ['host-dashboard-data'],
+    queryKey: ['host-dashboard-data', user?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate('/login'); return []; }
+      if (!user) return [];
 
       const { data: eventsData, error } = await supabase
         .from('events')
@@ -52,6 +59,7 @@ const Dashboard = () => {
 
       return enriched;
     },
+    enabled: !!user,
     refetchInterval: 30000,
   });
 
@@ -74,23 +82,18 @@ const Dashboard = () => {
     let rsvpId = scannedText.trim();
     let isPlusOne = false;
 
-    // Handle plus-one suffix
     if (rsvpId.includes(':plus-one')) {
       rsvpId = rsvpId.split(':plus-one')[0];
       isPlusOne = true;
     }
 
-    // Handle full URLs if scanned from a browser link
     if (rsvpId.includes('/')) {
       const parts = rsvpId.split('/');
       rsvpId = parts[parts.length - 1];
     }
 
-    // Clean any potential query params or fragments
     rsvpId = rsvpId.split('?')[0].split('#')[0];
 
-    // We'll let the database query handle the validation instead of a strict regex
-    // to be more robust against minor formatting variations.
     const updateData = isPlusOne ? { plus_one_checked_in: true } : { checked_in: true };
 
     try {
@@ -112,7 +115,13 @@ const Dashboard = () => {
     }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center min-h-screen bg-[#050505]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  if (sessionLoading || (isLoading && events.length === 0)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#050505]">
+        <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
+      </div>
+    );
+  }
 
   const activeEventIds = events.map((e: any) => e.id);
 
@@ -201,7 +210,7 @@ const Dashboard = () => {
                         <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest bg-gray-800 text-gray-400 px-2 py-1 rounded-full">Completed</span>
                       ) : (
                         <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-1 rounded-full flex items-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Live
+                          <div className="w-1 h-1 rounded-full bg-green-50 animate-pulse" /> Live
                         </span>
                       )}
                     </div>
@@ -252,8 +261,6 @@ const Dashboard = () => {
                             </div>
                           </div>
                           
-                          <BroadcastBox eventId={event.id} currentMessage={event.broadcast_message} />
-                          
                           <Tabs defaultValue="tools" className="w-full">
                             <TabsList className="bg-transparent border-b border-white/5 w-full justify-start gap-6 md:gap-12 mb-8 md:mb-12 rounded-none h-auto p-0 overflow-x-auto no-scrollbar">
                               <TabsTrigger value="tools" className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] pb-4 md:pb-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] bg-transparent whitespace-nowrap">Concierge Tools</TabsTrigger>
@@ -263,6 +270,7 @@ const Dashboard = () => {
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
                             <TabsContent value="guests" className="mt-0">
+                              <BroadcastBox eventId={event.id} currentMessage={event.message} />
                               <GuestList 
                                 rsvps={event.rsvps} 
                                 searchQuery={searchQuery} 
