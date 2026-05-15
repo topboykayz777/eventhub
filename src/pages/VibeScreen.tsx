@@ -1,149 +1,124 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, UserCheck, Sparkles, Heart, Camera, Music, Lock, ArrowLeft } from 'lucide-react';
+import { Lock, ArrowLeft, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 
-interface VibeNotification {
-  id: string;
-  type: 'spray' | 'checkin' | 'rsvp' | 'gallery';
-  title: string;
-  detail: string;
-  amount?: number;
-  timestamp: number;
-}
+import VibeBackground from '@/components/vibe/VibeBackground';
+import VibeHeroNotification, { VibeEvent } from '@/components/vibe/VibeHeroNotification';
+import VibeStats from '@/components/vibe/VibeStats';
 
 const VibeScreen = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
-  const [notifications, setNotifications] = useState<VibeNotification[]>([]);
-  const [stats, setStats] = useState({ rsvps: 0, checkedIn: 0, totalSprayed: 0 });
   const [isLive, setIsLive] = useState<boolean | null>(null);
+  const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
+  const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
+  const notificationQueue = useRef<VibeEvent[]>([]);
+  const isProcessingQueue = useRef(false);
 
-  const fetchInitialData = useCallback(async () => {
-    if (!slug) return;
+  const themeConfigs: Record<string, any> = {
+    modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", dark: true },
+    traditional: { bg: "bg-[#064e3b]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", glass: "bg-black/20", dark: true },
+    elegant: { bg: "bg-[#f8f8f8]", accent: "text-black", border: "border-black/10", glass: "bg-white/80", dark: false },
+    sahara: { bg: "bg-[#451a03]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", glass: "bg-black/20", dark: true },
+    velvet: { bg: "bg-[#2e1065]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", dark: true },
+    garden: { bg: "bg-[#064e3b]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-black/20", dark: true },
+    oceanic: { bg: "bg-[#1e3a8a]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", glass: "bg-black/20", dark: true },
+    rose: { bg: "bg-[#831843]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/20", glass: "bg-black/20", dark: true },
+    earth: { bg: "bg-[#431407]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", glass: "bg-black/20", dark: true },
+    silver: { bg: "bg-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", glass: "bg-black/20", dark: true },
+    dynasty: { bg: "bg-[#7f1d1d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", dark: true },
+    vintage: { bg: "bg-[#fef3c7]", accent: "text-[#92400e]", border: "border-[#92400e]/20", glass: "bg-white/40", dark: false },
+    onyx: { bg: "bg-[#050505]", accent: "text-[#06b6d4]", border: "border-[#06b6d4]/20", glass: "bg-white/5", dark: true },
+    lavender: { bg: "bg-[#f5f3ff]", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/20", glass: "bg-white/80", dark: false },
+    midnight: { bg: "bg-[#020617]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/20", glass: "bg-white/5", dark: true },
+    champagne: { bg: "bg-[#fafaf9]", accent: "text-[#d97706]", border: "border-[#d97706]/20", glass: "bg-white/80", dark: false },
+    forest: { bg: "bg-[#022c22]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-white/5", dark: true },
+    sunset: { bg: "bg-[#451a03]", accent: "text-[#f97316]", border: "border-[#f97316]/20", glass: "bg-white/5", dark: true },
+    marble: { bg: "bg-[#f9fafb]", accent: "text-[#111827]", border: "border-[#e5e7eb]", glass: "bg-white/80", dark: false },
+    platinum: { bg: "bg-[#f3f4f6]", accent: "text-[#1f2937]", border: "border-[#d1d5db]", glass: "bg-white/80", dark: false }
+  };
+
+  const processQueue = useCallback(async () => {
+    if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
     
-    try {
-      const { data: eventData } = await supabase
-        .from('events')
-        .select('*')
-        .ilike('slug', slug.trim())
-        .maybeSingle();
+    isProcessingQueue.current = true;
+    const next = notificationQueue.current.shift()!;
+    setActiveNotification(next);
 
+    if (next.type === 'spray') {
+      confetti({ 
+        particleCount: 200, spread: 90, origin: { y: 0.6 }, 
+        colors: ['#D4AF37', '#ffffff', '#F9E4B7'], zIndex: 200 
+      });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 6000));
+    setActiveNotification(null);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    isProcessingQueue.current = false;
+    processQueue();
+  }, []);
+
+  const addToQueue = useCallback((notif: Omit<VibeEvent, 'id' | 'config'>) => {
+    const config = themeConfigs[event?.theme || 'modern'];
+    notificationQueue.current.push({ ...notif, id: Math.random().toString(36).substring(7), config });
+    processQueue();
+  }, [event?.theme, processQueue]);
+
+  useEffect(() => {
+    const fetchInitial = async () => {
+      if (!slug) return;
+      const { data: eventData } = await supabase.from('events').select('*').ilike('slug', slug.trim()).maybeSingle();
       if (eventData) {
-        const started = new Date() >= new Date(eventData.event_date);
-        const finished = eventData.is_finished;
-        const live = started && !finished;
-        
-        setIsLive(live);
         setEvent(eventData);
-        
-        if (!live) return;
+        const started = new Date() >= new Date(eventData.event_date);
+        setIsLive(started && !eventData.is_finished);
 
         const { data: rsvps } = await supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id);
         const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('type', 'income');
         
         setStats({
-          rsvps: rsvps?.length || 0,
           checkedIn: rsvps?.filter(r => r.checked_in).length || 0,
           totalSprayed: budget?.reduce((acc, curr) => acc + curr.amount, 0) || 0
         });
 
-        // Real-time Orchestration
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
-          .on('postgres_changes', 
-            { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, 
-            (payload) => {
-              if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
-                const guestName = payload.new.description.replace('Digital Spray from ', '');
-                addNotification({ 
-                  type: 'spray', 
-                  title: 'Digital Spray Received', 
-                  detail: `${guestName} just honored the host`, 
-                  amount: payload.new.amount 
-                });
-                setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
-              }
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+            if (payload.new.type === 'income' && payload.new.description.includes('Digital Spray')) {
+              const guestName = payload.new.description.replace('Digital Spray from ', '');
+              addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: `${guestName} honored the host`, amount: payload.new.amount });
+              setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
             }
-          )
-          .on('postgres_changes', 
-            { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, 
-            (payload) => {
-              if (payload.new.checked_in && !payload.old.checked_in) {
-                addNotification({ 
-                  type: 'checkin', 
-                  title: 'Guest Arrival', 
-                  detail: `${payload.new.guest_name} has entered the celebration` 
-                });
-                setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
-              }
+          })
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+            if (payload.new.checked_in && !payload.old.checked_in) {
+              addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: `${payload.new.guest_name} has entered the celebration` });
+              setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
             }
-          )
-          .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` },
-            (payload) => {
-              addNotification({
-                type: 'rsvp',
-                title: 'New RSVP Confirmed',
-                detail: `${payload.new.guest_name} is joining the guest list`
-              });
-              setStats(prev => ({ ...prev, rsvps: prev.rsvps + 1 }));
+          })
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` }, (payload) => {
+            setEvent(payload.new);
+            if (payload.new.message !== payload.old.message && payload.new.message) {
+              addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
             }
-          )
-          .on('postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` },
-            (payload) => {
-              setEvent(payload.new);
-              if (payload.new.is_finished) setIsLive(false);
-              
-              if (payload.new.gallery_urls?.length > payload.old.gallery_urls?.length) {
-                addNotification({
-                  type: 'gallery',
-                  title: 'New Memories Captured',
-                  detail: 'Fresh photos have been added to the gallery'
-                });
-              }
-            }
-          )
+            if (payload.new.is_finished) setIsLive(false);
+          })
           .subscribe();
 
         return () => { supabase.removeChannel(channel); };
       }
-    } catch (error) {
-      console.error('Vibe Error:', error);
-    }
-  }, [slug]);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
-
-  const addNotification = (notif: Omit<VibeNotification, 'id' | 'timestamp'>) => {
-    const id = Math.random().toString(36).substring(7);
-    const newNotif = { ...notif, id, timestamp: Date.now() };
-    
-    setNotifications(prev => [newNotif, ...prev].slice(0, 5));
-    
-    if (notif.type === 'spray') {
-      confetti({ 
-        particleCount: 150, 
-        spread: 70, 
-        origin: { y: 0.6 }, 
-        colors: ['#D4AF37', '#ffffff', '#F9E4B7'],
-        zIndex: 1000
-      });
-    }
-
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 20000);
-  };
+    };
+    fetchInitial();
+  }, [slug, addToQueue]);
 
   if (!event || isLive === null) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
@@ -157,203 +132,77 @@ const VibeScreen = () => {
   if (!isLive) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-          <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-12 border border-white/10">
-            <Lock className="text-[#D4AF37] w-10 h-10" />
-          </div>
-          <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen <span className="text-[#D4AF37]">Inactive</span></h1>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-12">
-            {new Date() < new Date(event.event_date) 
-              ? `This broadcast will activate once the celebration commences on ${new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}.`
-              : "This celebration has concluded and the live broadcast is now archived."}
-          </p>
-          <Button 
-            onClick={() => navigate('/')}
-            variant="outline" 
-            className="border-white/10 text-white rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-[0.3em]"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Return to Portal
-          </Button>
-        </motion.div>
+        <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-12 border border-white/10">
+          <Lock className="text-[#D4AF37] w-10 h-10" />
+        </div>
+        <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen <span className="text-[#D4AF37]">Inactive</span></h1>
+        <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-12">
+          {new Date() < new Date(event.event_date) 
+            ? `This broadcast will activate once the celebration commences.`
+            : "This celebration has concluded and the live broadcast is now archived."}
+        </p>
+        <Button onClick={() => navigate('/')} variant="outline" className="border-white/10 text-white rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-[0.3em]">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Return to Portal
+        </Button>
       </div>
     );
   }
 
-  const theme = event.theme || 'modern';
-  const themeConfigs: Record<string, any> = {
-    modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", glow: "shadow-[#D4AF37]/10", dark: true },
-    traditional: { bg: "bg-[#064e3b]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", glass: "bg-black/20", glow: "shadow-[#D4AF37]/20", dark: true },
-    elegant: { bg: "bg-[#f8f8f8]", accent: "text-black", border: "border-black/10", glass: "bg-white/80", glow: "shadow-black/5", dark: false },
-    sahara: { bg: "bg-[#451a03]", accent: "text-[#fbbf24]", border: "border-[#fbbf24]/20", glass: "bg-black/20", glow: "shadow-[#fbbf24]/10", dark: true },
-    velvet: { bg: "bg-[#2e1065]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10", dark: true },
-    garden: { bg: "bg-[#064e3b]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-black/20", glow: "shadow-[#10b981]/10", dark: true },
-    oceanic: { bg: "bg-[#1e3a8a]", accent: "text-[#93c5fd]", border: "border-[#93c5fd]/20", glass: "bg-black/20", glow: "shadow-[#93c5fd]/10", dark: true },
-    rose: { bg: "bg-[#831843]", accent: "text-[#fbcfe8]", border: "border-[#fbcfe8]/20", glass: "bg-black/20", glow: "shadow-[#fbcfe8]/10", dark: true },
-    earth: { bg: "bg-[#431407]", accent: "text-[#fb923c]", border: "border-[#fb923c]/20", glass: "bg-black/20", glow: "shadow-[#fb923c]/10", dark: true },
-    silver: { bg: "bg-[#1f2937]", accent: "text-[#9ca3af]", border: "border-[#9ca3af]/20", glass: "bg-black/20", glow: "shadow-[#9ca3af]/10", dark: true },
-    dynasty: { bg: "bg-[#7f1d1d]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-black/20", glow: "shadow-[#D4AF37]/10", dark: true },
-    vintage: { bg: "bg-[#fef3c7]", accent: "text-[#92400e]", border: "border-[#92400e]/20", glass: "bg-white/40", glow: "shadow-[#92400e]/10", dark: false },
-    onyx: { bg: "bg-[#050505]", accent: "text-[#06b6d4]", border: "border-[#06b6d4]/20", glass: "bg-white/5", glow: "shadow-[#06b6d4]/10", dark: true },
-    lavender: { bg: "bg-[#f5f3ff]", accent: "text-[#8b5cf6]", border: "border-[#8b5cf6]/20", glass: "bg-white/80", glow: "shadow-[#8b5cf6]/10", dark: false },
-    midnight: { bg: "bg-[#020617]", accent: "text-[#38bdf8]", border: "border-[#38bdf8]/20", glass: "bg-white/5", glow: "shadow-[#38bdf8]/10", dark: true },
-    champagne: { bg: "bg-[#fafaf9]", accent: "text-[#d97706]", border: "border-[#d97706]/20", glass: "bg-white/80", glow: "shadow-[#d97706]/10", dark: false },
-    forest: { bg: "bg-[#022c22]", accent: "text-[#10b981]", border: "border-[#10b981]/20", glass: "bg-white/5", glow: "shadow-[#10b981]/10", dark: true },
-    sunset: { bg: "bg-[#451a03]", accent: "text-[#f97316]", border: "border-[#f97316]/20", glass: "bg-white/5", glow: "shadow-[#f97316]/10", dark: true },
-    marble: { bg: "bg-[#f9fafb]", accent: "text-[#111827]", border: "border-[#e5e7eb]", glass: "bg-white/80", glow: "shadow-black/5", dark: false },
-    platinum: { bg: "bg-[#f3f4f6]", accent: "text-[#1f2937]", border: "border-[#d1d5db]", glass: "bg-white/80", glow: "shadow-black/5", dark: false }
-  };
-
-  const config = themeConfigs[theme] || themeConfigs.modern;
+  const config = themeConfigs[event.theme || 'modern'];
   const isDark = config.dark !== false;
 
   return (
-    <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden flex flex-col relative transition-colors duration-1000`}>
-      <div className="fixed inset-0 z-0">
-        <motion.img 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          src={event.photo_url} 
-          className="w-full h-full object-cover blur-2xl" 
-          alt="" 
-        />
-        <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-b from-transparent via-black/40 to-black' : 'bg-gradient-to-b from-transparent via-white/40 to-white'}`} />
-      </div>
+    <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
+      <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
+      
+      <VibeHeroNotification event={activeNotification} />
 
-      <div className="relative z-10 flex flex-col h-screen p-12 lg:p-20">
-        <div className="flex justify-between items-start mb-20">
+      <div className="relative z-10 flex flex-col h-screen p-12 lg:p-24">
+        <div className="flex justify-between items-start">
           <motion.div 
             initial={{ opacity: 0, y: -50 }} 
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
+            transition={{ duration: 1 }}
           >
             <span className={`${config.accent} text-sm font-bold tracking-[1em] uppercase mb-6 block`}>
               Live Celebration Feed
             </span>
-            <h1 className="text-6xl lg:text-9xl font-serif italic leading-tight mb-4">
+            <h1 className="text-7xl lg:text-[10rem] font-serif italic leading-none mb-8">
               {event.event_name}
             </h1>
-            <div className={`h-1 w-64 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
+            <div className={`h-1.5 w-96 bg-gradient-to-r ${isDark ? 'from-[#D4AF37] to-transparent' : 'from-black to-transparent'}`} />
           </motion.div>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }} 
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-right"
-          >
-            <p className="text-sm font-bold uppercase tracking-[0.5em] opacity-50 mb-4">Engagement Stats</p>
-            <div className="flex gap-12">
-              <div>
-                <p className="text-4xl lg:text-6xl font-serif italic mb-1">{stats.checkedIn}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Verified Guests</p>
-              </div>
-              <div>
-                <p className={`${config.accent} text-4xl lg:text-6xl font-serif italic mb-1`}>₦{stats.totalSprayed.toLocaleString()}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Digital Sprays</p>
-              </div>
-            </div>
-          </motion.div>
+          <VibeStats stats={stats} config={config} />
         </div>
 
-        <div className="flex-grow grid grid-cols-12 gap-12">
-          <div className="col-span-8">
-            <AnimatePresence mode="popLayout">
-              {notifications.length > 0 ? (
-                notifications.map((n, i) => (
-                  <motion.div
-                    key={n.id}
-                    layout
-                    initial={{ opacity: 0, x: -100, scale: 0.9 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8, x: 50 }}
-                    transition={{ duration: 0.8, ease: "circOut" }}
-                    className={`${config.glass} backdrop-blur-3xl p-10 lg:p-16 flex items-center justify-between rounded-[4rem] border ${config.border} ${config.glow} mb-8`}
-                  >
-                    <div className="flex items-center gap-12">
-                      <div className={`w-24 h-24 lg:w-32 lg:h-32 rounded-full flex items-center justify-center shrink-0 ${
-                        n.type === 'spray' ? 'bg-[#D4AF37] text-black' : 
-                        n.type === 'checkin' ? 'bg-green-500 text-white' :
-                        n.type === 'gallery' ? 'bg-blue-500 text-white' : 'bg-white/10 text-[#D4AF37]'
-                      }`}>
-                        {n.type === 'spray' ? <Coins size={48} /> : 
-                         n.type === 'checkin' ? <UserCheck size={48} /> :
-                         n.type === 'gallery' ? <Camera size={48} /> : <Sparkles size={48} />}
-                      </div>
-                      <div>
-                        <p className={`${config.accent} text-xs font-black uppercase tracking-[0.6em] mb-3`}>
-                          {n.title}
-                        </p>
-                        <h3 className="text-4xl lg:text-6xl font-serif italic leading-tight">
-                          {n.detail}
-                        </h3>
-                      </div>
-                    </div>
-                    {n.amount && (
-                      <div className="text-6xl lg:text-8xl font-serif italic text-[#D4AF37] ml-8">
-                        ₦{n.amount.toLocaleString()}
-                      </div>
-                    )}
-                  </motion.div>
-                ))
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-[5rem]">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Sparkles className="text-gray-800 w-24 h-24 mb-8 opacity-20" />
-                  </motion.div>
-                  <p className="text-gray-600 text-2xl font-light tracking-[0.5em] uppercase">
-                    The celebration is in motion...
-                  </p>
-                </div>
-              )}
-            </AnimatePresence>
+        <div className="mt-auto flex justify-between items-end">
+          <div className="flex items-center gap-8">
+            <div className={`w-16 h-16 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45`}>
+              <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-2xl -rotate-45`}>E</span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-xs font-bold uppercase tracking-[0.6em] opacity-40 block">
+                Powered by EventHub Nigeria
+              </span>
+              <p className="text-2xl font-light tracking-[0.2em] uppercase opacity-80">Orchestration Suite</p>
+            </div>
           </div>
 
-          <div className="col-span-4 space-y-8">
-            <div className={`${config.glass} backdrop-blur-2xl p-12 rounded-[4rem] border ${config.border}`}>
-              <div className="flex items-center gap-6 mb-8">
-                <Heart className={config.accent} size={32} />
-                <h4 className="text-xl font-serif italic">The Host's Message</h4>
+          <div className="text-right space-y-4">
+            <div className={`${config.glass} backdrop-blur-xl p-8 rounded-[3rem] border ${config.border} max-w-xl inline-block text-left`}>
+              <div className="flex items-center gap-4 mb-4">
+                <Heart className={config.accent} size={24} />
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-50">The Host's Message</span>
               </div>
-              <p className="text-2xl font-light leading-relaxed italic opacity-80">
-                "{event.message || 'Thank you for being part of our special day. Your presence makes this celebration complete.'}"
+              <p className="text-2xl font-light leading-relaxed italic opacity-90">
+                "{event.message || 'Thank you for being part of our special day.'}"
               </p>
             </div>
-
-            <div className={`${config.glass} backdrop-blur-2xl p-12 rounded-[4rem] border ${config.border}`}>
-              <div className="flex items-center gap-6 mb-8">
-                <Music className={config.accent} size={32} />
-                <h4 className="text-xl font-serif italic">Celebration Vibe</h4>
-              </div>
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold uppercase tracking-widest opacity-40">Venue</span>
-                  <span className="text-lg font-light">{event.venue}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold uppercase tracking-widest opacity-40">Date</span>
-                  <span className="text-lg font-light">
-                    {new Date(event.event_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </span>
-                </div>
-              </div>
+            <div className="pt-4">
+              <p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-1">Live Portal</p>
+              <p className="text-2xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p>
             </div>
-          </div>
-        </div>
-
-        <div className="mt-auto pt-12 flex justify-between items-end border-t border-white/5">
-          <div className="flex items-center gap-6">
-            <div className="w-12 h-12 border border-[#D4AF37] flex items-center justify-center rotate-45">
-              <span className="text-[#D4AF37] font-serif text-xl -rotate-45">E</span>
-            </div>
-            <span className="text-xs font-bold uppercase tracking-[0.5em] opacity-30">
-              Powered by EventHub Nigeria Orchestration Suite
-            </span>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-bold uppercase tracking-widest opacity-30 mb-2">Live Portal</p>
-            <p className="text-xl font-light tracking-widest">eventhub.ng/event/{event.slug}</p>
           </div>
         </div>
       </div>
