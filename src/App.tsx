@@ -25,6 +25,7 @@ import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
 import VibeScreen from "./pages/VibeScreen";
 import SprayPage from "./pages/SprayPage";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -68,6 +69,7 @@ const AppRoutes = () => {
       <Route path="/budget/:id" element={<BudgetTracker />} />
       <Route path="/vendors" element={<VendorDirectory />} />
       <Route path="/vendor/:id" element={<VendorProfile />} />
+      <Route path="/support" element={<Support />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

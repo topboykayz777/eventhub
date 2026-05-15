@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { showSuccess, showError } from '@/utils/toast';
 
 const categories = ["Catering", "Decor", "Photography", "Music", "Venues", "Planning"];
-const SUPPORT_EMAILS = "kaelfelix0120@gmail.com, kaelfelix0121@gmail.com, topboykayz@gmail.com";
+const SUPPORT_EMAIL = "kaelfelix0120@gmail.com";
 
 const VendorDirectory = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -25,6 +25,12 @@ const VendorDirectory = () => {
     phone: '',
     instagram: ''
   });
+
+  const triggerMailto = () => {
+    const subject = encodeURIComponent(`New Vendor Application: ${formData.name}`);
+    const body = encodeURIComponent(`Hello EventHub Team,\n\nI have just submitted my vendor application via the portal.\n\n--- APPLICATION DETAILS ---\nBrand Name: ${formData.name}\nCategory: ${formData.category}\nLocation: ${formData.location}\nPhone: ${formData.phone}\nInstagram: ${formData.instagram}\n\nPlease review my portfolio for the upcoming launch.`);
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,17 +63,14 @@ const VendorDirectory = () => {
 
       setIsSuccess(true);
       showSuccess("Application submitted to our curators.");
+      
+      // Trigger the mailto after a short delay to let the success state show
+      setTimeout(triggerMailto, 1500);
     } catch (err: any) {
       showError(err.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const openMailto = () => {
-    const subject = encodeURIComponent(`Vendor Application: ${formData.name}`);
-    const body = encodeURIComponent(`Hello EventHub Team,\n\nI have just submitted my vendor application for ${formData.name} (${formData.category}).\n\n--- APPLICATION DETAILS ---\nBrand Name: ${formData.name}\nCategory: ${formData.category}\nLocation: ${formData.location}\nPhone: ${formData.phone}\nInstagram: ${formData.instagram}\n\nPlease review my portfolio for the upcoming launch.`);
-    window.location.href = `mailto:${SUPPORT_EMAILS}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -216,14 +219,12 @@ const VendorDirectory = () => {
                     Your brand has been added to our vetting queue. Our curators will review your details and contact you shortly.
                   </p>
                   <div className="space-y-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">Direct Support Channels</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">Direct Support Channel</p>
                     <div className="flex flex-col gap-2 text-sm text-[#D4AF37] font-light">
-                      <span>kaelfelix0120@gmail.com</span>
-                      <span>kaelfelix0121@gmail.com</span>
-                      <span>topboykayz@gmail.com</span>
+                      <span>{SUPPORT_EMAIL}</span>
                     </div>
                     <Button 
-                      onClick={openMailto}
+                      onClick={triggerMailto}
                       className="mt-8 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest"
                     >
                       <Mail className="w-4 h-4 mr-2" /> Send Portfolio Directly
