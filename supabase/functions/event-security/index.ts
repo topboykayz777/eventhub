@@ -26,43 +26,37 @@ serve(async (req) => {
       })
     }
 
-    if (action === 'get-spray-config') {
-      // 1. Get Event and Host Profile
-      const { data: event } = await supabase.from('events').select('host_id').eq('id', payload.eventId).single()
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', event.host_id).single()
+    if (action === 'verify-bank') {
+      const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${payload.accountNumber}&bank_code=${payload.bankCode}`, {
+        headers: { 'Authorization': `Bearer ${paystackSecret}` }
+      })
+      const data = await response.json()
+      return new Response(JSON.stringify(data), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    }
 
-      if (!profile?.bank_name || !profile?.account_number) {
-        return new Response(JSON.stringify({ subaccount: null, error: "Host has not set up bank details." }), { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        })
-      }
-
-      // 2. Use existing subaccount or create new one
-      if (profile.paystack_subaccount_code) {
-        return new Response(JSON.stringify({ subaccount: profile.paystack_subaccount_code }), { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        })
-      }
-
-      // 3. Create Subaccount on Paystack
+    if (action === 'create-subaccount') {
       const response = await fetch('https://api.paystack.co/subaccount', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${paystackSecret}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          business_name: profile.full_name || "Event Host",
-          settlement_bank: profile.bank_name,
-          account_number: profile.account_number,
-          percentage_charge: 0 // Platform takes 0%, Paystack takes their standard fee
+          business_name: payload.accountName,
+          settlement_bank: payload.bankCode,
+          account_number: payload.accountNumber,
+          percentage_charge: 0
         })
       })
+      const data = await response.json()
+      return new Response(JSON.stringify(data), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    }
 
-      const subData = await response.json()
-      if (!subData.status) throw new Error(subData.message)
-
-      // 4. Save subaccount code to profile
-      await supabase.from('profiles').update({ paystack_subaccount_code: subData.data.subaccount_code }).eq('id', event.host_id)
-
-      return new Response(JSON.stringify({ subaccount: subData.data.subaccount_code }), { 
+    if (action === 'get-spray-config') {
+      const { data: event } = await supabase.from('events').select('host_id').eq('id', payload.eventId).single()
+      const { data: profile } = await supabase.from('profiles').select('paystack_subaccount_code').eq('id', event.host_id).single()
+      return new Response(JSON.stringify({ subaccount: profile?.paystack_subaccount_code || null }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       })
     }
