@@ -140,13 +140,13 @@ const VibeScreen = () => {
 
   return (
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
-      <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
-      
       <VibeHeroNotification event={activeNotification} />
 
       <div className="relative z-10 flex h-screen">
         {/* Left Section: Memory Wall (75%) */}
-        <div className="w-3/4" />
+        <div className="w-3/4 relative overflow-hidden">
+          <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
+        </div>
 
         {/* Right Section: Sidebar (25%) */}
         <div className={`w-1/4 ${config.glass} backdrop-blur-3xl border-l ${config.border} flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>

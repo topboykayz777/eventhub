@@ -26,12 +26,12 @@ const VibeBackground = ({ mediaUrls, fallbackUrl }: VibeBackgroundProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden bg-black">
+    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
       <AnimatePresence mode="wait">
         <motion.div
           key={items[index]}
           initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 0.4, scale: 1 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 2, ease: "easeInOut" }}
           className="absolute inset-0 w-full h-full"
@@ -50,9 +50,7 @@ const VibeBackground = ({ mediaUrls, fallbackUrl }: VibeBackgroundProps) => {
               src={items[index]} 
               className="w-full h-full object-cover"
               animate={{ 
-                scale: [1, 1.1],
-                x: [0, -20],
-                y: [0, -10]
+                scale: [1, 1.05],
               }}
               transition={{ 
                 duration: 10, 
@@ -64,7 +62,8 @@ const VibeBackground = ({ mediaUrls, fallbackUrl }: VibeBackgroundProps) => {
           )}
         </motion.div>
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+      {/* Cinematic Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
     </div>
   );
 };
