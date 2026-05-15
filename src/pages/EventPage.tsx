@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Loader2, Lock, ArrowLeft, PartyPopper } from 'lucide-react';
+import { Loader2, Lock, ArrowLeft, PartyPopper, Search, Coins, Ticket } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { usePaystackPayment } from 'react-paystack';
 
@@ -15,6 +15,7 @@ import RSVPRegistry from '@/components/event/RSVPRegistry';
 import GuestPortal from '@/components/event/GuestPortal';
 import MediaLightbox from '@/components/MediaLightbox';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const EventPage = () => {
   const { slug } = useParams();
@@ -27,6 +28,8 @@ const EventPage = () => {
   const [giftAmount, setGiftAmount] = useState('');
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [searchPhone, setSearchPhone] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (slug) fetchEvent();
@@ -69,6 +72,26 @@ const EventPage = () => {
       .eq('event_id', eventId)
       .eq('table_number', tableNum);
     setTableMates(data || []);
+  };
+
+  const handleFindPass = async () => {
+    if (!searchPhone) return;
+    setIsSearching(true);
+    const { data, error } = await supabase
+      .from('rsvps')
+      .select('*')
+      .eq('event_id', event.id)
+      .eq('guest_phone', searchPhone)
+      .maybeSingle();
+
+    if (data) {
+      localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
+      setSubmittedRsvp(data);
+      showSuccess(`Welcome back, ${data.guest_name}`);
+    } else {
+      showError("No RSVP found for this number.");
+    }
+    setIsSearching(false);
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
@@ -150,7 +173,7 @@ const EventPage = () => {
     elegant: { bg: "bg-white", text: "text-gray-900", accent: "text-black", button: "bg-black hover:bg-gray-800 text-white", card: "bg-gray-50 border-gray-100 shadow-lg", rsvpCard: "bg-white border-4 border-black text-black" },
     sahara: { bg: "bg-[#78350f]", text: "text-[#fef3c7]", accent: "text-[#fbbf24]", button: "bg-[#fbbf24] hover:bg-[#d97706] text-black", card: "bg-white/5 border-[#fbbf24]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbbf24] text-black" },
     velvet: { bg: "bg-[#2e1065]", text: "text-[#f5f3ff]", accent: "text-[#D4AF37]", button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black", card: "bg-white/5 border-[#D4AF37]/20 backdrop-blur-xl", rsvpCard: "bg-[#D4AF37] text-black" },
-    garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", button: "bg-[#10b981] hover:bg-[#059669] text-white", card: "bg-white/5 border-[#10b981]/20 backdrop-blur-xl", rsvpCard: "bg-[#10b981] text-white" },
+    garden: { bg: "bg-[#064e3b]", text: "text-[#ecfdf5]", accent: "text-[#10b981]", button: "bg-[#10b981] hover:bg-[#059669] text-white", card: "bg-white/5 border-10b981/20 backdrop-blur-xl", rsvpCard: "bg-[#10b981] text-white" },
     oceanic: { bg: "bg-[#1e3a8a]", text: "text-[#eff6ff]", accent: "text-[#93c5fd]", button: "bg-[#93c5fd] hover:bg-[#60a5fa] text-black", card: "bg-white/5 border-[#93c5fd]/20 backdrop-blur-xl", rsvpCard: "bg-[#93c5fd] text-black" },
     rose: { bg: "bg-[#831843]", text: "text-[#fdf2f8]", accent: "text-[#fbcfe8]", button: "bg-[#fbcfe8] hover:bg-[#f9a8d4] text-black", card: "bg-white/5 border-[#fbcfe8]/20 backdrop-blur-xl", rsvpCard: "bg-[#fbcfe8] text-black" },
     earth: { bg: "bg-[#431407]", text: "text-[#fff7ed]", accent: "text-[#fb923c]", button: "bg-[#fb923c] hover:bg-[#ea580c] text-white", card: "bg-white/5 border-[#fb923c]/20 backdrop-blur-xl", rsvpCard: "bg-[#fb923c] text-white" },
@@ -209,19 +232,72 @@ const EventPage = () => {
                 onSubmit={handleRSVP}
                 config={config}
               />
+            ) : isOngoing ? (
+              <div className="space-y-8 sticky top-32">
+                <div className={`${config.card} p-10 md:p-12 rounded-[3rem] border text-center space-y-8`}>
+                  <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto">
+                    <Ticket className="text-[#D4AF37] w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-serif italic mb-2">Guest Concierge</h2>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-6">Registration is now closed.</p>
+                    <div className="space-y-4">
+                      <p className="text-xs text-gray-400 leading-relaxed">Already RSVP'd? Enter your phone number to retrieve your digital pass.</p>
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="080..." 
+                          className="bg-black/5 border-none h-14 rounded-none"
+                          value={searchPhone}
+                          onChange={(e) => setSearchPhone(e.target.value)}
+                        />
+                        <Button onClick={handleFindPass} disabled={isSearching} className="bg-[#D4AF37] text-black rounded-none h-14 px-6">
+                          {isSearching ? <Loader2 className="animate-spin" /> : <Search size={18} />}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`${config.card} p-10 md:p-12 rounded-[3rem] border`}>
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37] mb-8 flex items-center gap-4">
+                    <Coins className="w-4 h-4" /> Digital Spraying
+                  </h2>
+                  <div className="space-y-6">
+                    <p className="text-xs text-gray-400 leading-relaxed">You can still honor the host with a digital spray even if you aren't on the guest list.</p>
+                    <div className="relative">
+                      <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif text-xl">₦</span>
+                      <Input 
+                        type="number" 
+                        placeholder="Amount" 
+                        className="h-16 pl-12 bg-black/5 border-none rounded-none text-2xl font-light" 
+                        value={giftAmount} 
+                        onChange={(e) => setGiftAmount(e.target.value)} 
+                      />
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        if (!giftAmount || parseInt(giftAmount) < 100) {
+                          showError("Minimum spray is ₦100");
+                          return;
+                        }
+                        initializeGiftPayment({ onSuccess: handleGiftSuccess, onClose: () => {} });
+                      }} 
+                      className={`w-full h-16 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase ${config.button}`}
+                    >
+                      Spray the Host
+                    </Button>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className={`${config.card} p-12 md:p-16 rounded-[3.5rem] border text-center space-y-8`}>
                 <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto">
-                  {isFinished ? <PartyPopper className="text-[#D4AF37] w-10 h-10" /> : <Lock className="text-[#D4AF37] w-10 h-10" />}
+                  <PartyPopper className="text-[#D4AF37] w-10 h-10" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-serif italic mb-4">
-                    {isFinished ? "Celebration Concluded" : "Registration Closed"}
-                  </h2>
+                  <h2 className="text-3xl font-serif italic mb-4">Celebration Concluded</h2>
                   <p className="text-gray-500 text-sm leading-relaxed">
-                    {isFinished 
-                      ? "This event has successfully concluded. The host thanks you for your support and well wishes."
-                      : "The celebration has already commenced and new RSVPs are no longer being accepted. We look forward to seeing you at the next one!"}
+                    This event has successfully concluded. The host thanks you for your support and well wishes.
                   </p>
                 </div>
                 <Link to="/">
