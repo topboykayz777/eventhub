@@ -257,9 +257,11 @@ const VendorDirectory = () => {
                           <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                          <SelectContent position="popper" className="bg-[#1a1a1a] border-white/10 text-white z-[150]">
                             {categories.map(cat => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              <SelectItem key={cat} value={cat} className="hover:bg-white/5 focus:bg-white/5 cursor-pointer">
+                                {cat}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
