@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Heart, Sparkles, Globe } from 'lucide-react';
+import { Lock, Heart, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 
@@ -175,7 +175,7 @@ const VibeScreen = () => {
               <VibeSidebar activities={activities} config={config} />
             </div>
 
-            {/* Footer Info (Inside the 75% section but at the bottom) */}
+            {/* Footer Info */}
             <div className="p-8 pt-0 space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 opacity-40">
@@ -186,15 +186,9 @@ const VibeScreen = () => {
               </div>
 
               <div className="space-y-3 pt-4 border-t border-white/5">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="text-[6px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
-                    <p className="text-[8px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[6px] font-black uppercase tracking-widest opacity-30 mb-0.5">Live Portal</p>
-                    <p className="text-[9px] font-medium tracking-widest opacity-60">eventhub.ng/event/{event.slug}</p>
-                  </div>
+                <div className="space-y-0.5">
+                  <span className="text-[6px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
+                  <p className="text-[8px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite</p>
                 </div>
               </div>
             </div>
