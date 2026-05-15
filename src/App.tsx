@@ -27,6 +27,7 @@ import VibeScreen from "./pages/VibeScreen";
 import SprayPage from "./pages/SprayPage";
 import Support from "./pages/Support";
 import FAQPage from "./pages/FAQPage";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ const AppRoutes = () => {
       <Route path="/vendor/:id" element={<VendorProfile />} />
       <Route path="/support" element={<Support />} />
       <Route path="/faq" element={<FAQPage />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
