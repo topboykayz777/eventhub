@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showSuccess, showError } from '@/utils/toast';
-import { Coins, Loader2, ShieldCheck, ArrowLeft, Copy, CheckCircle2, User, Edit2 } from 'lucide-react';
+import { Coins, Loader2, ShieldCheck, ArrowLeft, User } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const SprayPage = () => {
@@ -31,7 +31,6 @@ const SprayPage = () => {
       const { data: profile } = await supabase.from('profiles').select('bank_name, account_number, account_name').eq('id', eventData.host_id).single();
       setHostProfile(profile);
 
-      // Auto-detect RSVP from localStorage
       const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${eventData.id}`);
       if (savedRsvpId) {
         const { data: rsvpData } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
@@ -46,32 +45,35 @@ const SprayPage = () => {
   }, [slug, navigate]);
 
   const handleSent = async () => {
-    if (!amount || parseInt(amount) < 100) {
+    if (!amount || parseFloat(amount) < 100) {
       showError("Please enter a valid amount (Min ₦100)");
       return;
     }
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('budget_items').insert({
+      // We explicitly structure the payload to avoid 'undefined' values which cause 400 errors
+      const payload = {
         event_id: event.id,
-        rsvp_id: rsvp?.id,
-        description: `Digital Spray from ${rsvp?.guest_name || 'Guest'}`,
-        alert_name: alertName,
+        rsvp_id: rsvp?.id || null,
+        description: `Digital Spray from ${rsvp?.guest_name || alertName || 'Guest'}`,
+        alert_name: alertName || 'Anonymous',
         amount: parseFloat(amount),
         type: 'income',
-        status: 'pending' // It starts as pending!
-      });
+        status: 'pending'
+      };
+
+      const { error } = await supabase.from('budget_items').insert(payload);
 
       if (error) throw error;
 
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       showSuccess("Notification sent to Host. Waiting for verification...");
       
-      // Redirect back to event page after 3 seconds
       setTimeout(() => navigate(`/event/${event.slug}`), 3000);
     } catch (err: any) {
-      showError(err.message);
+      console.error("Insert Error:", err);
+      showError(err.message || "Failed to record spray. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -91,7 +93,6 @@ const SprayPage = () => {
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 space-y-8">
-          {/* Identity Section */}
           <div className="p-6 bg-black/40 border border-white/5 rounded-2xl">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
@@ -111,14 +112,13 @@ const SprayPage = () => {
                 placeholder="Name on your bank app"
               />
             ) : (
-              <p className="text-xl font-serif italic">{rsvp?.guest_name || 'Anonymous Guest'}</p>
+              <p className="text-xl font-serif italic">{alertName || 'Anonymous Guest'}</p>
             )}
             <p className="text-[7px] text-gray-600 uppercase tracking-widest mt-2">
-              The host will look for a transfer from: <span className="text-gray-400">{alertName}</span>
+              The host will look for a transfer from: <span className="text-gray-400">{alertName || 'Anonymous'}</span>
             </p>
           </div>
 
-          {/* Amount Section */}
           <div className="space-y-3">
             <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Amount to Spray</Label>
             <div className="relative">
@@ -133,7 +133,6 @@ const SprayPage = () => {
             </div>
           </div>
 
-          {/* Bank Details */}
           <div className="space-y-4 pt-4 border-t border-white/5">
             <p className="text-[8px] font-black uppercase tracking-[0.3em] text-center text-[#D4AF37]">Host Bank Details</p>
             <div className="grid grid-cols-2 gap-4">
@@ -143,7 +142,12 @@ const SprayPage = () => {
               </div>
               <div 
                 className="p-4 bg-black/20 rounded-xl border border-white/5 cursor-pointer hover:border-[#D4AF37]/30 transition-all"
-                onClick={() => { navigator.clipboard.writeText(hostProfile?.account_number); showSuccess("Copied!"); }}
+                onClick={() => { 
+                  if (hostProfile?.account_number) {
+                    navigator.clipboard.writeText(hostProfile.account_number); 
+                    showSuccess("Copied!"); 
+                  }
+                }}
               >
                 <p className="text-[7px] font-bold text-gray-600 uppercase mb-1">Account (Tap to copy)</p>
                 <p className="text-xs font-medium tracking-widest">{hostProfile?.account_number}</p>
