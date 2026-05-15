@@ -21,8 +21,10 @@ const VibeScreen = () => {
   const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
   const [activities, setActivities] = useState<any[]>([]);
   const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
+  
   const notificationQueue = useRef<VibeEvent[]>([]);
   const isProcessingQueue = useRef(false);
+  const eventRef = useRef<any>(null);
 
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", dark: true },
@@ -50,8 +52,8 @@ const VibeScreen = () => {
   const processQueue = useCallback(async () => {
     if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
     isProcessingQueue.current = true;
-    const next = notificationQueue.current.shift()!;
     
+    const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
     setActivities(prev => [next, ...prev].slice(0, 10));
 
@@ -69,42 +71,55 @@ const VibeScreen = () => {
     await new Promise(resolve => setTimeout(resolve, 6000));
     setActiveNotification(null);
     await new Promise(resolve => setTimeout(resolve, 1000));
+    
     isProcessingQueue.current = false;
     processQueue();
   }, []);
 
   const addToQueue = useCallback((notif: Omit<VibeEvent, 'id' | 'config'>) => {
-    const config = themeConfigs[event?.theme || 'modern'];
+    const currentEvent = eventRef.current;
+    const config = themeConfigs[currentEvent?.theme || 'modern'];
+    
     notificationQueue.current.push({ 
       ...notif, 
       id: Math.random().toString(36).substring(7), 
       config,
       timestamp: Date.now()
     } as VibeEvent);
+    
     processQueue();
-  }, [event?.theme, processQueue]);
+  }, [processQueue]);
 
   useEffect(() => {
     const fetchInitial = async () => {
       if (!slug) return;
       const { data: eventData } = await supabase.from('events').select('*').ilike('slug', slug.trim()).maybeSingle();
+      
       if (eventData) {
         setEvent(eventData);
+        eventRef.current = eventData;
+        
         const started = new Date() >= new Date(eventData.event_date);
         setIsLive(started && !eventData.is_finished);
 
-        const { data: rsvps } = await supabase.from('rsvps').select('checked_in, guest_name').eq('event_id', eventData.id);
-        const { data: budget } = await supabase.from('budget_items').select('amount, description').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income');
+        // Initial Stats
+        const { data: rsvps } = await supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id);
+        const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income');
         
         setStats({
           checkedIn: rsvps?.filter(r => r.checked_in).length || 0,
           totalSprayed: budget?.reduce((acc, curr) => acc + curr.amount, 0) || 0
         });
 
+        // Real-time Subscription
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
-            // Handle both new approved sprays and sprays that just got approved
+          .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'budget_items', 
+            filter: `event_id=eq.${eventData.id}` 
+          }, (payload) => {
             const isNewlyApproved = (payload.eventType === 'INSERT' && payload.new.status === 'approved') || 
                                    (payload.eventType === 'UPDATE' && payload.new.status === 'approved' && payload.old?.status !== 'approved');
 
@@ -114,14 +129,26 @@ const VibeScreen = () => {
               setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
             }
           })
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+          .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'rsvps', 
+            filter: `event_id=eq.${eventData.id}` 
+          }, (payload) => {
             if (payload.new.checked_in && !payload.old?.checked_in) {
               addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
               setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
             }
           })
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` }, (payload) => {
+          .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'events', 
+            filter: `id=eq.${eventData.id}` 
+          }, (payload) => {
             setEvent(payload.new);
+            eventRef.current = payload.new;
+            
             if (payload.new.message !== payload.old?.message && payload.new.message) {
               addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
             }
@@ -129,15 +156,28 @@ const VibeScreen = () => {
           })
           .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+          supabase.removeChannel(channel);
+        };
       }
     };
+    
     fetchInitial();
   }, [slug, addToQueue]);
 
-  if (!event || isLive === null) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>;
+  if (!event || isLive === null) return (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
-  if (!isLive) return <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center"><Lock className="text-[#D4AF37] w-10 h-10 mb-12" /><h1 className="text-5xl font-serif italic mb-6">Vibe Screen Inactive</h1><Button onClick={() => navigate('/')} variant="outline">Return to Portal</Button></div>;
+  if (!isLive) return (
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
+      <Lock className="text-[#D4AF37] w-10 h-10 mb-12" />
+      <h1 className="text-5xl font-serif italic mb-6">Vibe Screen Inactive</h1>
+      <Button onClick={() => navigate('/')} variant="outline">Return to Portal</Button>
+    </div>
+  );
 
   const config = themeConfigs[event.theme || 'modern'];
   const isDark = config.dark !== false;
