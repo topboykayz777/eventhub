@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Heart, Sparkles, Wifi, WifiOff } from 'lucide-react';
+import { Lock, Heart, Sparkles, Wifi, WifiOff, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 
@@ -21,7 +21,7 @@ const VibeScreen = () => {
   const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
   const [activities, setActivities] = useState<any[]>([]);
   const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
-  const [isOnline, setIsOnline] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
   
   const notificationQueue = useRef<VibeEvent[]>([]);
   const isProcessingQueue = useRef(false);
@@ -56,22 +56,24 @@ const VibeScreen = () => {
     
     const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
-    setActivities(prev => [next, ...prev].slice(0, 10));
+    setActivities(prev => [next, ...prev].slice(0, 15));
 
     if (next.type === 'spray') {
       confetti({ 
-        particleCount: 300, 
-        spread: 100, 
+        particleCount: 400, 
+        spread: 120, 
         origin: { y: 0.6 }, 
         colors: ['#D4AF37', '#ffffff', '#F9E4B7'], 
         zIndex: 200,
-        scalar: 1.2
+        scalar: 1.5
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 6000));
+    // Display notification for 5 seconds
+    await new Promise(resolve => setTimeout(resolve, 5000));
     setActiveNotification(null);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Small gap between notifications
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     isProcessingQueue.current = false;
     processQueue();
@@ -92,93 +94,143 @@ const VibeScreen = () => {
   }, [processQueue]);
 
   useEffect(() => {
-    const fetchInitial = async () => {
+    const fetchInitialAndSubscribe = async () => {
       if (!slug) return;
-      const { data: eventData } = await supabase.from('events').select('*').ilike('slug', slug.trim()).maybeSingle();
       
-      if (eventData) {
-        setEvent(eventData);
-        eventRef.current = eventData;
-        
-        const started = new Date() >= new Date(eventData.event_date);
-        setIsLive(started && !eventData.is_finished);
+      // 1. Fetch Event Data
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('*')
+        .ilike('slug', slug.trim())
+        .maybeSingle();
+      
+      if (eventError || !eventData) {
+        console.error("Event fetch error:", eventError);
+        return;
+      }
 
-        // Initial Stats
-        const { data: rsvps } = await supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id);
-        const { data: budget } = await supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income');
-        
-        setStats({
-          checkedIn: rsvps?.filter(r => r.checked_in).length || 0,
-          totalSprayed: budget?.reduce((acc, curr) => acc + curr.amount, 0) || 0
+      setEvent(eventData);
+      eventRef.current = eventData;
+      
+      const started = new Date() >= new Date(eventData.event_date);
+      setIsLive(started && !eventData.is_finished);
+
+      // 2. Fetch Initial Stats
+      const [rsvpsRes, budgetRes] = await Promise.all([
+        supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id),
+        supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income')
+      ]);
+      
+      setStats({
+        checkedIn: rsvpsRes.data?.filter(r => r.checked_in).length || 0,
+        totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0
+      });
+
+      // 3. Initialize Realtime Channel
+      const channel = supabase
+        .channel(`vibe-realtime-${eventData.id}`, {
+          config: {
+            broadcast: { self: true },
+            presence: { key: eventData.id }
+          }
+        })
+        // Listen for Spray Approvals
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'budget_items', 
+          filter: `event_id=eq.${eventData.id}` 
+        }, (payload) => {
+          console.log("[Vibe Realtime] Budget Change:", payload);
+          
+          const isNewlyApproved = 
+            (payload.eventType === 'INSERT' && payload.new.status === 'approved') || 
+            (payload.eventType === 'UPDATE' && payload.new.status === 'approved' && payload.old?.status !== 'approved');
+
+          if (isNewlyApproved && payload.new.type === 'income') {
+            const guestName = payload.new.description.replace('Digital Spray from ', '');
+            addToQueue({ 
+              type: 'spray', 
+              title: 'Digital Spray Received', 
+              detail: guestName, 
+              amount: payload.new.amount 
+            });
+            setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
+          }
+        })
+        // Listen for Guest Check-ins
+        .on('postgres_changes', { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'rsvps', 
+          filter: `event_id=eq.${eventData.id}` 
+        }, (payload) => {
+          console.log("[Vibe Realtime] RSVP Change:", payload);
+          
+          // Check if main guest checked in
+          if (payload.new.checked_in && !payload.old?.checked_in) {
+            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
+            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+          }
+          
+          // Check if plus one checked in
+          if (payload.new.plus_one_checked_in && !payload.old?.plus_one_checked_in) {
+            const name = payload.new.plus_one_name || `${payload.new.guest_name}'s Guest`;
+            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: name });
+            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+          }
+        })
+        // Listen for Event Updates (Messages, Conclusion)
+        .on('postgres_changes', { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'events', 
+          filter: `id=eq.${eventData.id}` 
+        }, (payload) => {
+          console.log("[Vibe Realtime] Event Update:", payload);
+          setEvent(payload.new);
+          eventRef.current = payload.new;
+          
+          if (payload.new.message !== payload.old?.message && payload.new.message) {
+            addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
+          }
+          
+          if (payload.new.is_finished) {
+            setIsLive(false);
+          }
+        })
+        .subscribe((status) => {
+          console.log("[Vibe Realtime] Status:", status);
+          if (status === 'SUBSCRIBED') setConnectionStatus('online');
+          else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setConnectionStatus('offline');
         });
 
-        // Real-time Subscription with improved error handling
-        const channel = supabase
-          .channel(`vibe-live-${eventData.id}`)
-          .on('postgres_changes', { 
-            event: '*', 
-            schema: 'public', 
-            table: 'budget_items', 
-            filter: `event_id=eq.${eventData.id}` 
-          }, (payload) => {
-            const isNewlyApproved = (payload.eventType === 'INSERT' && payload.new.status === 'approved') || 
-                                   (payload.eventType === 'UPDATE' && payload.new.status === 'approved' && payload.old?.status !== 'approved');
-
-            if (isNewlyApproved && payload.new.type === 'income') {
-              const guestName = payload.new.description.replace('Digital Spray from ', '');
-              addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: guestName, amount: payload.new.amount });
-              setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
-            }
-          })
-          .on('postgres_changes', { 
-            event: 'UPDATE', 
-            schema: 'public', 
-            table: 'rsvps', 
-            filter: `event_id=eq.${eventData.id}` 
-          }, (payload) => {
-            if (payload.new.checked_in && !payload.old?.checked_in) {
-              addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
-              setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
-            }
-          })
-          .on('postgres_changes', { 
-            event: 'UPDATE', 
-            schema: 'public', 
-            table: 'events', 
-            filter: `id=eq.${eventData.id}` 
-          }, (payload) => {
-            setEvent(payload.new);
-            eventRef.current = payload.new;
-            
-            if (payload.new.message !== payload.old?.message && payload.new.message) {
-              addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
-            }
-            if (payload.new.is_finished) setIsLive(false);
-          })
-          .subscribe((status) => {
-            setIsOnline(status === 'SUBSCRIBED');
-          });
-
-        return () => {
-          supabase.removeChannel(channel);
-        };
-      }
+      return () => {
+        console.log("[Vibe Realtime] Cleaning up channel...");
+        supabase.removeChannel(channel);
+      };
     };
     
-    fetchInitial();
+    fetchInitialAndSubscribe();
   }, [slug, addToQueue]);
 
   if (!event || isLive === null) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <div className="w-16 h-16 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center gap-6">
+        <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500">Initializing Vibe Stream...</p>
+      </div>
     </div>
   );
 
   if (!isLive) return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
-      <Lock className="text-[#D4AF37] w-10 h-10 mb-12" />
-      <h1 className="text-5xl font-serif italic mb-6">Vibe Screen Inactive</h1>
-      <Button onClick={() => navigate('/')} variant="outline">Return to Portal</Button>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+        <Lock className="text-[#D4AF37] w-12 h-12 mb-12 mx-auto" />
+        <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen Inactive</h1>
+        <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-bold mb-12">The stream activates during the event window.</p>
+        <Button onClick={() => navigate('/')} variant="outline" className="border-white/10 rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-widest">Return to Portal</Button>
+      </motion.div>
     </div>
   );
 
@@ -190,69 +242,79 @@ const VibeScreen = () => {
       <VibeHeroNotification event={activeNotification} />
 
       {/* Connection Status Indicator */}
-      <div className="fixed top-4 left-4 z-[110] opacity-50 hover:opacity-100 transition-opacity">
-        {isOnline ? (
-          <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
-            <Wifi size={10} className="text-green-500" />
-            <span className="text-[7px] font-black uppercase tracking-widest text-green-500">Live Sync</span>
+      <div className="fixed top-6 left-6 z-[110] transition-all duration-500">
+        {connectionStatus === 'online' ? (
+          <div className="flex items-center gap-3 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full backdrop-blur-md">
+            <Wifi size={12} className="text-green-500" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-green-500">Live Sync Active</span>
+          </div>
+        ) : connectionStatus === 'connecting' ? (
+          <div className="flex items-center gap-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full backdrop-blur-md">
+            <Loader2 size={12} className="text-amber-500 animate-spin" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-amber-500">Connecting...</span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
-            <WifiOff size={10} className="text-red-500" />
-            <span className="text-[7px] font-black uppercase tracking-widest text-red-500">Offline</span>
+          <div className="flex items-center gap-3 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-full backdrop-blur-md">
+            <WifiOff size={12} className="text-red-500" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-red-500">Sync Disconnected</span>
           </div>
         )}
       </div>
 
       <div className="relative z-10 flex flex-col lg:flex-row h-screen">
-        {/* Memory Wall (75% on desktop, 60% on mobile) */}
-        <div className="h-[60vh] lg:h-full lg:w-3/4 relative overflow-hidden">
+        {/* Memory Wall */}
+        <div className="h-[55vh] lg:h-full lg:w-3/4 relative overflow-hidden">
           <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
         </div>
 
-        {/* Sidebar (25% on desktop, 40% on mobile) */}
-        <div className={`h-[40vh] lg:h-full lg:w-1/4 ${config.glass} backdrop-blur-3xl border-t lg:border-t-0 lg:border-l ${config.border} flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
+        {/* Sidebar */}
+        <div className={`h-[45vh] lg:h-full lg:w-1/4 ${config.glass} backdrop-blur-3xl border-t lg:border-t-0 lg:border-l ${config.border} flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.4)]`}>
           
-          {/* Details & Branding */}
-          <div className="p-6 lg:p-8 flex flex-col justify-between border-b border-white/5 shrink-0">
-            <div className="space-y-4">
+          {/* Header & Stats */}
+          <div className="p-6 lg:p-10 flex flex-col justify-between border-b border-white/5 shrink-0">
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className={config.accent} size={14} />
-                  <span className={`${config.accent} text-[8px] font-black tracking-[0.4em] uppercase`}>Live Feed</span>
+                <div className="flex items-center gap-3">
+                  <Sparkles className={config.accent} size={16} />
+                  <span className={`${config.accent} text-[10px] font-black tracking-[0.4em] uppercase`}>Live Feed</span>
                 </div>
-                <div className={`w-8 h-8 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45 shrink-0`}>
-                  <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-sm -rotate-45`}>E</span>
+                <div className={`w-10 h-10 border-2 ${isDark ? 'border-[#D4AF37]' : 'border-black'} flex items-center justify-center rotate-45 shrink-0`}>
+                  <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-lg -rotate-45`}>E</span>
                 </div>
               </div>
-              <h1 className="text-xl lg:text-3xl font-serif italic leading-tight line-clamp-1 lg:line-clamp-2">{event.event_name}</h1>
+              <h1 className="text-2xl lg:text-4xl font-serif italic leading-tight line-clamp-2">{event.event_name}</h1>
             </div>
 
-            <div className="mt-4 lg:mt-6">
+            <div className="mt-8">
               <VibeStats stats={stats} config={config} />
             </div>
           </div>
 
-          {/* Live Activity & Footer */}
+          {/* Live Activity Feed */}
           <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 p-6 lg:p-8 min-h-0">
+            <div className="flex-1 p-6 lg:p-10 min-h-0">
               <VibeSidebar activities={activities} config={config} />
             </div>
 
-            {/* Footer Info - Hidden on very small mobile screens to save space */}
-            <div className="hidden sm:block p-6 lg:p-8 pt-0 space-y-4 lg:space-y-6">
-              <div className="space-y-2">
+            {/* Host Message Footer */}
+            <div className="p-6 lg:p-10 pt-0 space-y-6">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2 opacity-40">
-                  <Heart size={12} />
-                  <span className="text-[7px] font-black uppercase tracking-widest">Host's Message</span>
+                  <Heart size={14} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Host's Message</span>
                 </div>
-                <p className="text-xs lg:text-sm font-light italic opacity-80 line-clamp-2 lg:line-clamp-3">"{event.message || 'Thank you for being part of our special day.'}"</p>
+                <p className="text-sm lg:text-base font-light italic opacity-80 leading-relaxed">
+                  "{event.message || 'Thank you for being part of our special day.'}"
+                </p>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-white/5">
-                <div className="space-y-0.5">
-                  <span className="text-[6px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
-                  <p className="text-[8px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite</p>
+              <div className="pt-6 border-t border-white/5">
+                <div className="flex justify-between items-end">
+                  <div className="space-y-1">
+                    <span className="text-[7px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
+                    <p className="text-[9px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite v2.0</p>
+                  </div>
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                 </div>
               </div>
             </div>
