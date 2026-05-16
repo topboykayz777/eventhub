@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Heart, Sparkles } from 'lucide-react';
+import { Lock, Heart, Sparkles, Wifi, WifiOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 
@@ -21,6 +21,7 @@ const VibeScreen = () => {
   const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
   const [activities, setActivities] = useState<any[]>([]);
   const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
   
   const notificationQueue = useRef<VibeEvent[]>([]);
   const isProcessingQueue = useRef(false);
@@ -111,7 +112,7 @@ const VibeScreen = () => {
           totalSprayed: budget?.reduce((acc, curr) => acc + curr.amount, 0) || 0
         });
 
-        // Real-time Subscription
+        // Real-time Subscription with improved error handling
         const channel = supabase
           .channel(`vibe-live-${eventData.id}`)
           .on('postgres_changes', { 
@@ -154,7 +155,9 @@ const VibeScreen = () => {
             }
             if (payload.new.is_finished) setIsLive(false);
           })
-          .subscribe();
+          .subscribe((status) => {
+            setIsOnline(status === 'SUBSCRIBED');
+          });
 
         return () => {
           supabase.removeChannel(channel);
@@ -186,17 +189,32 @@ const VibeScreen = () => {
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
       <VibeHeroNotification event={activeNotification} />
 
-      <div className="relative z-10 flex h-screen">
-        {/* Left Section: Memory Wall (75%) */}
-        <div className="w-3/4 relative overflow-hidden">
+      {/* Connection Status Indicator */}
+      <div className="fixed top-4 left-4 z-[110] opacity-50 hover:opacity-100 transition-opacity">
+        {isOnline ? (
+          <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+            <Wifi size={10} className="text-green-500" />
+            <span className="text-[7px] font-black uppercase tracking-widest text-green-500">Live Sync</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
+            <WifiOff size={10} className="text-red-500" />
+            <span className="text-[7px] font-black uppercase tracking-widest text-red-500">Offline</span>
+          </div>
+        )}
+      </div>
+
+      <div className="relative z-10 flex flex-col lg:flex-row h-screen">
+        {/* Memory Wall (75% on desktop, 60% on mobile) */}
+        <div className="h-[60vh] lg:h-full lg:w-3/4 relative overflow-hidden">
           <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
         </div>
 
-        {/* Right Section: Sidebar (25%) */}
-        <div className={`w-1/4 ${config.glass} backdrop-blur-3xl border-l ${config.border} flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
+        {/* Sidebar (25% on desktop, 40% on mobile) */}
+        <div className={`h-[40vh] lg:h-full lg:w-1/4 ${config.glass} backdrop-blur-3xl border-t lg:border-t-0 lg:border-l ${config.border} flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.3)]`}>
           
-          {/* Top 25%: Details & Branding */}
-          <div className="h-1/4 p-8 flex flex-col justify-between border-b border-white/5">
+          {/* Details & Branding */}
+          <div className="p-6 lg:p-8 flex flex-col justify-between border-b border-white/5 shrink-0">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -207,26 +225,28 @@ const VibeScreen = () => {
                   <span className={`${isDark ? 'text-[#D4AF37]' : 'text-black'} font-serif text-sm -rotate-45`}>E</span>
                 </div>
               </div>
-              <h1 className="text-2xl lg:text-3xl font-serif italic leading-tight line-clamp-2">{event.event_name}</h1>
+              <h1 className="text-xl lg:text-3xl font-serif italic leading-tight line-clamp-1 lg:line-clamp-2">{event.event_name}</h1>
             </div>
 
-            <VibeStats stats={stats} config={config} />
+            <div className="mt-4 lg:mt-6">
+              <VibeStats stats={stats} config={config} />
+            </div>
           </div>
 
-          {/* Bottom 75%: Live Activity & Footer */}
-          <div className="h-3/4 flex flex-col">
-            <div className="flex-1 p-8 min-h-0">
+          {/* Live Activity & Footer */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 p-6 lg:p-8 min-h-0">
               <VibeSidebar activities={activities} config={config} />
             </div>
 
-            {/* Footer Info */}
-            <div className="p-8 pt-0 space-y-6">
+            {/* Footer Info - Hidden on very small mobile screens to save space */}
+            <div className="hidden sm:block p-6 lg:p-8 pt-0 space-y-4 lg:space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 opacity-40">
                   <Heart size={12} />
                   <span className="text-[7px] font-black uppercase tracking-widest">Host's Message</span>
                 </div>
-                <p className="text-sm font-light italic opacity-80 line-clamp-3">"{event.message || 'Thank you for being part of our special day.'}"</p>
+                <p className="text-xs lg:text-sm font-light italic opacity-80 line-clamp-2 lg:line-clamp-3">"{event.message || 'Thank you for being part of our special day.'}"</p>
               </div>
 
               <div className="space-y-3 pt-4 border-t border-white/5">

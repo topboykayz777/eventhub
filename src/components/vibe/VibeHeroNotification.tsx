@@ -29,7 +29,7 @@ const VibeHeroNotification = ({ event }: VibeHeroNotificationProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-12 pointer-events-none"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 pointer-events-none"
       >
         {/* Backdrop Blur for the Memory Wall */}
         <motion.div 
@@ -44,7 +44,7 @@ const VibeHeroNotification = ({ event }: VibeHeroNotificationProps) => {
           animate={{ y: 0, scale: 1, opacity: 1 }}
           exit={{ y: -100, scale: 1.1, opacity: 0, filter: "blur(20px)" }}
           transition={{ type: "spring", damping: 20, stiffness: 100 }}
-          className={`max-w-5xl w-full ${event.config.glass} backdrop-blur-3xl rounded-[5rem] border-2 ${event.config.border} p-20 text-center shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden pointer-events-auto`}
+          className={`max-w-5xl w-full ${event.config.glass} backdrop-blur-3xl rounded-[3rem] md:rounded-[5rem] border-2 ${event.config.border} p-8 md:p-20 text-center shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden pointer-events-auto`}
         >
           {/* Animated Background Glow */}
           <motion.div 
@@ -61,33 +61,33 @@ const VibeHeroNotification = ({ event }: VibeHeroNotificationProps) => {
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.2, type: "spring" }}
-              className={`w-40 h-40 rounded-full mx-auto mb-12 flex items-center justify-center shadow-2xl ${
+              className={`w-24 h-24 md:w-40 md:h-40 rounded-full mx-auto mb-6 md:mb-12 flex items-center justify-center shadow-2xl ${
                 event.type === 'spray' ? 'bg-[#D4AF37] text-black' : 
                 event.type === 'checkin' ? 'bg-green-500 text-white' : 'bg-white/10 text-[#D4AF37]'
               }`}
             >
-              {event.type === 'spray' ? <Coins size={80} /> : 
-               event.type === 'checkin' ? <UserCheck size={80} /> : <MessageSquare size={80} />}
+              {event.type === 'spray' ? <Coins className="w-12 h-12 md:w-20 md:h-20" /> : 
+               event.type === 'checkin' ? <UserCheck className="w-12 h-12 md:w-20 md:h-20" /> : <MessageSquare className="w-12 h-12 md:w-20 md:h-20" />}
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex items-center justify-center gap-4 mb-6"
+              className="flex items-center justify-center gap-2 md:gap-4 mb-4 md:mb-6"
             >
-              <Sparkles className={event.config.accent} size={24} />
-              <p className={`${event.config.accent} text-2xl font-black uppercase tracking-[0.8em]`}>
+              <Sparkles className={event.config.accent} size={16} />
+              <p className={`${event.config.accent} text-sm md:text-2xl font-black uppercase tracking-[0.4em] md:tracking-[0.8em]`}>
                 {event.title}
               </p>
-              <Sparkles className={event.config.accent} size={24} />
+              <Sparkles className={event.config.accent} size={16} />
             </motion.div>
 
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className={`text-7xl md:text-9xl font-serif italic leading-tight ${isDark ? 'text-white' : 'text-black'}`}
+              className={`text-3xl md:text-7xl lg:text-9xl font-serif italic leading-tight ${isDark ? 'text-white' : 'text-black'}`}
             >
               {event.detail}
             </motion.h2>
@@ -97,7 +97,7 @@ const VibeHeroNotification = ({ event }: VibeHeroNotificationProps) => {
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.7, type: "spring" }}
-                className="mt-12 text-9xl md:text-[12rem] font-serif italic text-[#D4AF37] drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]"
+                className="mt-6 md:mt-12 text-5xl md:text-9xl lg:text-[12rem] font-serif italic text-[#D4AF37] drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]"
               >
                 ₦{event.amount.toLocaleString()}
               </motion.div>

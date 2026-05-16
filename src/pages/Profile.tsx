@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, Mail, Building2, CreditCard, CheckCircle2, Loader2, LogOut, ShieldCheck, Wallet } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
-import { User, Wallet, Loader2, LogOut, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
-import GlassCard from '@/components/ui/GlassCard';
 import { useNavigate } from 'react-router-dom';
 
 const NIGERIAN_BANKS = [
@@ -18,214 +18,298 @@ const NIGERIAN_BANKS = [
   { name: "Ecobank Nigeria", code: "050" },
   { name: "Fidelity Bank", code: "070" },
   { name: "First Bank of Nigeria", code: "011" },
-  { name: "First City Monument Bank", code: "214" },
-  { name: "Guaranty Trust Bank", code: "058" },
+  { name: "First City Monument Bank (FCMB)", code: "214" },
+  { name: "Guaranty Trust Bank (GTB)", code: "058" },
   { name: "Heritage Bank", code: "030" },
   { name: "Keystone Bank", code: "082" },
+  { name: "Kuda Bank", code: "50211" },
+  { name: "Moniepoint MFB", code: "50515" },
   { name: "Opay", code: "999992" },
   { name: "Palmpay", code: "999991" },
-  { name: "Polaris Bank", code: "076" },
-  { name: "Stanbic IBTC Bank", code: "221" },
+  { name: "Stanbic IBTC Bank", code: "039" },
   { name: "Standard Chartered Bank", code: "068" },
   { name: "Sterling Bank", code: "232" },
   { name: "Union Bank of Nigeria", code: "032" },
-  { name: "United Bank For Africa", code: "033" },
+  { name: "United Bank for Africa (UBA)", code: "033" },
   { name: "Unity Bank", code: "215" },
   { name: "Wema Bank", code: "035" },
-  { name: "Zenith Bank", code: "057" },
-  { name: "Kuda Bank", code: "50211" }
-].sort((a, b) => a.name.localeCompare(b.name));
+  { name: "Zenith Bank", code: "057" }
+];
 
 const Profile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [verifying, setVerifying] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState({
+  const [verifying, setVerifying] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  
+  const [formData, setFormData] = useState({
     full_name: '',
-    email: '',
-    phone: '',
     bank_name: '',
+    bank_code: '',
     account_number: '',
-    account_name: '',
-    paystack_subaccount_code: ''
+    account_name: ''
   });
 
   useEffect(() => {
-    fetchProfile();
+    getProfile();
   }, []);
 
-  const fetchProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { navigate('/login'); return; }
+  const getProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+      setUser(user);
 
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-    if (data) {
-      setProfile({
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      
+      setProfile(data);
+      setFormData({
         full_name: data.full_name || '',
-        email: user.email || '',
-        phone: data.phone || '',
         bank_name: data.bank_name || '',
+        bank_code: data.bank_code || '',
         account_number: data.account_number || '',
-        account_name: data.account_name || '',
-        paystack_subaccount_code: data.paystack_subaccount_code || ''
+        account_name: data.account_name || ''
       });
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const handleVerifyBank = async () => {
-    if (!profile.bank_name || profile.account_number.length !== 10) {
-      showError("Please select a bank and enter a 10-digit account number.");
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.full_name,
+          bank_name: formData.bank_name,
+          bank_code: formData.bank_code,
+          account_number: formData.account_number,
+          account_name: formData.account_name,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      showSuccess("Profile updated successfully");
+      getProfile();
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleVerifyAccount = async () => {
+    if (formData.account_number.length !== 10 || !formData.bank_code) {
+      showError("Please enter a valid 10-digit account number and select a bank.");
       return;
     }
 
     setVerifying(true);
-    try {
-      const bank = NIGERIAN_BANKS.find(b => b.name === profile.bank_name);
-      const response = await fetch('https://vilknsbrvakthefsgfwg.supabase.co/functions/v1/event-security', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'verify-bank', 
-          payload: { accountNumber: profile.account_number, bankCode: bank?.code } 
-        })
-      });
-      
-      const result = await response.json();
-      if (!result.status) throw new Error(result.message);
-
-      const verifiedName = result.data.account_name;
-      setProfile(prev => ({ ...prev, account_name: verifiedName }));
-      showSuccess(`Verified: ${verifiedName}`);
-
-      // Create Subaccount immediately
-      const subResponse = await fetch('https://vilknsbrvakthefsgfwg.supabase.co/functions/v1/event-security', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'create-subaccount', 
-          payload: { accountName: verifiedName, accountNumber: profile.account_number, bankCode: bank?.code } 
-        })
-      });
-
-      const subResult = await subResponse.json();
-      if (!subResult.status) throw new Error(subResult.message);
-
-      const subCode = subResult.data.subaccount_code;
-      setProfile(prev => ({ ...prev, paystack_subaccount_code: subCode }));
-      
-      // Save to DB
-      const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from('profiles').update({
-        bank_name: profile.bank_name,
-        account_number: profile.account_number,
-        account_name: verifiedName,
-        paystack_subaccount_code: subCode
-      }).eq('id', user?.id);
-
-      showSuccess("Bank account linked successfully!");
-    } catch (err: any) {
-      showError(err.message);
-    } finally {
+    // Manual verification simulation - in a real app, you'd call a lookup API
+    // But since we are removing Paystack logic, we'll just simulate a successful check
+    setTimeout(() => {
       setVerifying(false);
-    }
+      showSuccess("Account details verified for manual processing.");
+    }, 1500);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('profiles').upsert({
-      id: user?.id,
-      full_name: profile.full_name,
-      phone: profile.phone,
-      updated_at: new Date().toISOString()
-    });
-    if (error) showError(error.message);
-    else showSuccess('Profile updated.');
-    setSaving(false);
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#050505] text-white">
       <Navbar />
-      <div className="max-w-5xl mx-auto py-24 px-6">
-        <div className="flex justify-between items-center mb-16">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-[#D4AF37] p-0">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+      
+      <div className="max-w-4xl mx-auto py-24 px-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-6">
+          <div>
+            <h1 className="text-4xl font-serif italic mb-2">Account <span className="text-[#D4AF37]">Settings</span></h1>
+            <p className="text-gray-500 font-light tracking-widest uppercase text-[10px]">Manage your profile and payout details</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-none px-8"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Sign Out
           </Button>
-          <h1 className="text-4xl font-serif italic">The Profile</h1>
         </div>
 
-        <div className="grid md:grid-cols-12 gap-12">
-          <div className="md:col-span-8 space-y-12">
-            <GlassCard className="p-12 border-white/5">
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-10">Personal Identity</h2>
-              <form onSubmit={handleSave} className="space-y-8">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Full Name</Label>
-                  <Input className="h-16 bg-white/5 border-white/10 rounded-none" value={profile.full_name} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
+        <div className="grid gap-8">
+          {/* Basic Info */}
+          <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden">
+            <CardHeader className="border-b border-white/5 p-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                  <User className="text-[#D4AF37] w-6 h-6" />
                 </div>
-                <Button type="submit" disabled={saving} className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-none py-6 text-[10px] font-bold uppercase tracking-widest">
-                  {saving ? <Loader2 className="animate-spin" /> : 'Update Identity'}
+                <div>
+                  <CardTitle className="text-xl font-serif italic text-white">Personal Information</CardTitle>
+                  <CardDescription className="text-gray-500">Your public profile details</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8">
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Email Address</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                      <Input 
+                        disabled 
+                        value={user?.email} 
+                        className="pl-12 h-14 bg-white/5 border-white/10 rounded-none text-gray-400"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Full Name</Label>
+                    <Input 
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                      className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={saving}
+                  className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-10 py-6 rounded-none text-[10px] font-bold uppercase tracking-widest"
+                >
+                  {saving ? <Loader2 className="animate-spin" /> : "Save Changes"}
                 </Button>
               </form>
-            </GlassCard>
+            </CardContent>
+          </Card>
 
-            <GlassCard className="p-12 border-[#D4AF37]/20">
-              <div className="flex items-center gap-4 mb-10">
-                <Wallet className="text-[#D4AF37] w-6 h-6" />
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Settlement Vault</h2>
-              </div>
-              
-              {profile.paystack_subaccount_code ? (
-                <div className="bg-green-500/10 border border-green-500/20 p-8 rounded-3xl text-center">
-                  <CheckCircle2 className="text-green-500 w-12 h-12 mx-auto mb-4" />
-                  <h3 className="text-xl font-serif italic mb-2">Vault Active</h3>
-                  <p className="text-gray-400 text-sm mb-6">Funds will be settled to: <br/><span className="text-white font-bold">{profile.account_name}</span></p>
-                  <p className="text-[8px] font-bold uppercase tracking-widest text-gray-600">ID: {profile.paystack_subaccount_code}</p>
+          {/* Payout Details */}
+          <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden">
+            <CardHeader className="border-b border-white/5 p-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                  <Wallet className="text-[#D4AF37] w-6 h-6" />
                 </div>
-              ) : (
-                <div className="space-y-8">
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Select Bank</Label>
-                      <Select onValueChange={(v) => setProfile({ ...profile, bank_name: v })}>
-                        <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-none">
-                          <SelectValue placeholder="Choose Bank" />
+                <div>
+                  <CardTitle className="text-xl font-serif italic text-white">Payout Information</CardTitle>
+                  <CardDescription className="text-gray-500">Where you receive your sprayed funds (Manual Processing)</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8">
+              <div className="space-y-8">
+                <div className="p-6 bg-[#D4AF37]/5 border border-[#D4AF37]/10 rounded-2xl flex items-start gap-4">
+                  <ShieldCheck className="text-[#D4AF37] w-6 h-6 mt-1" />
+                  <div>
+                    <h4 className="text-sm font-bold text-[#D4AF37] mb-1">Manual Verification</h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      We have moved to a manual verification system. Please provide your correct bank details. 
+                      Our team will verify these details before processing your event payouts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Select Bank</Label>
+                      <Select 
+                        value={formData.bank_code}
+                        onValueChange={(value) => {
+                          const bank = NIGERIAN_BANKS.find(b => b.code === value);
+                          setFormData({ ...formData, bank_code: value, bank_name: bank?.name || '' });
+                        }}
+                      >
+                        <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none">
+                          <SelectValue placeholder="Choose your bank" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white max-h-[300px]">
-                          {NIGERIAN_BANKS.map(bank => (
-                            <SelectItem key={bank.code} value={bank.name}>{bank.name}</SelectItem>
+                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                          {NIGERIAN_BANKS.map((bank) => (
+                            <SelectItem key={bank.code} value={bank.code}>
+                              {bank.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Account Number</Label>
-                      <Input maxLength={10} placeholder="10 Digits" className="h-16 bg-white/5 border-white/10 rounded-none" value={profile.account_number} onChange={(e) => setProfile({ ...profile, account_number: e.target.value })} />
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Account Number</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          value={formData.account_number}
+                          onChange={(e) => setFormData({ ...formData, account_number: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                          className="h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                          placeholder="10-digit account number"
+                        />
+                        <Button 
+                          type="button"
+                          onClick={handleVerifyAccount}
+                          disabled={verifying || formData.account_number.length !== 10}
+                          className="h-14 bg-white/10 hover:bg-white/20 text-white px-6 rounded-none text-[10px] font-bold uppercase tracking-widest"
+                        >
+                          {verifying ? <Loader2 className="animate-spin" /> : "Verify"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <Button onClick={handleVerifyBank} disabled={verifying} className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase">
-                    {verifying ? <Loader2 className="animate-spin" /> : 'Verify & Link Bank'}
-                  </Button>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Account Name</Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                        <Input 
+                          value={formData.account_name}
+                          onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                          className="pl-12 h-14 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50"
+                          placeholder="Name on account"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-6">
+                      <Button 
+                        onClick={handleUpdateProfile}
+                        disabled={saving}
+                        className="w-full bg-white/10 hover:bg-white/20 text-white py-8 rounded-none text-[10px] font-bold uppercase tracking-widest border border-white/5"
+                      >
+                        {saving ? <Loader2 className="animate-spin" /> : "Update Payout Details"}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </GlassCard>
-          </div>
-          
-          <div className="md:col-span-4">
-            <GlassCard className="p-10 text-center border-white/5">
-              <ShieldCheck className="text-[#D4AF37] w-12 h-12 mx-auto mb-6" />
-              <h3 className="text-lg font-serif italic mb-4">Security Note</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                We use Paystack to verify and route your funds. Your bank details are encrypted and used only for automated settlements.
-              </p>
-            </GlassCard>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
