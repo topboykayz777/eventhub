@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Loader2, Lock, ArrowLeft, PartyPopper, Search, Coins, Ticket } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import EventHero from '@/components/event/EventHero';
 import EventDetails from '@/components/event/EventDetails';
@@ -19,78 +20,81 @@ import { Input } from '@/components/ui/input';
 const EventPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [event, setEvent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  
   const [rsvpData, setRsvpData] = useState({ name: '', phone: '', songRequest: '', hasPlusOne: false, plusOneName: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedRsvp, setSubmittedRsvp] = useState<any>(null);
-  const [tableMates, setTableMates] = useState<any[]>([]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [searchPhone, setSearchPhone] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    if (slug) fetchEvent();
-  }, [slug]);
-
-  const fetchEvent = async () => {
-    if (!slug) return;
-    setLoading(true);
-    try {
+  // High-performance cached query for event data
+  const { data: event, isLoading: eventLoading } = useQuery({
+    queryKey: ['event', slug],
+    queryFn: async () => {
+      if (!slug) return null;
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .ilike('slug', slug.trim())
         .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
 
-      if (data) {
-        setEvent(data);
-        const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${data.id}`);
-        if (savedRsvpId) {
-          const { data: rsvp } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
-          if (rsvp) {
-            setSubmittedRsvp(rsvp);
-            if (rsvp.table_number) {
-              fetchTableMates(data.id, rsvp.table_number);
-            }
-          }
-        }
-      }
-    } catch (err: any) {
-      console.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Cached query for user's RSVP status
+  const { data: submittedRsvp, isLoading: rsvpLoading } = useQuery({
+    queryKey: ['my-rsvp', event?.id],
+    queryFn: async () => {
+      if (!event?.id) return null;
+      const savedRsvpId = localStorage.getItem(`eventhub_rsvp_${event.id}`);
+      if (!savedRsvpId) return null;
+      
+      const { data } = await supabase.from('rsvps').select('*').eq('id', savedRsvpId).maybeSingle();
+      return data;
+    },
+    enabled: !!event?.id,
+  });
 
-  const fetchTableMates = async (eventId: string, tableNum: string) => {
-    const { data } = await supabase
-      .from('rsvps')
-      .select('guest_name, checked_in')
-      .eq('event_id', eventId)
-      .eq('table_number', tableNum);
-    setTableMates(data || []);
-  };
+  // Cached query for table mates
+  const { data: tableMates = [] } = useQuery({
+    queryKey: ['table-mates', event?.id, submittedRsvp?.table_number],
+    queryFn: async () => {
+      if (!event?.id || !submittedRsvp?.table_number) return [];
+      const { data } = await supabase
+        .from('rsvps')
+        .select('guest_name, checked_in')
+        .eq('event_id', event.id)
+        .eq('table_number', submittedRsvp.table_number);
+      return data || [];
+    },
+    enabled: !!submittedRsvp?.table_number,
+  });
 
   const handleFindPass = async () => {
-    if (!searchPhone) return;
+    if (!searchPhone || !event) return;
     setIsSearching(true);
-    const { data, error } = await supabase
-      .from('rsvps')
-      .select('*')
-      .eq('event_id', event.id)
-      .eq('guest_phone', searchPhone)
-      .maybeSingle();
+    try {
+      const { data } = await supabase
+        .from('rsvps')
+        .select('*')
+        .eq('event_id', event.id)
+        .eq('guest_phone', searchPhone)
+        .maybeSingle();
 
-    if (data) {
-      localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
-      setSubmittedRsvp(data);
-      showSuccess(`Welcome back, ${data.guest_name}`);
-    } else {
-      showError("No RSVP found for this number.");
+      if (data) {
+        localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
+        queryClient.invalidateQueries({ queryKey: ['my-rsvp', event.id] });
+        showSuccess(`Welcome back, ${data.guest_name}`);
+      } else {
+        showError("No RSVP found for this number.");
+      }
+    } finally {
+      setIsSearching(false);
     }
-    setIsSearching(false);
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
@@ -115,7 +119,7 @@ const EventPage = () => {
       localStorage.setItem(`eventhub_rsvp_${event.id}`, data.id);
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       showSuccess('Welcome to the guest list!');
-      setSubmittedRsvp(data);
+      queryClient.invalidateQueries({ queryKey: ['my-rsvp', event.id] });
     } catch (err: any) {
       showError(err.message);
     } finally {
@@ -123,7 +127,7 @@ const EventPage = () => {
     }
   };
 
-  if (loading) return (
+  if (eventLoading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
     </div>
@@ -189,8 +193,8 @@ const EventPage = () => {
                 event={event}
                 submittedRsvp={submittedRsvp}
                 tableMates={tableMates}
-                giftAmount="" // Not used anymore
-                setGiftAmount={() => {}} // Not used anymore
+                giftAmount="" 
+                setGiftAmount={() => {}} 
                 onSpray={() => navigate(`/spray/${event.slug}`)}
                 isFinished={isFinished}
                 config={config}

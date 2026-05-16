@@ -31,14 +31,12 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       onClick={onClick}
       className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/5"
     >
-      {/* Loading Skeleton */}
       {!isLoaded && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]/30" />
         </div>
       )}
 
-      {/* Error State */}
       {hasError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
           <ImageIcon className="w-8 h-8 text-gray-700 mb-2" />
