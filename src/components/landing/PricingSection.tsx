@@ -17,18 +17,17 @@ const LogoIcon = ({ className }: { className?: string }) => (
 const PricingSection = () => {
   const navigate = useNavigate();
   const [spotsRemaining, setSpotsRemaining] = useState(50);
+  const TOTAL_BETA_SPOTS = 150; // Increased from 50 to accommodate existing test users
 
   useEffect(() => {
     const fetchSignupCount = async () => {
-      // Fetch exact count of users in the profiles table
       const { count, error } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
       
       if (!error && count !== null) {
-        // If the database has 50 or more users, it shows 0.
-        // If it has 5 users, it shows 45.
-        const remaining = Math.max(0, 50 - count);
+        // Decrement from 150 based on existing users
+        const remaining = Math.max(0, TOTAL_BETA_SPOTS - count);
         setSpotsRemaining(remaining);
       }
     };
@@ -94,7 +93,7 @@ const PricingSection = () => {
                   {spotsRemaining} spots remaining
                 </p>
                 <Button
-                  onClick={() => navigate("/create-event")}
+                  onClick={() => navigate("/signup")}
                   className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20 w-full md:w-auto"
                 >
                   Secure Beta Access
