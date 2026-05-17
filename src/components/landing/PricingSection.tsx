@@ -20,7 +20,8 @@ const plans = [
     locked: true  },
   { 
     id: "basic",
-    name: "Basic",     price: "25,000", 
+    name: "Basic", 
+    price: "25,000", 
     icon: Sparkles,
     desc: "Essential digital presence for intimate gatherings.",
     features: ["Custom Event Page", "RSVP Tracking", "WhatsApp Share Button", "Countdown Timer"],
@@ -66,7 +67,7 @@ const PricingSection = () => {
       setBetaRemaining(prev => prev - 1);
     }
     setIsSubmitting(true);
-    // Navigate to create‑event page passing the selected plan
+    // Navigate to create-event page passing the selected plan
     // navigate(`/create-event?plan=${planId}`);
     setIsSubmitting(false);
   };
@@ -84,8 +85,7 @@ const PricingSection = () => {
           >
             Investment in Excellence
           </motion.span>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.h2             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-7xl font-serif italic mb-8"
           >
@@ -123,14 +123,13 @@ const PricingSection = () => {
             <div className="text-center mt-4 text-[#D4AF37] font-bold uppercase tracking-widest">
               {betaRemaining}/50 spots remaining
             </div>
-          </div>
+          )}
         </motion.div>
 
         {/* Other tiers (locked) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {otherPlans.map((plan) => (
-            <motion.div
-              key={plan.id}
+            <motion.div              key={plan.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: plans.indexOf(plans.find(p => p.id === "beta")) * 0.1 + Math.random() * 0.3 }}

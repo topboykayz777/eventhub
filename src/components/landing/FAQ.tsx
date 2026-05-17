@@ -1,69 +1,73 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Accordion,   AccordionContent, 
-  AccordionItem, 
-  AccordionTrigger } from "@/components/ui/accordion";
-import { 
-  Sparkles, 
-  UserPlus, 
-  Layout, 
-  CreditCard, 
-  Share2, 
-  Users, 
-  PartyPopper,
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   HelpCircle,
+  Sparkles,
+  UserPlus,
+  Layout,
+  CreditCard,
+  Share2,
+  Users,
+  PartyPopper,
   ShieldCheck,
   Wallet,
   Camera,
-  Zap
-} from 'lucide-react';
+  Zap,
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { showSuccess, showError } from "@/utils/toast";
 
 const steps = [
   {
     title: "Join the Club",
     desc: "Click 'Sign Up' to create your own secret key (account). It's like getting a library card for parties!",
     icon: UserPlus,
-    color: "bg-blue-500"
+    color: "bg-blue-500",
   },
   {
     title: "Make Your Party Page",
     desc: "Tell us the name of your party, where it is, and when it starts. It's like writing a digital invitation!",
     icon: Layout,
-    color: "bg-purple-500"
+    color: "bg-purple-500",
   },
   {
     title: "Pick a Pretty Dress",
     desc: "Choose a 'Theme' to make your page look beautiful. You can pick colors that match your party decorations!",
     icon: Sparkles,
-    color: "bg-pink-500"
+    color: "bg-pink-500",
   },
   {
     title: "Unlock the Magic",
     desc: "Pay a small fee to make your page go live on the internet. This is like buying a stamp for your letter!",
     icon: CreditCard,
-    color: "bg-green-500"
+    color: "bg-green-500",
   },
   {
     title: "Tell Everyone!",
     desc: "Send your special link to your friends on WhatsApp. They can click it to say 'Yes, I'm coming!'",
     icon: Share2,
-    color: "bg-orange-500"
+    color: "bg-orange-500",
   },
   {
     title: "Count the Guests",
     desc: "Check your Dashboard to see a list of everyone who is coming. It's like counting how many cupcakes you need!",
     icon: Users,
-    color: "bg-yellow-500"
+    color: "bg-yellow-500",
   },
   {
     title: "Party Time!",
     desc: "On the big day, use your phone to scan guests' QR codes at the door. It's like being a real VIP guard!",
     icon: PartyPopper,
-    color: "bg-red-500"
-  }
+    color: "bg-red-500",
+  },
 ];
 
 const faqSections = [
@@ -72,117 +76,117 @@ const faqSections = [
     questions: [
       {
         q: "What exactly is EventHub Nigeria?",
-        a: "EventHub is a premium digital orchestration suite. We provide hosts and professional planners with tools to create event pages, manage RSVPs, track budgets, and handle guest check-ins via QR codes."
+        a: "EventHub is a premium digital orchestration suite. We provide hosts and professional planners with tools to create event pages, manage RSVPs, track budgets, and handle guest check-ins via QR codes.",
       },
       {
         q: "Do I need to be a tech expert to use this?",
-        a: "Not at all. We've designed the interface to be as intuitive as possible. If you can use WhatsApp, you can orchestrate an event on EventHub."
+        a: "Not at all. We've designed the interface to be as intuitive as possible. If you can use WhatsApp, you can orchestrate an event on EventHub.",
       },
       {
         q: "Is my account free?",
-        a: "Creating an account and browsing the directory is free. You only pay when you want to activate a specific event page."
-      }
-    ]
+        a: "Creating an account and browsing the directory is free. You only pay when you want to activate a specific event page.",
+      },
+    ],
   },
   {
     category: "Events & Themes",
     questions: [
       {
         q: "Can I change my event details after paying?",
-        a: "Yes! You can edit your event name, venue, message, and theme at any time from your Dashboard. However, the event date is locked for security—contact support if you need to reschedule."
+        a: "Yes! You can edit your event name, venue, message, and theme at any time from your Dashboard. However, the event date is locked for security—contact support if you need to reschedule.",
       },
       {
         q: "How many photos can I add to my gallery?",
-        a: "It depends on your plan. Basic has no gallery, Standard allows 10 HD items, and Pro allows up to 50 media files (including videos)."
+        a: "It depends on your plan. Basic has no gallery, Standard allows 10 HD items, and Pro allows up to 50 media files (including videos).",
       },
       {
         q: "What are 'Themes'?",
-        a: "Themes are pre-designed aesthetic styles (colors, fonts, and layouts) that you can apply to your event page to match the vibe of your celebration."
-      }
-    ]
+        a: "Themes are pre-designed aesthetic styles (colors, fonts, and layouts) that you can apply to your event page to match the vibe of your celebration.",
+      },
+    ],
   },
   {
     category: "Payments & Plans",
     questions: [
       {
         q: "How do I pay for my event?",
-        a: "We use Paystack, Nigeria's most secure payment gateway. You can pay via Bank Transfer, Card, USSD, or QR code."
+        a: "We use Paystack, Nigeria's most secure payment gateway. You can pay via Bank Transfer, Card, USSD, or QR code.",
       },
       {
         q: "What is the difference between Basic, Standard, and Pro?",
-        a: "Basic is for simple RSVP tracking. Standard adds a media gallery and digital invite cards. Pro is the full suite, including WhatsApp Blasts and the Financial Ledger."
+        a: "Basic is for simple RSVP tracking. Standard adds a media gallery and digital invite cards. Pro is the full suite, including WhatsApp Blasts and the Financial Ledger.",
       },
       {
         q: "Can I upgrade my plan later?",
-        a: "Absolutely. You can upgrade from Basic to Standard or Pro at any time by paying the difference."
-      }
-    ]
+        a: "Absolutely. You can upgrade from Basic to Standard or Pro at any time by paying the difference.",
+      },
+    ],
   },
   {
     category: "Digital Spraying",
     questions: [
       {
         q: "What is Digital Spraying?",
-        a: "It's a modern way for guests to give cash gifts. Guests can 'spray' money digitally on your event page using Paystack."
+        a: "It's a modern way for guests to give cash gifts. Guests can 'spray' money digitally on your event page using Paystack.",
       },
       {
         q: "How do I get the money guests spray?",
-        a: "The money is collected via Paystack and settled into the bank account you provide in your 'Profile' section. Settlements usually happen within 24-48 hours."
+        a: "The money is collected via Paystack and settled into the bank account you provide in your 'Profile' section. Settlements usually happen within 24-48 hours.",
       },
       {
         q: "Is there a fee for digital spraying?",
-        a: "Standard payment processing fees apply from Paystack. EventHub does not take an additional cut from your gifts."
-      }
-    ]
+        a: "Standard payment processing fees apply from Paystack. EventHub does not take an additional cut from your gifts.",
+      },
+    ],
   },
   {
     category: "The Vibe Screen",
     questions: [
       {
         q: "What is the Vibe Screen?",
-        a: "It's a live, full-screen broadcast of your event's activity. It shows new RSVPs, digital sprays, and gallery updates in real-time. It's perfect for projecting on big screens at the venue!"
+        a: "It's a live, full-screen broadcast of your event's activity. It shows new RSVPs, digital sprays, and gallery updates in real-time. It's perfect for projecting on big screens at the venue!",
       },
       {
         q: "When does the Vibe Screen activate?",
-        a: "It becomes active exactly at the start time of your event and stays live until you mark the event as 'Concluded'."
-      }
-    ]
+        a: "It becomes active exactly at the start time of your event and stays live until you mark the event as 'Concluded'.",
+      },
+    ],
   },
   {
     category: "Security & Support",
     questions: [
       {
         q: "Is my data safe?",
-        a: "Yes. We use industry-standard encryption and Supabase's secure infrastructure to protect your data and your guests' information."
+        a: "Yes. We use industry-standard encryption and Supabase's secure infrastructure to protect your data and your guests' information.",
       },
       {
         q: "What if I forget my password?",
-        a: "Click 'Forgot Password' on the login page, and we'll send a secure reset link to your email."
+        a: "Click 'Forgot Password' on the login page, and we'll send a secure reset link to your email.",
       },
       {
         q: "How do I contact support?",
-        a: "Visit our 'Support' page or email us directly at kaelfelix0120@gmail.com. We're here to help 24/7."
-      }
-    ]
+        a: "Visit our 'Support' page or email us directly at kaelfelix0120@gmail.com. We're here to help 24/7.",
+      },
+    ],
   },
   {
     category: "Privacy Policy",
     questions: [
       {
         q: "What is your Privacy Policy?",
-        a: "Our Privacy Policy outlines how we collect, use, and protect personal data in accordance with the Nigeria Data Protection Act (NDPA) 2023. We act as a Data Controller and process data only for the purposes of event orchestration and guest management."
-      }
-    ]
+        a: "Our Privacy Policy outlines how we collect, use, and protect personal data in accordance with the Nigeria Data Protection Act (NDPA) 2023. We act as a Data Controller and process data only for the purposes of event orchestration and guest management.",
+      },
+    ],
   },
   {
     category: "Terms of Service",
     questions: [
       {
         q: "What are your Terms of Service?",
-        a: "Our Terms of Service govern your use of EventHub. They cover user conduct, payment processing, liability limits, and intellectual property rights. By using the platform you agree to these terms."
-      }
-    ]
-  }
+        a: "Our Terms of Service govern your use of EventHub. They cover user conduct, payment processing, liability limits, and intellectual property rights. By using the platform you agree to these terms.",
+      },
+    ],
+  },
 ];
 
 const FAQ = () => {
@@ -205,7 +209,7 @@ const FAQ = () => {
           >
             How to <span className="text-[#D4AF37]">Orchestrate</span>
           </motion.h1>
-          <p className="text-gray-500 max-w-2xl mx-auto font-light tracking-wide text-lg">
+          <p className="text-gray-500 max-w-2xl mx-auto font-light tracking-wide">
             Everything you need to know about using EventHub, from your first click to the final toast.
           </p>
         </div>
@@ -260,8 +264,7 @@ const FAQ = () => {
                 <Accordion type="single" collapsible className="space-y-4">
                   {section.questions.map((item, i) => (
                     <AccordionItem 
-                      key={i} 
-                      value={`${idx}-${i}`} 
+                      key={i}                       value={`${idx}-${i}`} 
                       className="border-white/5 bg-white/[0.02] px-8 rounded-3xl overflow-hidden hover:bg-white/[0.04] transition-all"
                     >
                       <AccordionTrigger className="py-6 hover:no-underline text-left group">
@@ -275,7 +278,7 @@ const FAQ = () => {
                     </AccordionItem>
                   ))}
                 </Accordion>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
