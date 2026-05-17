@@ -28,12 +28,12 @@ const Hero = () => {
             The Professional Orchestration Suite
           </span>
           
-          <h1 className="text-4xl sm:text-6xl md:text-[9rem] font-serif italic text-white mb-8 md:mb-12 leading-[1.1] tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif italic text-white mb-8 md:mb-12 leading-tight tracking-tight">
             The Art of <br />
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-lg md:text-3xl text-gray-200 mb-10 md:mb-20 max-w-4xl mx-auto leading-relaxed font-light tracking-wide px-4 drop-shadow-sm">
+          <p className="text-base md:text-xl text-gray-200 mb-10 md:mb-16 max-w-3xl mx-auto leading-relaxed font-light tracking-wide px-4 drop-shadow-sm">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
             Orchestrate weddings, galas, and elite events with precision.
           </p>
