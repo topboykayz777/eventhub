@@ -56,24 +56,25 @@ const VibeScreen = () => {
     
     const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
-    // Limit activities list to 2 items as requested
-    setActivities(prev => [next, ...prev].slice(0, 2));
+    // Updated: Now showing 3 items instead of 2
+    setActivities(prev => [next, ...prev].slice(0, 3));
 
     if (next.type === 'spray') {
-      confetti({ 
-        particleCount: 400, 
-        spread: 120, 
-        origin: { y: 0.6 }, 
-        colors: ['#D4AF37', '#ffffff', '#F9E4B7'], 
-        zIndex: 200,
-        scalar: 1.5
-      });
+      // Confetti logic enhanced for the explosion impression
+      setTimeout(() => {
+        confetti({ 
+          particleCount: 500, 
+          spread: 160, 
+          origin: { y: 0.6 }, 
+          colors: ['#D4AF37', '#ffffff', '#F9E4B7'], 
+          zIndex: 200,
+          scalar: 2
+        });
+      }, 800); // Sync with gift box opening
     }
     
-    // Display notification for 5 seconds
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 5500));
     setActiveNotification(null);
-    // Small gap between notifications
     await new Promise(resolve => setTimeout(resolve, 800));
     
     isProcessingQueue.current = false;
@@ -126,12 +127,7 @@ const VibeScreen = () => {
       });
 
       const channel = supabase
-        .channel(`vibe-realtime-${eventData.id}`, {
-          config: {
-            broadcast: { self: true },
-            presence: { key: eventData.id }
-          }
-        })
+        .channel(`vibe-realtime-${eventData.id}`)
         .on('postgres_changes', { 
           event: '*', 
           schema: 'public', 
@@ -163,11 +159,6 @@ const VibeScreen = () => {
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
-          if (payload.new.plus_one_checked_in && !payload.old?.plus_one_checked_in) {
-            const name = payload.new.plus_one_name || `${payload.new.guest_name}'s Guest`;
-            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: name });
-            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
-          }
         })
         .on('postgres_changes', { 
           event: 'UPDATE', 
@@ -180,9 +171,7 @@ const VibeScreen = () => {
           if (payload.new.message !== payload.old?.message && payload.new.message) {
             addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
           }
-          if (payload.new.is_finished) {
-            setIsLive(false);
-          }
+          if (payload.new.is_finished) setIsLive(false);
         })
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') setConnectionStatus('online');
@@ -199,21 +188,15 @@ const VibeScreen = () => {
 
   if (!event || isLive === null) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-6">
-        <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500">Initializing Vibe Stream...</p>
-      </div>
+      <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
     </div>
   );
 
   if (!isLive) return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-12 text-center">
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-        <Lock className="text-[#D4AF37] w-12 h-12 mb-12 mx-auto" />
-        <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen Inactive</h1>
-        <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-bold mb-12">The stream activates during the event window.</p>
-        <Button onClick={() => navigate('/')} variant="outline" className="border-white/10 rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-widest">Return to Portal</Button>
-      </motion.div>
+      <Lock className="text-[#D4AF37] w-12 h-12 mb-12" />
+      <h1 className="text-5xl md:text-7xl font-serif italic mb-6">Vibe Screen Inactive</h1>
+      <Button onClick={() => navigate('/')} variant="outline" className="border-white/10 rounded-none px-12 py-8 text-[10px] font-bold uppercase tracking-widest">Return to Portal</Button>
     </div>
   );
 
@@ -224,23 +207,13 @@ const VibeScreen = () => {
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
       <VibeHeroNotification event={activeNotification} />
 
-      <div className="fixed top-6 left-6 z-[110] transition-all duration-500">
-        {connectionStatus === 'online' ? (
-          <div className="flex items-center gap-3 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full backdrop-blur-md">
-            <Wifi size={12} className="text-green-500" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-green-500">Live Sync Active</span>
-          </div>
-        ) : connectionStatus === 'connecting' ? (
-          <div className="flex items-center gap-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full backdrop-blur-md">
-            <Loader2 size={12} className="text-amber-500 animate-spin" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-amber-500">Connecting...</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-full backdrop-blur-md">
-            <WifiOff size={12} className="text-red-500" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-red-500">Sync Disconnected</span>
-          </div>
-        )}
+      <div className="fixed top-6 left-6 z-[110]">
+        <div className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border ${
+          connectionStatus === 'online' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'
+        }`}>
+          {connectionStatus === 'online' ? <Wifi size={12} /> : <WifiOff size={12} />}
+          <span className="text-[8px] font-black uppercase tracking-widest">{connectionStatus === 'online' ? 'Live Sync Active' : 'Offline'}</span>
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col lg:flex-row h-screen">
@@ -249,7 +222,6 @@ const VibeScreen = () => {
         </div>
 
         <div className={`h-[55vh] lg:h-full lg:w-1/4 ${config.glass} backdrop-blur-3xl border-t lg:border-t-0 lg:border-l ${config.border} flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.4)]`}>
-          
           <div className="p-6 lg:p-10 flex flex-col justify-between border-b border-white/5 shrink-0">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -263,37 +235,23 @@ const VibeScreen = () => {
               </div>
               <h1 className="text-2xl lg:text-4xl font-serif italic leading-tight line-clamp-2">{event.event_name}</h1>
             </div>
-
             <div className="mt-8">
               <VibeStats stats={stats} config={config} />
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <div className="flex-1 p-6 lg:p-10 min-h-0">
-              <VibeSidebar activities={activities} config={config} />
-            </div>
+          {/* Activity feed now has full room without Host Message block */}
+          <div className="flex-1 p-6 lg:p-10 overflow-hidden">
+            <VibeSidebar activities={activities} config={config} />
+          </div>
 
-            <div className="p-6 lg:p-10 bg-black/20 mt-auto border-t border-white/5 shrink-0 space-y-6">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 opacity-40">
-                  <Heart size={14} />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Host's Message</span>
-                </div>
-                <p className="text-sm lg:text-base font-light italic opacity-80 leading-relaxed max-h-32 overflow-y-auto custom-scrollbar">
-                  "{event.message || 'Thank you for being part of our special day.'}"
-                </p>
+          <div className="p-6 lg:p-10 bg-black/20 mt-auto shrink-0 border-t border-white/5">
+            <div className="flex justify-between items-end">
+              <div className="space-y-1">
+                <span className="text-[7px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
+                <p className="text-[9px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite v2.0</p>
               </div>
-
-              <div className="pt-6 border-t border-white/5">
-                <div className="flex justify-between items-end">
-                  <div className="space-y-1">
-                    <span className="text-[7px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
-                    <p className="text-[9px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite v2.0</p>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_100px_rgba(34,197,94,0.5)]" />
-                </div>
-              </div>
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_100px_rgba(34,197,94,0.5)]" />
             </div>
           </div>
         </div>
