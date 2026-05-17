@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
-import { Gift } from 'lucide-react';
+import React, { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { Gift } from "lucide-react";
 
 interface SprayAnimationProps {
   isVisible: boolean;
@@ -16,9 +16,8 @@ const SprayAnimation = ({ isVisible, guestName, amount, onComplete }: SprayAnima
   useEffect(() => {
     if (!isVisible) return;
 
-    // Delay before confetti (shake effect)
     const confettiTimer = setTimeout(() => {
-      const colors = ['#D4AF37', '#ffffff', '#F9E4B7'];
+      const colors = ["#D4AF37", "#ffffff", "#F9E4B7"];
       confetti({
         particleCount: 350,
         spread: 180,
@@ -99,7 +98,8 @@ const SprayAnimation = ({ isVisible, guestName, amount, onComplete }: SprayAnima
               </motion.div>
 
               {/* Content */}
-              <motion.div                initial={{ opacity: 0, y: 30 }}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
               >
@@ -115,9 +115,9 @@ const SprayAnimation = ({ isVisible, guestName, amount, onComplete }: SprayAnima
               </motion.div>
             </div>
           </motion.div>
-        </motion-presence>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 };
 
