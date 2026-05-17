@@ -56,7 +56,8 @@ const VibeScreen = () => {
     
     const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
-    setActivities(prev => [next, ...prev].slice(0, 15));
+    // Limit activities list to 2 items as requested
+    setActivities(prev => [next, ...prev].slice(0, 2));
 
     if (next.type === 'spray') {
       confetti({ 
@@ -97,7 +98,6 @@ const VibeScreen = () => {
     const fetchInitialAndSubscribe = async () => {
       if (!slug) return;
       
-      // 1. Fetch Event Data
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
@@ -115,7 +115,6 @@ const VibeScreen = () => {
       const started = new Date() >= new Date(eventData.event_date);
       setIsLive(started && !eventData.is_finished);
 
-      // 2. Fetch Initial Stats
       const [rsvpsRes, budgetRes] = await Promise.all([
         supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id),
         supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income')
@@ -126,7 +125,6 @@ const VibeScreen = () => {
         totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0
       });
 
-      // 3. Initialize Realtime Channel
       const channel = supabase
         .channel(`vibe-realtime-${eventData.id}`, {
           config: {
@@ -134,15 +132,12 @@ const VibeScreen = () => {
             presence: { key: eventData.id }
           }
         })
-        // Listen for Spray Approvals
         .on('postgres_changes', { 
           event: '*', 
           schema: 'public', 
           table: 'budget_items', 
           filter: `event_id=eq.${eventData.id}` 
         }, (payload) => {
-          console.log("[Vibe Realtime] Budget Change:", payload);
-          
           const isNewlyApproved = 
             (payload.eventType === 'INSERT' && payload.new.status === 'approved') || 
             (payload.eventType === 'UPDATE' && payload.new.status === 'approved' && payload.old?.status !== 'approved');
@@ -158,55 +153,43 @@ const VibeScreen = () => {
             setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
           }
         })
-        // Listen for Guest Check-ins
         .on('postgres_changes', { 
           event: 'UPDATE', 
           schema: 'public', 
           table: 'rsvps', 
           filter: `event_id=eq.${eventData.id}` 
         }, (payload) => {
-          console.log("[Vibe Realtime] RSVP Change:", payload);
-          
-          // Check if main guest checked in
           if (payload.new.checked_in && !payload.old?.checked_in) {
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
-          
-          // Check if plus one checked in
           if (payload.new.plus_one_checked_in && !payload.old?.plus_one_checked_in) {
             const name = payload.new.plus_one_name || `${payload.new.guest_name}'s Guest`;
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: name });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
         })
-        // Listen for Event Updates (Messages, Conclusion)
         .on('postgres_changes', { 
           event: 'UPDATE', 
           schema: 'public', 
           table: 'events', 
           filter: `id=eq.${eventData.id}` 
         }, (payload) => {
-          console.log("[Vibe Realtime] Event Update:", payload);
           setEvent(payload.new);
           eventRef.current = payload.new;
-          
           if (payload.new.message !== payload.old?.message && payload.new.message) {
             addToQueue({ type: 'message', title: "Host's Live Update", detail: payload.new.message });
           }
-          
           if (payload.new.is_finished) {
             setIsLive(false);
           }
         })
         .subscribe((status) => {
-          console.log("[Vibe Realtime] Status:", status);
           if (status === 'SUBSCRIBED') setConnectionStatus('online');
           else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setConnectionStatus('offline');
         });
 
       return () => {
-        console.log("[Vibe Realtime] Cleaning up channel...");
         supabase.removeChannel(channel);
       };
     };
@@ -241,7 +224,6 @@ const VibeScreen = () => {
     <div className={`min-h-screen ${config.bg} ${isDark ? 'text-white' : 'text-black'} overflow-hidden relative`}>
       <VibeHeroNotification event={activeNotification} />
 
-      {/* Connection Status Indicator */}
       <div className="fixed top-6 left-6 z-[110] transition-all duration-500">
         {connectionStatus === 'online' ? (
           <div className="flex items-center gap-3 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full backdrop-blur-md">
@@ -262,15 +244,12 @@ const VibeScreen = () => {
       </div>
 
       <div className="relative z-10 flex flex-col lg:flex-row h-screen">
-        {/* Memory Wall */}
-        <div className="h-[55vh] lg:h-full lg:w-3/4 relative overflow-hidden">
+        <div className="h-[45vh] lg:h-full lg:w-3/4 relative overflow-hidden">
           <VibeBackground mediaUrls={event.gallery_urls || []} fallbackUrl={event.photo_url} />
         </div>
 
-        {/* Sidebar */}
-        <div className={`h-[45vh] lg:h-full lg:w-1/4 ${config.glass} backdrop-blur-3xl border-t lg:border-t-0 lg:border-l ${config.border} flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.4)]`}>
+        <div className={`h-[55vh] lg:h-full lg:w-1/4 ${config.glass} backdrop-blur-3xl border-t lg:border-t-0 lg:border-l ${config.border} flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.4)]`}>
           
-          {/* Header & Stats */}
           <div className="p-6 lg:p-10 flex flex-col justify-between border-b border-white/5 shrink-0">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -290,20 +269,18 @@ const VibeScreen = () => {
             </div>
           </div>
 
-          {/* Live Activity Feed */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <div className="flex-1 p-6 lg:p-10 min-h-0">
               <VibeSidebar activities={activities} config={config} />
             </div>
 
-            {/* Host Message Footer */}
-            <div className="p-6 lg:p-10 pt-0 space-y-6">
+            <div className="p-6 lg:p-10 bg-black/20 mt-auto border-t border-white/5 shrink-0 space-y-6">
               <div className="space-y-3">
                 <div className="flex items-center gap-2 opacity-40">
                   <Heart size={14} />
                   <span className="text-[8px] font-black uppercase tracking-widest">Host's Message</span>
                 </div>
-                <p className="text-sm lg:text-base font-light italic opacity-80 leading-relaxed">
+                <p className="text-sm lg:text-base font-light italic opacity-80 leading-relaxed max-h-32 overflow-y-auto custom-scrollbar">
                   "{event.message || 'Thank you for being part of our special day.'}"
                 </p>
               </div>
@@ -314,7 +291,7 @@ const VibeScreen = () => {
                     <span className="text-[7px] font-black uppercase tracking-[0.3em] opacity-30 block">Powered by EventHub Nigeria</span>
                     <p className="text-[9px] font-bold tracking-[0.1em] uppercase opacity-50">Orchestration Suite v2.0</p>
                   </div>
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_100px_rgba(34,197,94,0.5)]" />
                 </div>
               </div>
             </div>

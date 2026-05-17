@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MediaLightboxProps {
   isOpen: boolean;
@@ -18,14 +18,6 @@ const MediaLightbox = ({ isOpen, onClose, mediaUrls, currentIndex, onNavigate }:
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = mediaUrls[currentIndex];
-    link.download = `event_media_${currentIndex}`;
-    link.target = "_blank";
-    link.click();
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -37,13 +29,6 @@ const MediaLightbox = ({ isOpen, onClose, mediaUrls, currentIndex, onNavigate }:
         >
           {/* Controls */}
           <div className="absolute top-6 right-6 flex items-center gap-4 z-[210]">
-            <button 
-              onClick={handleDownload}
-              className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
-              title="Download Original"
-            >
-              <Download size={20} />
-            </button>
             <button 
               onClick={onClose}
               className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
