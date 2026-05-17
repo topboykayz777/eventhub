@@ -1,125 +1,121 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import Navbar from '@/components/Navbar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { showSuccess, showError } from '@/utils/toast';
-import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Navigation, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield } from 'lucide-react';
-import { motion } from 'framer-motion';
-import GlassCard from '@/components/ui/GlassCard';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import Navbar from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { showSuccess, showError } from "@/utils/toast";
+import { motion } from "framer-motion";
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
-    eventName: '',
-    eventDate: '',
-    venue: '',
-    venue_map_url: '',
-    message: '',
-    plan: 'Basic',
-    theme: 'modern',
-    photo_url: ''
+    eventName: "",
+    eventDate: "",
+    venue: "",
+    venue_map_url: "",
+    message: "",
+    plan: "Beta",
+    theme: "modern",
+    photo_url: ""
   });
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0]) return;
-    
-    const file = e.target.files[0];
-    setUploading(true);
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('event-photos')
-        .upload(fileName, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
-      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
-      showSuccess('Portrait uploaded successfully.');
-    } catch (error: any) {
-      showError('Upload failed: ' + error.message);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.photo_url) {
-      showError('Please upload a cover portrait.');
+    
+    if (!formData.eventName || !formData.eventDate || !formData.venue) {
+      showError("Please fill in the required fields.");
       return;
     }
-    setLoading(true);
 
+    setLoading(true);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/login');
+        showError("You must be logged in to create an event.");
+        setLoading(false);
         return;
       }
 
-      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
-      const lastName = profile?.full_name?.split(' ').pop()?.toLowerCase() || 'event';
-      const slug = `${formData.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}-${Math.floor(Math.random() * 1000)}`;
+      const slug = formData.eventName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") + "-" + Date.now();
 
-      const { data: event, error } = await supabase.from('events').insert({
+      const { error } = await supabase.from("events").insert({
         host_id: user.id,
         event_name: formData.eventName,
-        event_date: new Date(formData.eventDate).toISOString(),
+        event_date: formData.eventDate,
         venue: formData.venue,
-        venue_map_url: formData.venue_map_url,
-        message: formData.message,
+        venue_map_url: formData.venue_map_url || null,
+        message: formData.message || null,
         plan: formData.plan,
         theme: formData.theme,
+        photo_url: formData.photo_url || null,
         slug,
-        photo_url: formData.photo_url
-      }).select().single();
+        is_paid: false
+      });
 
       if (error) throw error;
 
-      showSuccess('Event created! Proceeding to activation.');
-      navigate(`/payment/${event.id}`);
+      showSuccess("Event created successfully!");
+      navigate(`/event/${slug}`);
     } catch (error: any) {
-      showError(error.message);
+      showError(error.message || "Failed to create event.");
     } finally {
       setLoading(false);
     }
   };
 
-  const themes = [
-    { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
-    { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
-    { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
-    { id: 'sahara', label: 'Sahara Gold', color: 'bg-[#78350f]', icon: Sun },
-    { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
-    { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
-    { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
-    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
-    { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
-    { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
-    { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
-    { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool },
-    { id: 'onyx', label: 'Onyx Cyber', color: 'bg-[#111111]', icon: Zap },
-    { id: 'lavender', label: 'Lavender Mist', color: 'bg-[#ddd6fe]', icon: Cloud },
-    { id: 'midnight', label: 'Midnight Sapphire', color: 'bg-[#0f172a]', icon: Compass },
-    { id: 'champagne', label: 'Champagne Bubbles', color: 'bg-[#fafaf9]', icon: GlassWater },
-    { id: 'forest', label: 'Forest Mystique', color: 'bg-[#064e3b]', icon: Trees },
-    { id: 'sunset', label: 'Golden Hour', color: 'bg-[#ea580c]', icon: Sunrise },
-    { id: 'marble', label: 'Carrara Marble', color: 'bg-[#e5e7eb]', icon: Layers },
-    { id: 'platinum', label: 'Platinum Elite', color: 'bg-[#f3f4f6]', icon: Shield }
-  ];
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `event-images/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from("event-images")
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from("event-images")
+        .getPublicUrl(data.path);
+
+      setFormData({ ...formData, photo_url: urlData.publicUrl });
+      showSuccess("Image uploaded successfully!");
+    } catch (error: any) {
+      showError(error.message || "Failed to upload image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const themeColors: Record<string, { bg: string; accent: string; text: string }> = {
+    modern: { bg: "from-slate-900 to-slate-800", accent: "bg-blue-500", text: "text-blue-400" },
+    gold: { bg: "from-amber-900 to-amber-800", accent: "bg-[#D4AF37]", text: "text-[#D4AF37]" },
+    rose: { bg: "from-rose-900 to-rose-800", accent: "bg-rose-500", text: "text-rose-400" },
+    emerald: { bg: "from-emerald-900 to-emerald-800", accent: "bg-emerald-500", text: "text-emerald-400" },
+    violet: { bg: "from-violet-900 to-violet-800", accent: "bg-violet-500", text: "text-violet-400" },
+    ocean: { bg: "from-cyan-900 to-cyan-800", accent: "bg-cyan-500", text: "text-cyan-400" },
+    sunset: { bg: "from-orange-900 to-orange-800", accent: "bg-orange-500", text: "text-orange-400" },
+  };
+
+  const selectedTheme = themeColors[formData.theme] || themeColors.modern;
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white">
@@ -127,206 +123,154 @@ const CreateEvent = () => {
       
       <div className="max-w-5xl mx-auto py-24 px-6 relative z-10">
         <div className="text-center mb-20">
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block"
           >
-            The Creator Suite
+            Create Your Event
           </motion.span>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-serif italic mb-6"
+            className="text-5xl md:text-7xl font-serif italic mb-8"
           >
-            Design Your <span className="text-[#D4AF37]">Masterpiece</span>
+            Design Your <span className="text-[#D4AF37]">Celebration</span>
           </motion.h1>
+          <p className="text-gray-500 max-w-2xl mx-auto font-light tracking-wide">
+            Fill in the details below to create a stunning digital event page.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-12">
-          <GlassCard className="p-12 border-white/5">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <Type className="text-[#D4AF37] w-5 h-5" />
-              </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Event Identity</h2>
-            </div>
+          {/* Event Details */}
+          <div className="p-8 md:p-12 rounded-[3rem] border border-white/5 bg-white/[0.02] space-y-8">
+            <h2 className="text-2xl font-serif italic mb-8">Event Details</h2>
             
-            <div className="grid md:grid-cols-2 gap-10">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Event Title</Label>
-                <Input 
-                  required 
-                  placeholder="e.g. The Balogun Wedding"
-                  className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                  value={formData.eventName}
-                  onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
+            <div className="space-y-2">
+              <Label className="text-gray-400">Event Name *</Label>
+              <Input
+                placeholder="e.g. Kael & Felix Wedding Reception"
+                value={formData.eventName}
+                onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
+                className="h-14 bg-white/5 border-white/10 rounded-none text-lg text-white placeholder:text-gray-600"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-gray-400">Event Date *</Label>
+                <Input
+                  type="datetime-local"
+                  value={formData.eventDate}
+                  onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                  className="h-14 bg-white/5 border-white/10 rounded-none text-lg text-white"
+                  required
                 />
               </div>
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</Label>
-                <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="Basic">
-                  <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-none text-lg font-light">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
-                    <SelectItem value="Basic">Basic (₦25,000)</SelectItem>
-                    <SelectItem value="Standard">Standard (₦75,000)</SelectItem>
-                    <SelectItem value="Pro">Pro (₦150,000)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-12 border-white/5">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <Calendar className="text-[#D4AF37] w-5 h-5" />
-              </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Logistics</h2>
-            </div>
-            
-            <div className="space-y-10">
-              <div className="grid md:grid-cols-2 gap-10">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
-                  <Input 
-                    type="datetime-local" 
-                    required 
-                    className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                    value={formData.eventDate}
-                    onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Name</Label>
-                  <Input 
-                    required 
-                    placeholder="Eko Hotel & Suites, VI, Lagos"
-                    className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                    value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Exact Location Pin (Google Maps Link)</Label>
-                  <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest hover:underline">Open Maps to get link</a>
-                </div>
-                <div className="relative">
-                  <Navigation className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
-                  <Input 
-                    placeholder="Paste the 'Share' link from Google Maps here..."
-                    className="h-16 pl-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
-                    value={formData.venue_map_url}
-                    onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })}
-                  />
-                </div>
-                <p className="text-[8px] text-gray-500 uppercase tracking-widest">This ensures guests are guided to the exact entrance, not just the general area.</p>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-12 border-white/5">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <ImageIcon className="text-[#D4AF37] w-5 h-5" />
-              </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Visual Assets</h2>
-            </div>
-            
-            <div className="space-y-10">
-              <div className="space-y-6">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Cover Portrait</Label>
-                {formData.photo_url ? (
-                  <div className="relative aspect-video w-full overflow-hidden border border-white/10">
-                    <img src={formData.photo_url} className="w-full h-full object-cover" alt="Preview" />
-                    <button 
-                      type="button"
-                      onClick={() => setFormData({ ...formData, photo_url: '' })}
-                      className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white hover:bg-red-500 transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <Label htmlFor="photo-upload" className="cursor-pointer">
-                      <div className="h-64 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-4 hover:border-[#D4AF37]/30 transition-colors bg-white/5">
-                        {uploading ? (
-                          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <Upload className="text-gray-600 w-10 h-10" />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Upload High-Resolution Portrait</span>
-                          </>
-                        )}
-                      </div>
-                    </Label>
-                    <Input 
-                      id="photo-upload" 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden"
-                      onChange={handleFileChange} 
-                      disabled={uploading}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host's Message</Label>
-                <Textarea 
-                  placeholder="A personal note to your guests (e.g. 'We can't wait to celebrate our special day with you!')"
-                  className="min-h-[150px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light resize-none"
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              <div className="space-y-2">
+                <Label className="text-gray-400">Venue *</Label>
+                <Input
+                  placeholder="e.g. Eko Hotels & Suites, Victoria Island"
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  className="h-14 bg-white/5 border-white/10 rounded-none text-lg text-white placeholder:text-gray-600"
+                  required
                 />
               </div>
             </div>
-          </GlassCard>
 
-          <GlassCard className="p-12 border-white/5">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                <Palette className="text-[#D4AF37] w-5 h-5" />
-              </div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Aesthetic Theme</h2>
+            <div className="space-y-2">
+              <Label className="text-gray-400">Venue Map URL (Google Maps link)</Label>
+              <Input
+                placeholder="https://maps.google.com/..."
+                value={formData.venue_map_url}
+                onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })}
+                className="h-14 bg-white/5 border-white/10 rounded-none text-lg text-white placeholder:text-gray-600"
+              />
             </div>
+
+            <div className="space-y-2">
+              <Label className="text-gray-400">Message to Guests</Label>
+              <Textarea
+                placeholder="Write a warm welcome message for your guests..."
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                className="min-h-[120px] bg-white/5 border-white/10 rounded-none text-lg text-white placeholder:text-gray-600"
+              />
+            </div>
+          </div>
+
+          {/* Service Tier */}
+          <div className="p-8 md:p-12 rounded-[3rem] border border-white/5 bg-white/[0.02] space-y-8">
+            <h2 className="text-2xl font-serif italic mb-8">Service Tier</h2>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {themes.map((t) => (
+            <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="Beta">
+              <SelectTrigger className="h-16 bg-[#D4AF37]/50 border-[#D4AF37]/30 rounded-none text-lg font-light text-[#D4AF37]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a1a1a] border-[#D4AF37]/30 text-[#D4AF37]">
+                <SelectItem value="Beta">Beta Access - #100 (First 50 Testers)</SelectItem>
+                <SelectItem value="Basic" disabled>Basic (₦25,000)</SelectItem>
+                <SelectItem value="Standard" disabled>Standard (₦75,000)</SelectItem>
+                <SelectItem value="Pro" disabled>Pro (₦150,000)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Theme Selection */}
+          <div className="p-8 md:p-12 rounded-[3rem] border border-white/5 bg-white/[0.02] space-y-8">
+            <h2 className="text-2xl font-serif italic mb-8">Choose Your Theme</h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(themeColors).map(([key, theme]) => (
                 <button
-                  key={t.id}
+                  key={key}
                   type="button"
-                  onClick={() => setFormData({ ...formData, theme: t.id })}
-                  className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
-                    formData.theme === t.id 
-                      ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
-                      : 'border-white/5 hover:border-white/20'
+                  onClick={() => setFormData({ ...formData, theme: key })}
+                  className={`p-6 rounded-2xl bg-gradient-to-br ${theme.bg} border-2 transition-all ${
+                    formData.theme === key ? "border-[#D4AF37] scale-105" : "border-transparent opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    <t.icon className={`w-5 h-5 ${formData.theme === t.id ? 'text-[#D4AF37]' : 'text-gray-600'}`} />
-                    <span className="text-[8px] font-bold uppercase tracking-widest">{t.label}</span>
-                  </div>
-                  <div className={`absolute top-0 right-0 w-12 h-12 ${t.color} opacity-20 -mr-6 -mt-6 rotate-45`} />
+                  <span className={`text-sm font-bold uppercase tracking-widest ${theme.text}`}>
+                    {key}
+                  </span>
                 </button>
               ))}
             </div>
-          </GlassCard>
+          </div>
 
-          <div className="pt-12">
-            <Button 
-              type="submit" 
-              disabled={loading || uploading}
-              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+          {/* Cover Image */}
+          <div className="p-8 md:p-12 rounded-[3rem] border border-white/5 bg-white/[0.02] space-y-8">
+            <h2 className="text-2xl font-serif italic mb-8">Cover Image</h2>
+            
+            <div className="space-y-2">
+              <Label className="text-gray-400">Upload a cover photo for your event page</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="h-14 bg-white/5 border-white/10 rounded-none text-lg text-white file:bg-[#D4AF37] file:text-black file:border-0 file:px-6 file:py-2 file:rounded-none file:font-bold file:uppercase file:tracking-widest file:text-[10px]"
+              />
+              {uploading && <p className="text-[#D4AF37] text-sm">Uploading...</p>}
+              {formData.photo_url && (
+                <div className="mt-4 relative rounded-2xl overflow-hidden">
+                  <img src={formData.photo_url} alt="Preview" className="w-full h-48 object-cover" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div className="text-center pt-8">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-16 py-8 rounded-none text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500"
             >
-              {loading ? 'Processing...' : 'Finalize & Proceed'}
+              {loading ? "Creating..." : "Create Event Page"}
             </Button>
           </div>
         </form>
