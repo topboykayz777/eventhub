@@ -5,7 +5,14 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Shield, Zap, Users } from "lucide-react";
+import { Shield, Zap, Users } from "lucide-react";
+
+const LogoIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <rect x="2" y="2" width="28" height="28" transform="rotate(45 16 16)" stroke="currentColor" strokeWidth="2"/>
+    <path d="M12 10H20V12H14V15H19V17H14V20H20V22H12V10Z" fill="currentColor" transform="translate(1, 0)"/>
+  </svg>
+);
 
 const PricingSection = () => {
   const navigate = useNavigate();
@@ -13,12 +20,14 @@ const PricingSection = () => {
 
   useEffect(() => {
     const fetchSignupCount = async () => {
-      const { count } = await supabase
+      // Fetch exact count of users in the profiles table
+      const { count, error } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
       
-      if (count !== null) {
-        // Calculate remaining spots starting from 50
+      if (!error && count !== null) {
+        // If the database has 50 or more users, it shows 0.
+        // If it has 5 users, it shows 45.
         const remaining = Math.max(0, 50 - count);
         setSpotsRemaining(remaining);
       }
@@ -44,7 +53,7 @@ const PricingSection = () => {
             <div className="relative z-10 space-y-10 text-center">
               <div className="space-y-6">
                 <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center mx-auto shadow-lg">
-                  <Sparkles className="text-[#D4AF37] w-10 h-10" />
+                  <LogoIcon className="text-[#D4AF37] w-10 h-10" />
                 </div>
                 <div>
                   <h3 className="text-3xl font-serif italic text-white mb-2">
