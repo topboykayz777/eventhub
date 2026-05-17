@@ -14,8 +14,6 @@ interface GuestListProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onOpenScanner: () => void;
-  onExportCSV: () => void;
-  onToggleCheckIn: (rsvpId: string, currentStatus: boolean) => void;
   onUpdate?: () => void;
 }
 

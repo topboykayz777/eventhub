@@ -50,17 +50,31 @@ const Dashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!eventsData || eventsData.length === 0) return [];
 
-      const enriched = await Promise.all((eventsData || []).map(async (event) => {
-        const { data: rsvps } = await supabase.from('rsvps').select('*').eq('event_id', event.id);
-        const isCompleted = new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now();
-        return { ...event, rsvps: rsvps || [], isCompleted };
+      const eventIds = eventsData.map(e => e.id);
+
+      const { data: allRSVPs, error: rsvpError } = await supabase
+        .from('rsvps')
+        .select('*')
+        .in('event_id', eventIds);
+
+      if (rsvpError) throw rsvpError;
+
+      const rsvpsByEvent = (allRSVPs || []).reduce((acc: any, rsvp: any) => {
+        if (!acc[rsvp.event_id]) acc[rsvp.event_id] = [];
+        acc[rsvp.event_id].push(rsvp);
+        return acc;
+      }, {});
+
+      return eventsData.map((event) => ({
+        ...event,
+        rsvps: rsvpsByEvent[event.id] || [],
+        isCompleted: new Date(event.event_date).getTime() + (24 * 60 * 60 * 1000) < Date.now()
       }));
-
-      return enriched;
     },
     enabled: !!user,
-    refetchInterval: 30000,
+    staleTime: 1000 * 30,
   });
 
   const handleManualRefresh = async () => {
@@ -276,8 +290,6 @@ const Dashboard = () => {
                                 searchQuery={searchQuery} 
                                 onSearchChange={setSearchQuery} 
                                 onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} 
-                                onExportCSV={() => {}} 
-                                onToggleCheckIn={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })} 
                                 onUpdate={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })}
                               />
                             </TabsContent>
