@@ -23,57 +23,50 @@ import {
   Camera,
   Zap,
   Gift,
-  Monitor
+  Monitor,
+  Heart
 } from 'lucide-react';
 
 const steps = [
   {
     title: "1. Create Your Secret Key",
     desc: "Click 'Sign Up' to create your account. It's like getting a VIP library card that lets you into the planning world. You just need an email and a password you can remember.",
-    icon: UserPlus,
-    color: "bg-blue-500"
+    icon: UserPlus
   },
   {
-    title: "2. Write Your Invite",
-    desc: "Tell us the 'Who, Where, and When'. Give your party a name, pick a date, and type in the venue address. It's just like filling out a paper invitation, but on your screen.",
-    icon: Layout,
-    color: "bg-purple-500"
+    title: "2. Sculpt Your Masterpiece",
+    desc: "Set the name, date, and venue, then pick a theme and upload a beautiful portrait. Everything guests see is designed on this single page in minutes.",
+    icon: Sparkles
   },
   {
-    title: "3. Dress Up Your Page",
-    desc: "Choose a 'Theme' to make your page look beautiful. Upload a lovely photo of yourself or the celebrant. This photo is the first thing guests see, so make it a great one!",
-    icon: Sparkles,
-    color: "bg-pink-500"
-  },
-  {
-    title: "4. Turn on the Lights",
+    title: "3. Turn on the Lights",
     desc: "Pay a small fee to make your page 'Live' on the internet. Think of this like buying a stamp for your letter. Once paid, your special link is ready for the world to see.",
-    icon: CreditCard,
-    color: "bg-green-500"
+    icon: CreditCard
   },
   {
-    title: "5. Spread the Word",
+    title: "4. Spread the Word",
     desc: "Use our 'WhatsApp Blast' tool to send your invite to all your friends at once. They'll get a beautiful link they can click to say 'Yes, I'm coming!' and get their entry pass.",
-    icon: Share2,
-    color: "bg-orange-500"
+    icon: Share2
   },
   {
-    title: "6. Manage Your Vault",
+    title: "5. Manage Your Vault",
     desc: "As guests 'Spray' you with digital gifts, you'll see them in your 'Ledger'. Check your bank app for the money, then click 'Approve' to show their gift on the big screen!",
-    icon: Wallet,
-    color: "bg-yellow-500"
+    icon: Wallet
   },
   {
-    title: "7. Guard the Door",
+    title: "6. Guard the Door",
     desc: "On the party day, use your phone camera to scan the QR codes on guests' phones as they arrive. It’s like being a high-tech guard—it checks them in instantly!",
-    icon: PartyPopper,
-    color: "bg-red-500"
+    icon: PartyPopper
   },
   {
-    title: "8. Show Off the Vibe",
+    title: "7. Show Off the Vibe",
     desc: "Connect a laptop to a big TV or projector and open the 'Vibe Screen'. It shows everyone who is arriving and celebrates every 'Digital Spray' with an explosion of gold!",
-    icon: Monitor,
-    color: "bg-indigo-500"
+    icon: Monitor
+  },
+  {
+    title: "8. A Monument to the Moment",
+    desc: "After the last song plays, your page doesn't disappear. It remains live forever as a digital shrine to your celebration—a place to revisit the photos, memories, and messages whenever you wish.",
+    icon: Heart
   }
 ];
 
@@ -165,7 +158,7 @@ const FAQPage = () => {
             <div className="h-px flex-1 bg-white/5" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-16">
             {steps.map((step, i) => (
               <motion.div
                 key={i}

@@ -12,7 +12,8 @@ import {
   PartyPopper,
   Zap,
   Wallet,
-  Monitor
+  Monitor,
+  Heart
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
@@ -20,50 +21,42 @@ const steps = [
   {
     title: "1. Create Your Secret Key",
     desc: "Click 'Sign Up' to create your account. It's like getting a VIP library card that lets you into the planning world.",
-    icon: UserPlus,
-    color: "bg-blue-500",
+    icon: UserPlus
   },
   {
-    title: "2. Write Your Invite",
-    desc: "Tell us the 'Who, Where, and When'. Give your party a name, pick a date, and type in the venue address.",
-    icon: Layout,
-    color: "bg-purple-500",
+    title: "2. Sculpt Your Masterpiece",
+    desc: "Set the name, date, and venue, then pick a theme and upload a beautiful portrait. Everything is designed on one page.",
+    icon: Sparkles
   },
   {
-    title: "3. Dress Up Your Page",
-    desc: "Choose a 'Theme' to make your page look beautiful. Upload a lovely photo of yourself or the celebrant.",
-    icon: Sparkles,
-    color: "bg-pink-500",
+    title: "3. Turn on the Lights",
+    desc: "Pay a small fee to make your page 'Live'. Think of this like buying a stamp for your letter. Your link is then ready for the world.",
+    icon: CreditCard
   },
   {
-    title: "4. Turn on the Lights",
-    desc: "Pay a small fee to make your page 'Live' on the internet. Think of this like buying a stamp for your letter.",
-    icon: CreditCard,
-    color: "bg-green-500",
-  },
-  {
-    title: "5. Spread the Word",
+    title: "4. Spread the Word",
     desc: "Use our 'WhatsApp Blast' tool to send your invite to all your friends at once so they can RSVP easily.",
-    icon: Share2,
-    color: "bg-orange-500",
+    icon: Share2
   },
   {
-    title: "6. Manage Your Vault",
+    title: "5. Manage Your Vault",
     desc: "As guests 'Spray' you with digital gifts, check your bank app and then click 'Approve' to show it on the big screen!",
-    icon: Wallet,
-    color: "bg-yellow-500",
+    icon: Wallet
   },
   {
-    title: "7. Guard the Door",
+    title: "6. Guard the Door",
     desc: "On the party day, use your phone camera to scan the QR codes on guests' phones as they arrive for instant entry.",
-    icon: PartyPopper,
-    color: "bg-red-500",
+    icon: PartyPopper
   },
   {
-    title: "8. Show Off the Vibe",
+    title: "7. Show Off the Vibe",
     desc: "Open the 'Vibe Screen' on a big TV or projector to celebrate every 'Digital Spray' with an explosion of gold!",
-    icon: Monitor,
-    color: "bg-indigo-500",
+    icon: Monitor
+  },
+  {
+    title: "8. A Monument to the Moment",
+    desc: "After the party ends, your page lives on forever as a digital shrine to your celebration—a place to revisit the memories always.",
+    icon: Heart
   }
 ];
 
