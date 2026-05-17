@@ -24,48 +24,50 @@ import {
   Zap,
   Gift,
   Monitor,
-  Heart
+  Heart,
+  Send,
+  QrCode
 } from 'lucide-react';
 
 const steps = [
   {
-    title: "1. Create Your Secret Key",
-    desc: "Click 'Sign Up' to create your account. It's like getting a VIP library card that lets you into the planning world. You just need an email and a password you can remember.",
+    title: "1. The Registry",
+    desc: "Create your host account to begin. Think of this as your personal master key that unlocks the entire EventHub orchestration suite.",
     icon: UserPlus
   },
   {
-    title: "2. Sculpt Your Masterpiece",
-    desc: "Set the name, date, and venue, then pick a theme and upload a beautiful portrait. Everything guests see is designed on this single page in minutes.",
-    icon: Sparkles
+    title: "2. The Architecture",
+    desc: "Design your event page in one go. Pick your theme, set the venue, and upload a stunning portrait. This is the digital face of your celebration.",
+    icon: Layout
   },
   {
-    title: "3. Turn on the Lights",
-    desc: "Pay a small fee to make your page 'Live' on the internet. Think of this like buying a stamp for your letter. Once paid, your special link is ready for the world to see.",
+    title: "3. The Ignition",
+    desc: "Activate your page by choosing a service tier. Once the small fee is settled, your unique link goes live and is ready to receive guests.",
     icon: CreditCard
   },
   {
-    title: "4. Spread the Word",
-    desc: "Use our 'WhatsApp Blast' tool to send your invite to all your friends at once. They'll get a beautiful link they can click to say 'Yes, I'm coming!' and get their entry pass.",
+    title: "4. The First Dispatch",
+    desc: "Copy your unique event link and send it manually to your inner circle. As they click and RSVP, their phone numbers are saved to your dashboard.",
     icon: Share2
   },
   {
-    title: "5. Manage Your Vault",
-    desc: "As guests 'Spray' you with digital gifts, you'll see them in your 'Ledger'. Check your bank app for the money, then click 'Approve' to show their gift on the big screen!",
+    title: "5. The Digital Vault",
+    desc: "As guests 'Spray' you with digital gifts, you'll see every transfer in your 'Ledger'. Check your bank app, then hit 'Approve' to trigger the big screen celebration.",
     icon: Wallet
   },
   {
-    title: "6. Guard the Door",
-    desc: "On the party day, use your phone camera to scan the QR codes on guests' phones as they arrive. It’s like being a high-tech guard—it checks them in instantly!",
-    icon: PartyPopper
+    title: "6. The Mass Broadcast",
+    desc: "Now that you have a list of confirmed guests, use the WhatsApp Blast tool to send mass updates—like dress code reminders—to everyone at once.",
+    icon: Send
   },
   {
-    title: "7. Show Off the Vibe",
-    desc: "Connect a laptop to a big TV or projector and open the 'Vibe Screen'. It shows everyone who is arriving and celebrates every 'Digital Spray' with an explosion of gold!",
+    title: "7. The Red Carpet",
+    desc: "On the big day, use your phone to scan guest QR codes for instant check-in. Connect a laptop to a TV to show the Vibe Screen and watch the party come alive.",
     icon: Monitor
   },
   {
-    title: "8. A Monument to the Moment",
-    desc: "After the last song plays, your page doesn't disappear. It remains live forever as a digital shrine to your celebration—a place to revisit the photos, memories, and messages whenever you wish.",
+    title: "8. The Eternal Shrine",
+    desc: "The party might end, but your page never dies. It remains live forever as a digital monument—a place to revisit photos and messages for years to come.",
     icon: Heart
   }
 ];
@@ -89,7 +91,7 @@ const faqSections = [
     questions: [
       {
         q: "Can I edit details after the page is live?",
-        a: "Yes. You can refine your event title, venue, theme, and gallery at any time from your dashboard. For security, event dates are locked after activation—contact support for reschedules."
+        a: "Yes. You can refine your event title, venue, theme, and gallery at any time from your dashboard. For security, event dates are locked after activation."
       },
       {
         q: "What media formats are supported?",
@@ -102,24 +104,11 @@ const faqSections = [
     questions: [
       {
         q: "How does the Digital Spray work?",
-        a: "Guests honor the host by sending direct transfers. They notify the host through the app, which triggers a cinematic gift box explosion on the Vibe Screen once the host verifies the bank alert in their Ledger."
+        a: "Guests honor the host by sending direct transfers. They notify the host through the app, which triggers a cinematic gift box explosion on the Vibe Screen once the host verifies the bank alert."
       },
       {
         q: "Is the spraying automated?",
-        a: "We currently use a verified manual transfer system to ensure 100% of the funds reach the host's provided bank account without platform commissions on gifts."
-      }
-    ]
-  },
-  {
-    category: "The Vibe Screen",
-    questions: [
-      {
-        q: "What is the Vibe Screen for?",
-        a: "The Vibe Screen is a live cinematic broadcast designed for venue projectors. it shows guest arrivals, digital sprays, and your curated media gallery in real-time."
-      },
-      {
-        q: "How many activities are shown on the sidebar?",
-        a: "The sidebar displays the 3 most recent activities (arrivals or sprays) to keep the layout clean and readable from a distance."
+        a: "We use a verified manual transfer system to ensure 100% of the funds reach your bank account without platform commissions."
       }
     ]
   }
@@ -166,17 +155,15 @@ const FAQPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="text-center"
+                className="text-center group"
               >
-                <div className="text-center group">
-                  <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500">
-                    <step.icon className="text-[#D4AF37] w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed font-light px-4">
-                    {step.desc}
-                  </p>
+                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500">
+                  <step.icon className="text-[#D4AF37] w-8 h-8" />
                 </div>
+                <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed font-light px-4">
+                  {step.desc}
+                </p>
               </motion.div>
             ))}
           </div>

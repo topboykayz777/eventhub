@@ -13,49 +13,49 @@ import {
   Zap,
   Wallet,
   Monitor,
-  Heart
+  Heart,
+  Send
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 const steps = [
   {
-    title: "1. Create Your Secret Key",
-    desc: "Click 'Sign Up' to create your account. It's like getting a VIP library card that lets you into the planning world.",
+    title: "1. The Registry",
+    desc: "Create your account to unlock the entire EventHub suite.",
     icon: UserPlus
   },
   {
-    title: "2. Sculpt Your Masterpiece",
-    desc: "Set the name, date, and venue, then pick a theme and upload a beautiful portrait. Everything is designed on one page.",
-    icon: Sparkles
+    title: "2. The Architecture",
+    desc: "Design your event page with your theme and portrait in one go.",
+    icon: Layout
   },
   {
-    title: "3. Turn on the Lights",
-    desc: "Pay a small fee to make your page 'Live'. Think of this like buying a stamp for your letter. Your link is then ready for the world.",
+    title: "3. The Ignition",
+    desc: "Pay a small fee to make your page live on the internet.",
     icon: CreditCard
   },
   {
-    title: "4. Spread the Word",
-    desc: "Use our 'WhatsApp Blast' tool to send your invite to all your friends at once so they can RSVP easily.",
+    title: "4. The First Dispatch",
+    desc: "Share your link manually with friends to start gathering RSVPs.",
     icon: Share2
   },
   {
-    title: "5. Manage Your Vault",
-    desc: "As guests 'Spray' you with digital gifts, check your bank app and then click 'Approve' to show it on the big screen!",
+    title: "5. The Digital Vault",
+    desc: "Manage digital sprays and gifts through your secure Ledger.",
     icon: Wallet
   },
   {
-    title: "6. Guard the Door",
-    desc: "On the party day, use your phone camera to scan the QR codes on guests' phones as they arrive for instant entry.",
-    icon: PartyPopper
+    title: "6. The Mass Broadcast",
+    desc: "Use the WhatsApp Blast tool to send reminders to your guest list.",
+    icon: Send
   },
   {
-    title: "7. Show Off the Vibe",
-    desc: "Open the 'Vibe Screen' on a big TV or projector to celebrate every 'Digital Spray' with an explosion of gold!",
+    title: "7. The Red Carpet",
+    desc: "Scan QR codes and open the Vibe Screen to celebrate live.",
     icon: Monitor
   },
   {
-    title: "8. A Monument to the Moment",
-    desc: "After the party ends, your page lives on forever as a digital shrine to your celebration—a place to revisit the memories always.",
+    title: "8. The Eternal Shrine",
+    desc: "Your event page lives on forever as a digital monument.",
     icon: Heart
   }
 ];
@@ -85,7 +85,6 @@ const FAQ = () => {
           </p>
         </div>
 
-        {/* 8-Step Guide */}
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-white/5" />
@@ -117,7 +116,6 @@ const FAQ = () => {
           </div>
         </section>
 
-        {/* Final CTA */}
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
