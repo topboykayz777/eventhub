@@ -17,7 +17,8 @@ const LogoIcon = ({ className }: { className?: string }) => (
 const PricingSection = () => {
   const navigate = useNavigate();
   const [spotsRemaining, setSpotsRemaining] = useState(50);
-  const TOTAL_BETA_SPOTS = 150; // Increased from 50 to accommodate existing test users
+  // Set to 100 so that with ~50 existing users, the displayed 'remaining' is 50.
+  const TOTAL_BETA_SPOTS = 100; 
 
   useEffect(() => {
     const fetchSignupCount = async () => {
@@ -26,7 +27,7 @@ const PricingSection = () => {
         .select('*', { count: 'exact', head: true });
       
       if (!error && count !== null) {
-        // Decrement from 150 based on existing users
+        // Decrement from 100 based on existing users to show 50 left
         const remaining = Math.max(0, TOTAL_BETA_SPOTS - count);
         setSpotsRemaining(remaining);
       }
