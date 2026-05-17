@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
@@ -30,7 +32,7 @@ const Privacy = () => {
           </div>
           <h1 className="text-4xl md:text-6xl font-serif italic mb-6">Legal <span className="text-[#D4AF37]">Atelier</span></h1>
           <p className="text-gray-400 text-lg font-light tracking-wide">
-            Privacy Policy & Terms of Service. Last updated: May 15, 2026.
+            Privacy Policy & Terms of Service. Last updated: June 10, 2026.
           </p>
         </motion.div>
 
@@ -46,21 +48,21 @@ const Privacy = () => {
               <div>
                 <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">1. Data Collection & NDPA Compliance</h3>
                 <p>
-                  In accordance with the <strong>Nigeria Data Protection Act (NDPA) 2023</strong>, EventHub Nigeria acts as the Data Controller. We collect personal data including names, phone numbers, and email addresses solely for the purpose of event orchestration and guest management.
+                  In accordance with the <strong>Nigeria Data Protection Act (NDPA) 2023</strong>, EventHub Nigeria acts as the Data Controller. We collect personal data including names, phone numbers, and email addresses solely for the purpose of event orchestration, guest verification, and secure access control.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">2. Legal Basis for Processing</h3>
                 <p>
-                  We process your data based on <strong>Consent</strong> (when you sign up or RSVP) and <strong>Contractual Necessity</strong> (to deliver the event management services you paid for).
+                  We process your data based on <strong>Consent</strong> (when you sign up or RSVP) and <strong>Contractual Necessity</strong> (to deliver the digital event assets you have commissioned).
                 </p>
               </div>
 
               <div>
-                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">3. Financial Data Security</h3>
+                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">3. Financial Data & Digital Spraying</h3>
                 <p>
-                  EventHub does not store credit card or bank login details. All payments and "Digital Spraying" transactions are processed via <strong>Paystack</strong>, a PCI-DSS compliant gateway. Your settlement details are encrypted and used only for automated payouts.
+                  EventHub uses Paystack for the secure collection of platform tier fees only. <strong>For Digital Spraying</strong>, EventHub acts solely as a verification and notification layer. We do not store, hold, or process guest-to-host funds. All "Spraying" is done via direct Peer-to-Peer (P2P) transfers between parties.
                 </p>
               </div>
 
@@ -70,10 +72,10 @@ const Privacy = () => {
                   Under Nigerian law, you have the right to:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Access your personal data stored on our servers.</li>
-                  <li>Request rectification of inaccurate information.</li>
-                  <li>Request the "Right to be Forgotten" (deletion of your account and events).</li>
-                  <li>Object to automated processing.</li>
+                  <li>Access your personal data stored on our secure servers.</li>
+                  <li>Request rectification of any inaccurate information.</li>
+                  <li>Request the "Right to be Forgotten" (complete deletion of your archive).</li>
+                  <li>Object to automated check-in processing.</li>
                 </ul>
               </div>
             </div>
@@ -88,30 +90,30 @@ const Privacy = () => {
             
             <div className="prose prose-invert max-w-none space-y-8 text-gray-400 font-light leading-relaxed">
               <div>
-                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">1. Service Activation</h3>
+                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">1. Service Orchestration</h3>
                 <p>
-                  Event pages are activated upon successful payment of the selected tier fee. These fees are non-refundable once the digital assets (unique URL, QR codes) have been generated and delivered.
+                  Event pages are activated upon successful payment of the selected orchestration tier. These fees grant access to our digital suite and are non-refundable once the unique URL and QR assets have been generated.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">2. User Conduct</h3>
+                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">2. Host Responsibility</h3>
                 <p>
-                  Hosts are responsible for the content uploaded to their event pages. EventHub reserves the right to deactivate any page containing illegal content, hate speech, or unauthorized use of intellectual property.
+                  Hosts are the sole curators of their event content. EventHub reserves the right to deactivate any page containing unauthorized media, illegal content, or material that violates high-society conduct standards.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">3. Digital Spraying Settlements</h3>
+                <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">3. Digital Spraying Verification (0% Commission)</h3>
                 <p>
-                  Funds received via Digital Spraying are subject to Paystack's standard processing fees. EventHub facilitates the collection but is not responsible for delays caused by the Nigerian banking inter-switch system.
+                  EventHub provides a verification service for direct transfers. We take <strong>0% commission</strong> on gifts sent via Digital Spraying. As the funds do not pass through our accounts, the Host is responsible for verifying their own bank alerts before approving the cinematic notification in the Ledger.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-white font-medium mb-4 uppercase tracking-widest text-sm">4. Limitation of Liability</h3>
                 <p>
-                  EventHub provides the platform "as is". While we strive for 99.9% uptime, we are not liable for any indirect losses resulting from technical interruptions during your event.
+                  EventHub provides the orchestration platform "as is". While we guarantee 99.9% uptime for the Vibe Screen, we are not liable for direct transfer delays between banking institutions or third-party network interruptions.
                 </p>
               </div>
             </div>
@@ -124,7 +126,7 @@ const Privacy = () => {
               variant="outline" 
               className="border-white/10 text-white rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest"
             >
-              Contact Legal Support
+              Contact Legal Concierge
             </Button>
           </div>
         </div>
