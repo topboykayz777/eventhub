@@ -53,14 +53,52 @@ const VibeScreen = () => {
   const processQueue = useCallback(async () => {
     if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
     isProcessingQueue.current = true;
+    
     const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
     setActivities(prev => [next, ...prev].slice(0, 3));
+    
     if (next.type === 'spray') {
-      confetti({ particleCount: 500, spread: 160, origin: { y: 0.6 }, colors: ['#D4AF37', '#ffffff', '#F9E4B7'], zIndex: 200, scalar: 2 });
+      // Trigger multiple bursts for "Jaw-dropping" effect
+      // Burst 1: After shake ends (at 4s)
+      setTimeout(() => {
+        const colors = ['#D4AF37', '#ffffff', '#F9E4B7'];
+        
+        // Massive Center Burst
+        confetti({
+          particleCount: 600,
+          spread: 120,
+          origin: { y: 0.6 },
+          colors,
+          zIndex: 200,
+          scalar: 2
+        });
+
+        // Left Burst
+        confetti({
+          particleCount: 200,
+          angle: 60,
+          spread: 80,
+          origin: { x: 0, y: 0.8 },
+          colors
+        });
+
+        // Right Burst
+        confetti({
+          particleCount: 200,
+          angle: 120,
+          spread: 80,
+          origin: { x: 1, y: 0.8 },
+          colors
+        });
+      }, 4000);
     }
-    await new Promise(resolve => setTimeout(resolve, 5500));
+
+    // Extended display time (10 seconds total)
+    await new Promise(resolve => setTimeout(resolve, 10000));
     setActiveNotification(null);
+    
+    // Short gap before next notification
     await new Promise(resolve => setTimeout(resolve, 800));
     isProcessingQueue.current = false;
     processQueue();
@@ -68,7 +106,12 @@ const VibeScreen = () => {
 
   const addToQueue = useCallback((notif: Omit<VibeEvent, 'id' | 'config'>) => {
     const config = themeConfigs[eventRef.current?.theme || 'modern'] || themeConfigs.modern;
-    notificationQueue.current.push({ ...notif, id: Math.random().toString(36).substring(7), config, timestamp: Date.now() } as VibeEvent);
+    notificationQueue.current.push({ 
+      ...notif, 
+      id: Math.random().toString(36).substring(7), 
+      config, 
+      timestamp: Date.now() 
+    } as VibeEvent);
     processQueue();
   }, [processQueue]);
 
