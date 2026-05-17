@@ -33,8 +33,12 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      // Data is considered fresh for 5 minutes (reduces redundant API calls)
       staleTime: 1000 * 60 * 5,
+      // Keep unused data in memory for 10 minutes before garbage collection
+      gcTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 });

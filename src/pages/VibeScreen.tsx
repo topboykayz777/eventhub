@@ -73,6 +73,8 @@ const VibeScreen = () => {
   }, [processQueue]);
 
   useEffect(() => {
+    let channel: any;
+
     const fetchInitialAndSubscribe = async () => {
       if (!slug) return;
       const { data: eventData } = await supabase.from('events').select('*').eq('slug', slug.trim()).maybeSingle();
@@ -87,7 +89,7 @@ const VibeScreen = () => {
       ]);
       setStats({ checkedIn: rsvpsRes.data?.filter(r => r.checked_in).length || 0, totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0 });
 
-      const channel = supabase.channel(`vibe-realtime-${eventData.id}`)
+      channel = supabase.channel(`vibe-realtime-${eventData.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
           const anyNew = payload.new as any;
           const anyOld = payload.old as any;
@@ -113,11 +115,17 @@ const VibeScreen = () => {
         })
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') setConnectionStatus('online');
-          else setConnectionStatus('offline');
+          else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setConnectionStatus('offline');
         });
-      return () => { supabase.removeChannel(channel); };
     };
+
     fetchInitialAndSubscribe();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, [slug, addToQueue]);
 
   if (!event || isLive === null) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;

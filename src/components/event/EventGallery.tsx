@@ -25,11 +25,11 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: (index % 6) * 0.1 }}
+      viewport={{ once: true, margin: "100px" }} // Triggers load slightly before it enters view
+      transition={{ delay: (index % 6) * 0.05 }}
       whileHover={{ scale: 1.02 }}
       onClick={onClick}
-      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/5"
+      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/5 will-change-transform"
     >
       {!isLoaded && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -63,7 +63,8 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       ) : (
         <img 
           src={url} 
-          loading="lazy"
+          loading="lazy" // Native browser lazy loading
+          decoding="async" // Offload image decoding to prevent main thread blocking
           className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           alt="" 
           onLoad={() => setIsLoaded(true)}
