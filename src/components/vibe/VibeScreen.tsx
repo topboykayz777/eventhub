@@ -13,6 +13,7 @@ const VibeScreen = () => {
   const [isLive, setIsLive] = useState<boolean | null>(null);
   const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
   const [activities, setActivities] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [activeNotification, setActiveNotification] = useState<any>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
   
@@ -43,10 +44,13 @@ const VibeScreen = () => {
     platinum: { bg: "bg-[#f3f4f6]", accent: "text-[#1f2937]", border: "border-[#d1d5db]", glass: "bg-white/80", dark: false }
   };
 
+  const config = event?.theme ? themeConfigs[event.theme as keyof typeof themeConfigs] : themeConfigs.modern;
+  const isDark = config?.dark ?? true;
+
   useEffect(() => {
     if (!event?.id) return;
-    
-    const channel = supabase
+
+    const vibeChannel = supabase
       .channel(`vibe-realtime-${event.id}`, {
         config: {
           broadcast: { self: true },
@@ -67,35 +71,33 @@ const VibeScreen = () => {
             type: 'spray',
             title: 'Digital Spray Received',
             detail: guestName,
-            amount          }].slice(-3));
+            amount
+          }].slice(-3));
           
           addNotification({ type: 'spray', title: 'Digital Spray Received', message: guestName, amount });
         }
       })
-      .on('postgres_changes', {         event: 'UPDATE', 
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
         schema: 'public', 
         table: 'rsvps' 
       }, (payload) => {
         if (payload.new.checked_in && !payload.old?.checked_in) {
-          addNotification({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
-          
-          // LOG TO ACTIVITIES (last 3)
           setActivities(prev => [...prev, {
             type: 'checkin',
             title: 'Guest Arrival',
             detail: payload.new.guest_name
           }].slice(-3));
+          addNotification({ type: 'checkin', title: 'Guest Arrival', detail: payload.new.guest_name });
         }
         if (payload.new.plus_one_checked_in && !payload.old?.plus_one_checked_in) {
           const name = payload.new.plus_one_name || `${payload.new.guest_name}'s Guest`;
-          addNotification({ type: 'checkin', title: 'Plus One Arrival', detail: name });
-          
-          // LOG TO ACTIVITIES (last 3)
           setActivities(prev => [...prev, {
             type: 'checkin',
             title: 'Plus One Arrival',
             detail: name
           }].slice(-3));
+          addNotification({ type: 'checkin', title: 'Plus One Arrival', detail: name });
         }
       })
       .on('postgres_changes', { 
@@ -107,13 +109,12 @@ const VibeScreen = () => {
         eventRef.current = payload.new;
         
         if (payload.new.message && payload.new.message !== payload.old?.message) {
-          addNotification({ type: 'message', title: 'Host Update', detail: payload.new.message });
-          
-          // LOG TO ACTIVITIES (last 3)
           setActivities(prev => [...prev, {
             type: 'message',
             title: 'Host Update',
-            detail: payload.new.message          }].slice(-3));
+            detail: payload.new.message
+          }].slice(-3));
+          addNotification({ type: 'message', title: 'Host Update', detail: payload.new.message });
         }
         
         if (payload.new.is_finished) {
@@ -121,20 +122,21 @@ const VibeScreen = () => {
         }
       })
       .subscribe();
-    
-    // Initialize Realtime Channel
-    const channel = supabase
+
+    const globalChannel = supabase
       .channel('global-event-notifications')
       .on('postgres_changes', { 
-        event: 'INSERT',         schema: 'public', 
+        event: 'INSERT', 
+        schema: 'public', 
         table: 'budget_items' 
       }, (payload) => {
-        // ... existing logic for global notifications ...
+        // existing global notification logic
       })
       .subscribe();
     
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(vibeChannel);
+      supabase.removeChannel(globalChannel);
     };
   }, [event?.id]);
 
@@ -142,18 +144,13 @@ const VibeScreen = () => {
     const id = Math.random().toString(36).substring(7);
     const newNotif = { ...notif, id, timestamp: Date.now() };
     setNotifications(prev => [newNotif, ...prev].slice(0, 3));
-    
-    // LOG TO ACTIVITIES (last 3)
     setActivities(prev => [...prev, { ...newNotif, type: notif.type }].slice(-3));
     
-    // Auto-remove after 8 seconds
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
       setActivities(prev => prev.filter(n => n.id !== id));
     }, 8000);
   }, []);
-
-  // ... rest of component unchanged ...
 
   return (
     <div className="h-full flex flex-col">
@@ -170,7 +167,8 @@ const VibeScreen = () => {
             {activities.map((activity, i) => (
               <motion.div
                 key={activity.id ?? i}
-                layout                initial={{ opacity: 0, x: 30, filter: "blur(5px)" }}
+                layout
+                initial={{ opacity: 0, x: 30, filter: "blur(5px)" }}
                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
@@ -188,7 +186,7 @@ const VibeScreen = () => {
                     {activity.type === 'spray' ? <Coins className="w-6 h-6" /> : 
                     activity.type === 'checkin' ? <UserCheck className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
                   </div>
-                                    <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0">
                     <p className={`text-[7px] font-black uppercase tracking-widest mb-0.5 ${
                       activity.type === 'spray' ? 'text-[#D4AF37]' : 'opacity-40'
                     }`}>
