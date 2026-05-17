@@ -24,7 +24,7 @@ const CreateEvent = () => {
     venue: '',
     venue_map_url: '',
     message: '',
-    plan: 'Basic',
+    plan: 'beta',
     theme: 'modern',
     photo_url: ''
   });
@@ -165,14 +165,15 @@ const CreateEvent = () => {
               </div>
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</Label>
-                <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="Basic">
+                <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="beta">
                   <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-none text-lg font-light">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
-                    <SelectItem value="Basic">Basic (₦25,000)</SelectItem>
-                    <SelectItem value="Standard">Standard (₦75,000)</SelectItem>
-                    <SelectItem value="Pro">Pro (₦150,000)</SelectItem>
+                    <SelectItem value="beta">Beta Access</SelectItem>
+                    <SelectItem value="basic" disabled>Basic (₦25,000)</SelectItem>
+                    <SelectItem value="standard" disabled>Standard (₦75,000)</SelectItem>
+                    <SelectItem value="pro" disabled>Pro (₦150,000)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
