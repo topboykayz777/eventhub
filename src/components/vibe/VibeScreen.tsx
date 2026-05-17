@@ -10,6 +10,7 @@ import {
   WifiOff,
   Loader2,
   UserCheck,
+  AlertCircle,
   Gift,
 } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -36,8 +37,7 @@ const VibeScreen: React.FC = () => {
   const [event, setEvent] = useState<any>(null);
   const [isLive, setIsLive] = useState<boolean | null>(null);
   const [stats, setStats] = useState({ checkedIn: 0, totalSprayed: 0 });
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
+  const [activities, setActivities] = useState<any[]>([]); // <- any[] to accept VibeEvent  const [activeNotification, setActiveNotification] = useState<VibeEvent | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [recentSprays, setRecentSprays] = useState<{
     id: string;
@@ -52,6 +52,7 @@ const VibeScreen: React.FC = () => {
   const notificationQueue = useRef<VibeEvent[]>([]);
   const isProcessingQueue = useRef(false);
 
+  // --- theme configs -------------------------------------------------
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/20", glass: "bg-white/5", dark: true },
     traditional: { bg: "bg-[#064e3b]", accent: "text-[#D4AF37]", border: "border-[#D4AF37]/30", glass: "bg-black/20", dark: true },
@@ -75,13 +76,14 @@ const VibeScreen: React.FC = () => {
     platinum: { bg: "bg-[#f3f4f6]", accent: "text-[#1f2937]", border: "border-[#d1d5db]", glass: "bg-white/80", dark: false },
   };
 
+  // --- queue & processing -------------------------------------------
   const processQueue = useCallback(async () => {
     if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
     isProcessingQueue.current = true;
 
     const next = notificationQueue.current.shift()!;
     setActiveNotification(next);
-    setActivities((prev) => [next, ...prev].slice(0, 15));
+    setActivities((prev) => [...prev, next].slice(0, 15));
     setShowOverlay(true);
 
     if (next.type === "spray") {
@@ -105,7 +107,8 @@ const VibeScreen: React.FC = () => {
 
     isProcessingQueue.current = false;
     processQueue();
-  }, [processQueue]);
+  }, []);
+  // ------------------------------------------------------------------
 
   const addToQueue = useCallback(
     (notif: Omit<VibeEvent, "id" | "config">) => {
@@ -124,67 +127,69 @@ const VibeScreen: React.FC = () => {
     [processQueue],
   );
 
-  useEffect(() => {
-    const fetchInitialAndSubscribe = async () => {
-      if (!slug) return;
+  // --- data fetching & subscription ------------------------------------
+  const fetchInitialAndSubscribe = async () => {
+    if (!slug) return;
 
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("*")
-        .ilike("slug", slug.trim())
-        .maybeSingle();
+    const { data: eventData, error: eventError } = await supabase
+      .from("events")
+      .select("*")
+      .ilike("slug", slug.trim())
+      .maybeSingle();
 
-      if (eventError || !eventData) {
-        console.error("Event fetch error:", eventError);
-        return;
-      }
+    if (eventError || !eventData) {
+      console.error("Event fetch error:", eventError);
+      return;
+    }
 
-      setEvent(eventData);
-      eventRef.current = eventData;
+    setEvent(eventData);
+    eventRef.current = eventData;
 
-      const started = new Date() >= new Date(eventData.event_date);
-      setIsLive(started && !eventData.is_finished);
+    const started = new Date() >= new Date(eventData.event_date);
+    setIsLive(started && !eventData.is_finished);
 
-      const [rsvpsRes, budgetRes] = await Promise.all([
-        supabase.from("rsvps").select("checked_in").eq("event_id", eventData.id),
-        supabase
-          .from("budget_items")
-          .select("amount")
-          .eq("event_id", eventData.id)
-          .eq("status", "approved")
-          .eq("type", "income"),
-      ]);
+    const [rsvpsRes, budgetRes] = await Promise.all([
+      supabase.from("rsvps").select("checked_in").eq("event_id", eventData.id),
+      supabase        .from("budget_items")
+        .select("amount")
+        .eq("event_id", eventData.id)
+        .eq("status", "approved")
+        .eq("type", "income"),
+    ]);
 
-      setStats({
-        checkedIn: rsvpsRes.data?.filter((r) => r.checked_in).length || 0,
-        totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0,
-      });
+    setStats({
+      checkedIn: rsvpsRes.data?.filter((r) => r.checked_in).length || 0,
+      totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0,
+    });
 
-      const channel = supabase
-        .channel(`vibe-realtime-${eventData.id}`, {
-          config: { broadcast: { self: true }, presence: { key: eventData.id } },
-        })
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "budget_items",
-              filter: `event_id=eq.${eventData.id}`,
-            },
-            (payload) => {
-              const isNewlyApproved =
-                (payload.eventType === "INSERT" && payload.new.status === "approved") ||
-                (payload.eventType === "UPDATE" && payload.new.status === "approved" && payload.old?.status !== "approved");
+    const channel = supabase
+      .channel(`vibe-realtime-${eventData.id}`, {
+        config: { broadcast: { self: true }, presence: { key: eventData.id } },
+      })
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "budget_items",
+            filter: `event_id=eq.${eventData.id}`,
+          },
+          (payload) => {
+            const isNewlyApproved =
+              (payload.eventType === "INSERT" && payload.new.status === "approved") ||
+              (payload.eventType === "UPDATE" && payload.new.status === "approved" && payload.old?.status !== "approved");
 
-              if (isNewlyApproved && payload.new.type === "income") {
-                const guestName = payload.new.description.replace("Digital Spray from ", "");
-                addToQueue({ type: "spray", title: "Digital Spray Received", detail: guestName, amount: payload.new.amount });
-                setStats((prev) => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
-              }
-            },
-          )
-          .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rsvps", filter: `event_id=eq.${eventData.id}` }, (payload) => {
+            if (isNewlyApproved && payload.new.type === "income") {
+              const guestName = payload.new.description.replace("Digital Spray from ", "");
+              addToQueue({ type: "spray", title: "Digital Spray Received", detail: guestName, amount: payload.new.amount });
+              setStats((prev) => ({ ...prev, totalSprayed: prev.totalSprayed + payload.new.amount }));
+            }
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "rsvps", filter: `event_id=eq.${eventData.id}` },
+          (payload) => {
             if (payload.new.checked_in && !payload.old?.checked_in) {
               addToQueue({ type: "checkin", title: "Guest Arrival", detail: payload.new.guest_name });
               setStats((prev) => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
@@ -194,8 +199,12 @@ const VibeScreen: React.FC = () => {
               addToQueue({ type: "checkin", title: "Guest Arrival", detail: name });
               setStats((prev) => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
             }
-          })
-          .on("postgres_changes", { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${eventData.id}` }, (payload) => {
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${eventData.id}` },
+          (payload) => {
             setEvent(payload.new);
             eventRef.current = payload.new;
             if (payload.new.message !== payload.old?.message && payload.new.message) {
@@ -204,27 +213,40 @@ const VibeScreen: React.FC = () => {
             if (payload.new.is_finished) {
               setIsLive(false);
             }
-          })
-          .subscribe((status) => {
-            if (status === "SUBSCRIBED") setConnectionStatus("online");
-            else if (status === "CLOSED" || status === "CHANNEL_ERROR") setConnectionStatus("offline");
-          });
+          },
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") setConnectionStatus("online");
+          else if (status === "CLOSED" || status === "CHANNEL_ERROR") setConnectionStatus("offline");
+        });
 
-        return () => {
-          supabase.removeChannel(channel);
-        };
+      return () => {
+        supabase.removeChannel(channel);
       };
-
-      fetchInitialAndSubscribe();
     };
 
     fetchInitialAndSubscribe();
+  };
+
+  useEffect(() => {
+    fetchInitialAndSubscribe();
   }, [slug, addToQueue]);
 
+  // --- overlay style & render ----------------------------------------
   const overlayStyle: React.CSSProperties = {
-    ...overlayStyle,
-    maxWidth: "280px",
+    position: "fixed",
+    inset: 0,
+    background: "rgba(255,255,255,0.1)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.2)",
+    borderRadius: "16px",
     padding: "20px",
+    maxWidth: "280px",
+    width: "100%",
+    textAlign: "center",
+    zIndex: 200,
+    opacity: showOverlay ? 1 : 0,
+    transition: "opacity 0.5s ease-out",
   };
 
   const renderOverlay = () => {
@@ -237,14 +259,14 @@ const VibeScreen: React.FC = () => {
       <div ref={overlayRef} style={overlayStyle}>
         <Gift className="text-[#C9A84C]" size={48} />
         <p style={{ color: "white", fontSize: "20px", fontWeight: "bold" }}>{currentSpray.detail}</p>
-        <p style={{ color: "#C9A84C", fontSize: "18px", fontWeight: "bold" }}>
-          ₦{(currentSpray.amount || 0).toLocaleString()}
-        </p>
+        <p style={{ color: "#C9A84C", fontSize: "18px", fontWeight: "bold" }}>₦{(currentSpray.amount || 0).toLocaleString()}</p>
       </div>
     );
   };
 
+  // --- component start ------------------------------------------------
   const config = themeConfigs[event?.theme || "modern"];
+  const isDark = config.dark !== false;
 
   if (!event || isLive === null) {
     return (
@@ -272,7 +294,7 @@ const VibeScreen: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen ${config.bg} ${config.dark !== false ? "text-white" : "text-black"} overflow-hidden relative`}>
+    <div className={`min-h-screen ${config.bg} ${isDark ? "text-white" : "text-black"} overflow-hidden relative`}>
       <VibeHeroNotification event={activeNotification} />
 
       <div className="fixed top-6 left-6 z-[110] transition-all duration-500">
@@ -335,7 +357,7 @@ const VibeScreen: React.FC = () => {
             {/* Recent Activity (max 2) */}
             <div className="space-y-2">
               {activities.slice(0, 2).map((item, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-[1rem] bg-[#0f0f0f]/30 px-4 py-3 border border-[#D4AF37]/10">
+                <div key={item.id} className="flex items-center gap-3 rounded-[1rem] bg-[#0f0f0f]/30 px-4 py-3 border border-[#D4AF37]/10">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                     {item.type === "spray" ? (
                       <Gift className="text-[#D4AF37] w-6 h-6" />
