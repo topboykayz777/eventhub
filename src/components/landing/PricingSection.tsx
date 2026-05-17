@@ -9,14 +9,24 @@ import { Gift, Sparkles, Crown, Gem, Star, Loader2 } from "lucide-react";
 
 const plans = [
   { 
+    id: "beta",
+    name: "Beta Access", 
+    price: "100", 
+    icon: Gift,
+    desc: "Exclusive early access for our first 50 testers. Help shape the future of EventHub Nigeria.",
+    features: [],
+    accent: "bg-[#D4AF37]",
+    button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black",
+    locked: true  },
+  { 
     id: "basic",
-    name: "Basic", 
-    price: "25,000", 
+    name: "Basic",     price: "25,000", 
     icon: Sparkles,
     desc: "Essential digital presence for intimate gatherings.",
     features: ["Custom Event Page", "RSVP Tracking", "WhatsApp Share Button", "Countdown Timer"],
     accent: "border-white/5",
-    button: "bg-white/5 hover:bg-white/10 text-white border border-white/10"
+    button: "bg-white/5 hover:bg-white/10 text-white border border-white/10",
+    locked: true
   },
   { 
     id: "standard",
@@ -27,7 +37,8 @@ const plans = [
     desc: "The definitive choice for weddings and galas.",
     features: ["Everything in Basic", "10 HD Photo Gallery", "Digital Invite Card", "HD Image Processing", "Guest Check-in System"],
     accent: "border-[#D4AF37]/30 shadow-[0_0_50px_-12px_rgba(212,175,55,0.3)]",
-    button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black"
+    button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black",
+    locked: true
   },
   { 
     id: "pro",
@@ -37,19 +48,8 @@ const plans = [
     desc: "Full-suite orchestration for high-society events.",
     features: ["Everything in Standard", "50 Media Files (Images/Video)", "WhatsApp Blast to Guests", "Budget Tracker Tool", "Vendor Directory Access"],
     accent: "border-white/5",
-    button: "bg-white/5 hover:bg-white/10 text-white border border-white/10"
-  },
-  { 
-    id: "beta",
-    name: "Beta Access",
-    price: "100",
-    beta: true,
-    popular: false,
-    icon: Gift,
-    desc: "Exclusive early access for our first 50 testers. Help shape the future of EventHub Nigeria.",
-    features: [],
-    accent: "bg-[#D4AF37]",
-    button: "bg-[#D4AF37] hover:bg-[#B8860B] text-black"
+    button: "bg-white/5 hover:bg-white/10 text-white border border-white/10",
+    locked: true
   }
 ];
 
@@ -70,6 +70,9 @@ const PricingSection = () => {
     // navigate(`/create-event?plan=${planId}`);
     setIsSubmitting(false);
   };
+
+  // Render beta tier first, then other tiers
+  const otherPlans = plans.filter(p => p.id !== "beta");
 
   return (
     <section className="py-40 px-6 bg-[#050505]">
@@ -93,20 +96,50 @@ const PricingSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
-          {plans.map((plan, index) => (
+        {/* Beta tier (always first) */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-12"
+        >
+          <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4">
+            <Gift className="text-[#D4AF37] w-8 h-8" />
+          </div>
+          <h3 className="text-2xl font-serif italic mb-2">Beta Access</h3>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            Exclusive early access for our first 50 testers. Help shape the future of EventHub Nigeria.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => handleSubmit("beta")}
+              disabled={betaRemaining <= 0}
+              className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 py-6 text-[10px] font-bold uppercase tracking-widest"
+            >
+              {betaRemaining > 0 ? "Secure This Tier" : "Full"}
+            </Button>
+          </div>
+          {betaRemaining < 50 && (
+            <div className="text-center mt-4 text-[#D4AF37] font-bold uppercase tracking-widest">
+              {betaRemaining}/50 spots remaining
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Other tiers (locked) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {otherPlans.map((plan) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className={`relative flex flex-col p-10 md:p-12 rounded-[3rem] border border-white/5 ${plan.accent}`}
+              transition={{ delay: plans.indexOf(plans.find(p => p.id === "beta")) * 0.1 + Math.random() * 0.3 }}
+              className="relative flex flex-col p-10 md:p-12 rounded-[3rem] border border-white/5"
             >
               {plan.popular && (
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#D4AF37] text-black px-6 py-2 rounded-full text-[8px] font-black tracking-[0.2em] flex items-center gap-2">
                   <Star size={12} fill="currentColor" />
-                  <span className="text-sm font-bold uppercase tracking-widest">MOST PREFERRED</span>
+                  <span className="text-sm font-bold uppercase tracking-widest">LAUNCHING SOON</span>
                 </div>
               )}
               
@@ -126,22 +159,21 @@ const PricingSection = () => {
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-start gap-4 group">
                     <div className="mt-1 w-4 h-4 rounded-full border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors">
-                      <Gift className="text-[#D4AF37] w-2.5 h-2.5" />
+                      <plan.icon className="text-[#D4AF37] w-2.5 h-2.5" />
                     </div>
                     <span className="text-sm text-gray-400 font-light tracking-wide group-hover:text-white transition-colors">{feature}</span>
                   </div>
                 ))}
               </div>
 
-              <Link to="/create-event">
-                <Button 
-                  onClick={() => handleSubmit(plan.id)}
-                  disabled={plan.id === "beta" && betaRemaining <= 0}
-                  className={`w-full py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl ${plan.button}`}
-                >
-                  {plan.id === "beta" ? (betaRemaining > 0 ? "Secure This Tier" : "Full") : "Secure This Tier"}
-                </Button>
-              </Link>
+              {/* Lock overlay */}
+              <div className="absolute inset-0 bg-[#050505]/80 flex items-center justify-center">
+                <div className="text-center">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-[#D4AF37]">
+                    Launching Soon
+                  </span>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
