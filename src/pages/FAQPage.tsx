@@ -22,51 +22,58 @@ import {
   Wallet,
   Camera,
   Zap,
-  Gift
+  Gift,
+  Monitor
 } from 'lucide-react';
 
 const steps = [
   {
-    title: "Join the Elite",
-    desc: "Create your orchestration account in seconds. This is your portal to luxury event management.",
+    title: "1. Create Your Secret Key",
+    desc: "Click 'Sign Up' to create your account. It's like getting a VIP library card that lets you into the planning world. You just need an email and a password you can remember.",
     icon: UserPlus,
     color: "bg-blue-500"
   },
   {
-    title: "Design the Page",
-    desc: "Provide event details, venue pins, and a host message to build your digital command center.",
+    title: "2. Write Your Invite",
+    desc: "Tell us the 'Who, Where, and When'. Give your party a name, pick a date, and type in the venue address. It's just like filling out a paper invitation, but on your screen.",
     icon: Layout,
     color: "bg-purple-500"
   },
   {
-    title: "Select Aesthetic",
-    desc: "Choose from 20 bespoke themes to match your event's specific vibe and color palette.",
+    title: "3. Dress Up Your Page",
+    desc: "Choose a 'Theme' to make your page look beautiful. Upload a lovely photo of yourself or the celebrant. This photo is the first thing guests see, so make it a great one!",
     icon: Sparkles,
     color: "bg-pink-500"
   },
   {
-    title: "Unlock Activation",
-    desc: "Select a tier and activate your page. Beta access is currently available at a special rate.",
+    title: "4. Turn on the Lights",
+    desc: "Pay a small fee to make your page 'Live' on the internet. Think of this like buying a stamp for your letter. Once paid, your special link is ready for the world to see.",
     icon: CreditCard,
     color: "bg-green-500"
   },
   {
-    title: "Mass Broadcast",
-    desc: "Share your unique event link or use the Pro WhatsApp Blast tool to reach guests instantly.",
+    title: "5. Spread the Word",
+    desc: "Use our 'WhatsApp Blast' tool to send your invite to all your friends at once. They'll get a beautiful link they can click to say 'Yes, I'm coming!' and get their entry pass.",
     icon: Share2,
     color: "bg-orange-500"
   },
   {
-    title: "Real-time Ledger",
-    desc: "Track every RSVP and monitor incoming digital sprays from your live financial suite.",
-    icon: Users,
+    title: "6. Manage Your Vault",
+    desc: "As guests 'Spray' you with digital gifts, you'll see them in your 'Ledger'. Check your bank app for the money, then click 'Approve' to show their gift on the big screen!",
+    icon: Wallet,
     color: "bg-yellow-500"
   },
   {
-    title: "On-site Access",
-    desc: "On the big day, use the built-in QR scanner for instant guest verification and check-in.",
+    title: "7. Guard the Door",
+    desc: "On the party day, use your phone camera to scan the QR codes on guests' phones as they arrive. It’s like being a high-tech guard—it checks them in instantly!",
     icon: PartyPopper,
     color: "bg-red-500"
+  },
+  {
+    title: "8. Show Off the Vibe",
+    desc: "Connect a laptop to a big TV or projector and open the 'Vibe Screen'. It shows everyone who is arriving and celebrates every 'Digital Spray' with an explosion of gold!",
+    icon: Monitor,
+    color: "bg-indigo-500"
   }
 ];
 
@@ -102,7 +109,7 @@ const faqSections = [
     questions: [
       {
         q: "How does the Digital Spray work?",
-        a: "Guests honor the host by sending direct transfers. They upload a receipt or notify the host, which triggers a cinematic gift box explosion on the Vibe Screen once approved in the Ledger."
+        a: "Guests honor the host by sending direct transfers. They notify the host through the app, which triggers a cinematic gift box explosion on the Vibe Screen once the host verifies the bank alert in their Ledger."
       },
       {
         q: "Is the spraying automated?",
@@ -139,7 +146,8 @@ const FAQPage = () => {
           >
             The Knowledge Base
           </motion.span>
-          <motion.h1             initial={{ opacity: 0, y: 20 }}
+          <motion.h1             
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-8xl font-serif italic mb-8"
           >
@@ -153,7 +161,7 @@ const FAQPage = () => {
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-white/5" />
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 7-Step Journey</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 8-Step Journey</h2>
             <div className="h-px flex-1 bg-white/5" />
           </div>
 
@@ -167,9 +175,9 @@ const FAQPage = () => {
                 transition={{ delay: i * 0.1 }}
                 className="text-center"
               >
-                <div className="text-center">
-                  <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6">
-                    <step.icon className="text-[#D4AF37] w-6 h-6" />
+                <div className="text-center group">
+                  <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500">
+                    <step.icon className="text-[#D4AF37] w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
                   <p className="text-gray-400 text-sm leading-relaxed font-light px-4">
@@ -198,7 +206,8 @@ const FAQPage = () => {
                 <Accordion type="single" collapsible className="space-y-4">
                   {section.questions.map((item, i) => (
                     <AccordionItem 
-                      key={i}                       value={`${idx}-${i}`} 
+                      key={i}                       
+                      value={`${idx}-${i}`} 
                       className="border-white/5 bg-white/[0.02] px-8 rounded-3xl overflow-hidden hover:bg-white/[0.04] transition-all"
                     >
                       <AccordionTrigger className="py-6 hover:no-underline text-left group">
