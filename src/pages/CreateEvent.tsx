@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
-import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Navigation, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield } from 'lucide-react';
+import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Navigation, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield, ZapIcon, Flame, Cherry, Trees as PalmTree, Tent, Ghost, Palette as ColorPalette, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 
@@ -99,6 +99,7 @@ const CreateEvent = () => {
   };
 
   const themes = [
+    // 1-12 (Retained as requested)
     { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
     { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
     { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
@@ -111,14 +112,15 @@ const CreateEvent = () => {
     { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
     { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
     { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool },
-    { id: 'onyx', label: 'Onyx Cyber', color: 'bg-[#111111]', icon: Zap },
-    { id: 'lavender', label: 'Lavender Mist', color: 'bg-[#ddd6fe]', icon: Cloud },
-    { id: 'midnight', label: 'Midnight Sapphire', color: 'bg-[#0f172a]', icon: Compass },
-    { id: 'champagne', label: 'Champagne Bubbles', color: 'bg-[#fafaf9]', icon: GlassWater },
-    { id: 'forest', label: 'Forest Mystique', color: 'bg-[#064e3b]', icon: Trees },
-    { id: 'sunset', label: 'Golden Hour', color: 'bg-[#ea580c]', icon: Sunrise },
-    { id: 'marble', label: 'Carrara Marble', color: 'bg-[#e5e7eb]', icon: Layers },
-    { id: 'platinum', label: 'Platinum Elite', color: 'bg-[#f3f4f6]', icon: Shield }
+    // 13-20 (8 Unique New Themes)
+    { id: 'neon', label: 'Electric Pulse', color: 'bg-[#00f3ff]', icon: ZapIcon },
+    { id: 'royal', label: 'Royal Amethyst', color: 'bg-[#3b0764]', icon: Crown },
+    { id: 'blossom', label: 'Sakura Spring', color: 'bg-[#fff1f2]', icon: Cherry },
+    { id: 'tropic', label: 'Tropical Jungle', color: 'bg-[#0d9488]', icon: PalmTree },
+    { id: 'desert', label: 'Oasis Blue', color: 'bg-[#d97706]', icon: Tent },
+    { id: 'glitch', label: 'Glitch Noir', color: 'bg-[#ef4444]', icon: Ghost },
+    { id: 'minimal', label: 'Bauhaus Minimal', color: 'bg-[#2563eb]', icon: ColorPalette },
+    { id: 'noir', label: 'Noir Cinema', color: 'bg-white', icon: Camera }
   ];
 
   return (
@@ -170,10 +172,10 @@ const CreateEvent = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
-                    <SelectItem value="beta">Beta Access</SelectItem>
-                    <SelectItem value="basic" disabled>Basic (₦25,000)</SelectItem>
-                    <SelectItem value="standard" disabled>Standard (₦75,000)</SelectItem>
-                    <SelectItem value="pro" disabled>Pro (₦150,000)</SelectItem>
+                    <SelectItem value="beta">Beta Access (₦100)</SelectItem>
+                    <SelectItem value="Basic">Basic (₦25,000)</SelectItem>
+                    <SelectItem value="Standard">Standard (₦75,000)</SelectItem>
+                    <SelectItem value="Pro">Pro (₦150,000)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -308,7 +310,7 @@ const CreateEvent = () => {
                   className={`relative p-6 border transition-all text-left overflow-hidden h-32 ${
                     formData.theme === t.id 
                       ? 'border-[#D4AF37] bg-[#D4AF37]/5' 
-                      : 'border-white/5 hover:border-white/20'
+                      : 'border-white/5 hover:border-white/10'
                   }`}
                 >
                   <div className="relative z-10 flex flex-col justify-between h-full">

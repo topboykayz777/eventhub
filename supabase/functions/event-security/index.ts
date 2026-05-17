@@ -21,7 +21,12 @@ serve(async (req) => {
     console.log(`[event-security] Action: ${action}`)
 
     if (action === 'get-price') {
-      const prices = { 'Basic': 25000, 'Standard': 75000, 'Pro': 150000 }
+      const prices = { 
+        'beta': 100, // Testing price
+        'Basic': 25000, 
+        'Standard': 75000, 
+        'Pro': 150000 
+      }
       return new Response(JSON.stringify({ amount: prices[payload.plan] || 25000 }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       })
@@ -40,7 +45,6 @@ serve(async (req) => {
     if (action === 'validate-receipt') {
       console.log("[event-security] Starting AI Receipt Validation...");
       
-      // Call Gemini to analyze the receipt
       const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,11 +69,9 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Receipt verification failed. Please upload a clear, original success receipt." }), { status: 400, headers: corsHeaders });
       }
 
-      // Verify destination account matches host
       const { data: event } = await supabase.from('events').select('host_id').eq('id', payload.eventId).single();
       const { data: profile } = await supabase.from('profiles').select('account_number').eq('id', event.host_id).single();
 
-      // Clean account numbers for comparison (remove leading zeros if necessary)
       const cleanResultAcc = result.destination_account?.replace(/\D/g, '');
       const cleanHostAcc = profile?.account_number?.replace(/\D/g, '');
 
@@ -77,7 +79,6 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `This receipt is for account ${result.destination_account}, but the host's account is ${profile?.account_number}.` }), { status: 400, headers: corsHeaders });
       }
 
-      // Check for duplicate session ID
       const { data: existing } = await supabase.from('budget_items').select('id').eq('receipt_session_id', result.session_id).maybeSingle();
       if (existing) {
         return new Response(JSON.stringify({ error: "This receipt has already been used for a spray." }), { status: 400, headers: corsHeaders });

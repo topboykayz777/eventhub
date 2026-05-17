@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
@@ -19,49 +21,50 @@ import {
   ShieldCheck,
   Wallet,
   Camera,
-  Zap
+  Zap,
+  Gift
 } from 'lucide-react';
 
 const steps = [
   {
-    title: "Join the Club",
-    desc: "Click 'Sign Up' to create your own secret key (account). It's like getting a library card for parties!",
+    title: "Join the Elite",
+    desc: "Create your orchestration account in seconds. This is your portal to luxury event management.",
     icon: UserPlus,
     color: "bg-blue-500"
   },
   {
-    title: "Make Your Party Page",
-    desc: "Tell us the name of your party, where it is, and when it starts. It's like writing a digital invitation!",
+    title: "Design the Page",
+    desc: "Provide event details, venue pins, and a host message to build your digital command center.",
     icon: Layout,
     color: "bg-purple-500"
   },
   {
-    title: "Pick a Pretty Dress",
-    desc: "Choose a 'Theme' to make your page look beautiful. You can pick colors that match your party decorations!",
+    title: "Select Aesthetic",
+    desc: "Choose from 20 bespoke themes to match your event's specific vibe and color palette.",
     icon: Sparkles,
     color: "bg-pink-500"
   },
   {
-    title: "Unlock the Magic",
-    desc: "Pay a small fee to make your page go live on the internet. This is like buying a stamp for your letter!",
+    title: "Unlock Activation",
+    desc: "Select a tier and activate your page. Beta access is currently available at a special rate.",
     icon: CreditCard,
     color: "bg-green-500"
   },
   {
-    title: "Tell Everyone!",
-    desc: "Send your special link to your friends on WhatsApp. They can click it to say 'Yes, I'm coming!'",
+    title: "Mass Broadcast",
+    desc: "Share your unique event link or use the Pro WhatsApp Blast tool to reach guests instantly.",
     icon: Share2,
     color: "bg-orange-500"
   },
   {
-    title: "Count the Guests",
-    desc: "Check your Dashboard to see a list of everyone who is coming. It's like counting how many cupcakes you need!",
+    title: "Real-time Ledger",
+    desc: "Track every RSVP and monitor incoming digital sprays from your live financial suite.",
     icon: Users,
     color: "bg-yellow-500"
   },
   {
-    title: "Party Time!",
-    desc: "On the big day, use your phone to scan guests' QR codes at the door. It's like being a real VIP guard!",
+    title: "On-site Access",
+    desc: "On the big day, use the built-in QR scanner for instant guest verification and check-in.",
     icon: PartyPopper,
     color: "bg-red-500"
   }
@@ -72,50 +75,25 @@ const faqSections = [
     category: "Getting Started",
     questions: [
       {
-        q: "What exactly is EventHub Nigeria?",
-        a: "EventHub is a premium digital orchestration suite. We provide hosts and professional planners with tools to create event pages, manage RSVPs, track budgets, and handle guest check-ins via QR codes."
+        q: "What is EventHub Nigeria?",
+        a: "EventHub is a premium digital orchestration suite designed for high-society hosts and professional planners in Nigeria. We provide integrated tools for RSVPs, check-ins, and financial tracking."
       },
       {
-        q: "Do I need to be a tech expert to use this?",
-        a: "Not at all. We've designed the interface to be as intuitive as possible. If you can use WhatsApp, you can orchestrate an event on EventHub."
-      },
-      {
-        q: "Is my account free?",
-        a: "Creating an account and browsing the directory is free. You only pay when you want to activate a specific event page."
+        q: "What is the 'Beta Access' tier?",
+        a: "Our Beta tier allows early adopters to test all foundational features at a significantly reduced rate (₦100) during our testing phase."
       }
     ]
   },
   {
-    category: "Events & Themes",
+    category: "Events & Customization",
     questions: [
       {
-        q: "Can I change my event details after paying?",
-        a: "Yes! You can edit your event name, venue, message, and theme at any time from your Dashboard. However, the event date is locked for security—contact support if you need to reschedule."
+        q: "Can I edit details after the page is live?",
+        a: "Yes. You can refine your event title, venue, theme, and gallery at any time from your dashboard. For security, event dates are locked after activation—contact support for reschedules."
       },
       {
-        q: "How many photos can I add to my gallery?",
-        a: "It depends on your plan. Basic has no gallery, Standard allows 10 HD items, and Pro allows up to 50 media files (including videos)."
-      },
-      {
-        q: "What are 'Themes'?",
-        a: "Themes are pre-designed aesthetic styles (colors, fonts, and layouts) that you can apply to your event page to match the vibe of your celebration."
-      }
-    ]
-  },
-  {
-    category: "Payments & Plans",
-    questions: [
-      {
-        q: "How do I pay for my event?",
-        a: "We use Paystack, Nigeria's most secure payment gateway. You can pay via Bank Transfer, Card, USSD, or QR code."
-      },
-      {
-        q: "What is the difference between Basic, Standard, and Pro?",
-        a: "Basic is for simple RSVP tracking. Standard adds a media gallery and digital invite cards. Pro is the full suite, including WhatsApp Blasts and the Financial Ledger."
-      },
-      {
-        q: "Can I upgrade my plan later?",
-        a: "Absolutely. You can upgrade from Basic to Standard or Pro at any time by paying the difference."
+        q: "What media formats are supported?",
+        a: "Our Standard and Pro tiers support both high-resolution images and HD video files (up to 50MB per file) for your memory wall."
       }
     ]
   },
@@ -123,16 +101,12 @@ const faqSections = [
     category: "Digital Spraying",
     questions: [
       {
-        q: "What is Digital Spraying?",
-        a: "It's a modern way for guests to give cash gifts. Guests can 'spray' money digitally on your event page using Paystack."
+        q: "How does the Digital Spray work?",
+        a: "Guests honor the host by sending direct transfers. They upload a receipt or notify the host, which triggers a cinematic gift box explosion on the Vibe Screen once approved in the Ledger."
       },
       {
-        q: "How do I get the money guests spray?",
-        a: "The money is collected via Paystack and settled into the bank account you provide in your 'Profile' section. Settlements usually happen within 24-48 hours."
-      },
-      {
-        q: "Is there a fee for digital spraying?",
-        a: "Standard payment processing fees apply from Paystack. EventHub does not take an additional cut from your gifts."
+        q: "Is the spraying automated?",
+        a: "We currently use a verified manual transfer system to ensure 100% of the funds reach the host's provided bank account without platform commissions on gifts."
       }
     ]
   },
@@ -140,29 +114,12 @@ const faqSections = [
     category: "The Vibe Screen",
     questions: [
       {
-        q: "What is the Vibe Screen?",
-        a: "It's a live, full-screen broadcast of your event's activity. It shows new RSVPs, digital sprays, and gallery updates in real-time. It's perfect for projecting on big screens at the venue!"
+        q: "What is the Vibe Screen for?",
+        a: "The Vibe Screen is a live cinematic broadcast designed for venue projectors. it shows guest arrivals, digital sprays, and your curated media gallery in real-time."
       },
       {
-        q: "When does the Vibe Screen activate?",
-        a: "It becomes active exactly at the start time of your event and stays live until you mark the event as 'Concluded'."
-      }
-    ]
-  },
-  {
-    category: "Security & Support",
-    questions: [
-      {
-        q: "Is my data safe?",
-        a: "Yes. We use industry-standard encryption and Supabase's secure infrastructure to protect your data and your guests' information."
-      },
-      {
-        q: "What if I forget my password?",
-        a: "Click 'Forgot Password' on the login page, and we'll send a secure reset link to your email."
-      },
-      {
-        q: "How do I contact support?",
-        a: "Visit our 'Support' page or email us directly at kaelfelix0120@gmail.com. We're here to help 24/7."
+        q: "How many activities are shown on the sidebar?",
+        a: "The sidebar displays the 3 most recent activities (arrivals or sprays) to keep the layout clean and readable from a distance."
       }
     ]
   }
@@ -189,11 +146,10 @@ const FAQPage = () => {
             How to <span className="text-[#D4AF37]">Orchestrate</span>
           </motion.h1>
           <p className="text-gray-500 max-w-2xl mx-auto font-light tracking-wide">
-            Everything you need to know about using EventHub, from your first click to the final toast.
+            The definitive guide to orchestrating your celebration on the EventHub platform.
           </p>
         </div>
 
-        {/* 7-Step Guide */}
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-white/5" />
@@ -212,11 +168,11 @@ const FAQPage = () => {
                 className="text-center"
               >
                 <div className="text-center">
-                  <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6">
                     <step.icon className="text-[#D4AF37] w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed font-light">
+                  <p className="text-gray-400 text-sm leading-relaxed font-light px-4">
                     {step.desc}
                   </p>
                 </div>
@@ -225,11 +181,10 @@ const FAQPage = () => {
           </div>
         </section>
 
-        {/* FAQs */}
         <section className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-white/5" />
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">Detailed Scenarios</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">Frequently Asked Questions</h2>
             <div className="h-px flex-1 bg-white/5" />
           </div>
 
@@ -262,15 +217,14 @@ const FAQPage = () => {
           </div>
         </section>
 
-        {/* Final CTA */}
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           className="mt-40 text-center p-20 rounded-[4rem] bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5"
         >
           <Zap className="text-[#D4AF37] w-12 h-12 mx-auto mb-8 animate-pulse" />
-          <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Still have questions?</h2>
-          <p className="text-gray-500 mb-10 uppercase tracking-widest text-[10px] font-bold">Our concierge is standing by</p>
+          <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Need more assistance?</h2>
+          <p className="text-gray-500 mb-10 uppercase tracking-widest text-[10px] font-bold">Our customer concierge is available 24/7</p>
           <button 
             onClick={() => window.location.href = '/support'}
             className="bg-[#D4AF37] text-black px-12 py-8 rounded-none text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#B8860B] transition-all duration-500"

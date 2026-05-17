@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import GlassCard from '@/components/ui/GlassCard';
 import { showSuccess, showError } from '@/utils/toast';
-import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Upload, X, Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, Save, Loader2, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Clock, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield, PlayCircle, ZapIcon, Cherry, Trees as PalmTree, Tent, Ghost, Palette as ColorPalette, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const EditEvent = () => {
@@ -144,6 +144,7 @@ const EditEvent = () => {
   };
 
   const themes = [
+    // 1-12 (Retained as requested)
     { id: 'modern', label: 'Midnight Noir', color: 'bg-black', icon: Sparkles },
     { id: 'traditional', label: 'Royal Heritage', color: 'bg-[#064e3b]', icon: Crown },
     { id: 'elegant', label: 'Pure Ivory', color: 'bg-white', icon: Gem },
@@ -151,19 +152,20 @@ const EditEvent = () => {
     { id: 'velvet', label: 'Midnight Velvet', color: 'bg-[#4c1d95]', icon: Moon },
     { id: 'garden', label: 'Emerald Garden', color: 'bg-[#065f46]', icon: Flower2 },
     { id: 'oceanic', label: 'Oceanic Silk', color: 'bg-[#1e3a8a]', icon: Waves },
-    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#831843]', icon: Heart },
+    { id: 'rose', label: 'Sunset Rose', color: 'bg-[#9d174d]', icon: Heart },
     { id: 'earth', label: 'Ancestral Earth', color: 'bg-[#7c2d12]', icon: Landmark },
     { id: 'silver', label: 'Celestial Silver', color: 'bg-[#374151]', icon: Star },
     { id: 'dynasty', label: 'Crimson Dynasty', color: 'bg-[#991b1b]', icon: Crown },
     { id: 'vintage', label: 'Vintage Parchment', color: 'bg-[#fef3c7]', icon: PenTool },
-    { id: 'onyx', label: 'Onyx Cyber', color: 'bg-[#111111]', icon: Zap },
-    { id: 'lavender', label: 'Lavender Mist', color: 'bg-[#ddd6fe]', icon: Cloud },
-    { id: 'midnight', label: 'Midnight Sapphire', color: 'bg-[#0f172a]', icon: Compass },
-    { id: 'champagne', label: 'Champagne Bubbles', color: 'bg-[#fafaf9]', icon: GlassWater },
-    { id: 'forest', label: 'Forest Mystique', color: 'bg-[#064e3b]', icon: Trees },
-    { id: 'sunset', label: 'Golden Hour', color: 'bg-[#ea580c]', icon: Sunrise },
-    { id: 'marble', label: 'Carrara Marble', color: 'bg-[#e5e7eb]', icon: Layers },
-    { id: 'platinum', label: 'Platinum Elite', color: 'bg-[#f3f4f6]', icon: Shield }
+    // 13-20 (8 Unique New Themes)
+    { id: 'neon', label: 'Electric Pulse', color: 'bg-[#00f3ff]', icon: ZapIcon },
+    { id: 'royal', label: 'Royal Amethyst', color: 'bg-[#3b0764]', icon: Crown },
+    { id: 'blossom', label: 'Sakura Spring', color: 'bg-[#fff1f2]', icon: Cherry },
+    { id: 'tropic', label: 'Tropical Jungle', color: 'bg-[#0d9488]', icon: PalmTree },
+    { id: 'desert', label: 'Oasis Blue', color: 'bg-[#d97706]', icon: Tent },
+    { id: 'glitch', label: 'Glitch Noir', color: 'bg-[#ef4444]', icon: Ghost },
+    { id: 'minimal', label: 'Bauhaus Minimal', color: 'bg-[#2563eb]', icon: ColorPalette },
+    { id: 'noir', label: 'Noir Cinema', color: 'bg-white', icon: Camera }
   ];
 
   if (loading) return (
