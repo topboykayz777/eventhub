@@ -41,7 +41,7 @@ const PricingSection = () => {
 
               {/* Description */}
               <p className="text-gray-400 text-base leading-relaxed font-light max-w-sm mx-auto">
-                Get early access to the EventHub orchestration suite. Build, manage, and host your events with all foundational tools — before the public launch.
+                Get early access to the EventHub orchestration suite. Build, manage, and host your events with all foundational tools before the public launch.
               </p>
 
               {/* Features */}
