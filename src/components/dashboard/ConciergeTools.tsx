@@ -23,6 +23,9 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   const isFinished = event.is_finished;
   const isLive = isStarted && !isFinished;
 
+  // Beta access mirrors Pro access
+  const hasFullAccess = event.plan === 'Pro' || event.plan === 'beta';
+
   const handleVibeClick = () => {
     if (!isStarted) {
       showError("The Vibe Screen activates once the event commences.");
@@ -40,20 +43,13 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
     setIsDownloading(true);
     
     try {
-      // Small delay to ensure all sub-components (like QR canvas) are fully painted
       await new Promise(resolve => setTimeout(resolve, 500));
-
       const canvas = await html2canvas(inviteRef.current, {
         backgroundColor: '#0a0a0a',
-        scale: 3, // Higher scale for better print quality
+        scale: 3,
         useCORS: true,
         allowTaint: true,
-        logging: false,
-        onclone: (clonedDoc) => {
-          // Ensure the cloned element is visible for capture
-          const el = clonedDoc.querySelector('[ref]') as HTMLElement;
-          if (el) el.style.display = 'block';
-        }
+        logging: false
       });
       
       const image = canvas.toDataURL("image/png", 1.0);
@@ -64,7 +60,6 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
       showSuccess("Invitation downloaded successfully.");
     } catch (err) {
       showError("Could not generate invitation image.");
-      console.error(err);
     } finally {
       setIsDownloading(false);
     }
@@ -84,13 +79,11 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
             <DialogHeader className="p-6 border-b border-white/5 shrink-0">
               <DialogTitle className="text-xl font-serif italic">The Digital Invitation</DialogTitle>
             </DialogHeader>
-            
             <ScrollArea className="flex-1 p-6">
               <div className="pb-12 flex justify-center">
                 <DigitalInvite ref={inviteRef} event={event} />
               </div>
             </ScrollArea>
-
             <div className="p-6 border-t border-white/5 bg-black/40 shrink-0 flex gap-4">
               <button 
                 onClick={handleDownloadInvite}
@@ -110,45 +103,25 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
         </DialogContent>
       </Dialog>
 
-      <button 
-        onClick={() => navigate(`/budget/${event.id}`)} 
-        className="bg-white/5 border border-white/5 p-10 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group"
-      >
+      <button onClick={() => navigate(`/budget/${event.id}`)} className="bg-white/5 border border-white/5 p-10 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group">
         <Wallet className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Financial Suite</span>
       </button>
 
-      <button 
-        onClick={handleVibeClick} 
-        className={`p-10 flex flex-col items-center justify-center gap-6 transition-all group border ${
-          isLive 
-            ? 'bg-white/5 border-white/5 hover:bg-white/10' 
-            : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'
-        }`}
-      >
-        {isLive ? (
-          <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-        ) : (
-          <Lock className="w-8 h-8 text-gray-600" />
-        )}
+      <button onClick={handleVibeClick} className={`p-10 flex flex-col items-center justify-center gap-6 transition-all group border ${isLive ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'}`}>
+        {isLive ? <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" /> : <Lock className="w-8 h-8 text-gray-600" />}
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">
           {isFinished ? 'Vibe Concluded' : isStarted ? 'Vibe Screen' : 'Vibe Locked'}
         </span>
       </button>
 
-      {event.plan === 'Pro' ? (
-        <button 
-          onClick={onSendWhatsAppBlast} 
-          className="bg-[#25D366]/10 border border-[#25D366]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#25D366]/20 transition-all group"
-        >
+      {hasFullAccess ? (
+        <button onClick={onSendWhatsAppBlast} className="bg-[#25D366]/10 border border-[#25D366]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#25D366]/20 transition-all group">
           <Send className="w-8 h-8 text-[#25D366] group-hover:scale-110 transition-transform" />
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#25D366]">WhatsApp Blast</span>
         </button>
       ) : (
-        <button 
-          onClick={() => navigate(`/payment/${event.id}?upgrade=Pro`)} 
-          className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#D4AF37]/20 transition-all group"
-        >
+        <button onClick={() => navigate(`/payment/${event.id}?upgrade=Pro`)} className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#D4AF37]/20 transition-all group">
           <Sparkles className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37]">Upgrade to Pro</span>
         </button>

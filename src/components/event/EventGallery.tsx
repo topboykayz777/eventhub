@@ -25,11 +25,11 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "100px" }} // Triggers load slightly before it enters view
+      viewport={{ once: true, margin: "200px" }}
       transition={{ delay: (index % 6) * 0.05 }}
       whileHover={{ scale: 1.02 }}
       onClick={onClick}
-      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/5 will-change-transform"
+      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/5 will-change-transform rounded-2xl"
     >
       {!isLoaded && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -63,8 +63,9 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       ) : (
         <img 
           src={url} 
-          loading="lazy" // Native browser lazy loading
-          decoding="async" // Offload image decoding to prevent main thread blocking
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
           className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           alt="" 
           onLoad={() => setIsLoaded(true)}
@@ -98,12 +99,7 @@ const EventGallery = ({ galleryUrls, onOpenLightbox }: EventGalleryProps) => {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {galleryUrls.map((url: string, i: number) => (
-          <GalleryItem 
-            key={`${url}-${i}`} 
-            url={url} 
-            index={i} 
-            onClick={() => onOpenLightbox(i)} 
-          />
+          <GalleryItem key={`${url}-${i}`} url={url} index={i} onClick={() => onOpenLightbox(i)} />
         ))}
       </div>
     </div>
