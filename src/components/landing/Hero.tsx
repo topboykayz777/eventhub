@@ -24,28 +24,52 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <span className="text-[#D4AF37] text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase mb-4 md:mb-8 block">
+          <span className="text-[#D4AF37] text-[10px] md:text-xs font-bold tracking-[0.4em] md:tracking-[0.6em] uppercase mb-6 md:mb-10 block">
             The Professional Orchestration Suite
           </span>
           
-          <h1 className="text-3xl sm:text-5xl md:text-8xl font-serif italic text-white mb-6 md:mb-10 leading-tight tracking-tight">
+          <h1 className="text-4xl sm:text-6xl md:text-[9rem] font-serif italic text-white mb-8 md:mb-12 leading-[1.1] tracking-tight">
             The Art of <br />
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-sm md:text-xl text-gray-400 mb-8 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-wide px-4">
+          <p className="text-lg md:text-3xl text-gray-200 mb-10 md:mb-20 max-w-4xl mx-auto leading-relaxed font-light tracking-wide px-4 drop-shadow-sm">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
             Orchestrate weddings, galas, and elite events with precision.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 px-6 sm:px-0">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-10 px-6 sm:px-0">
             <Link to="/create-event" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[10px] px-8 md:px-12 py-6 md:py-8 rounded-none font-bold tracking-[0.3em] uppercase transition-all duration-500">
-                Start Orchestrating
-              </Button>
+              <motion.div
+                animate={{ 
+                  boxShadow: [
+                    "0 0 0px rgba(212, 175, 55, 0)", 
+                    "0 0 40px rgba(212, 175, 55, 0.4)", 
+                    "0 0 0px rgba(212, 175, 55, 0)"
+                  ],
+                  scale: [1, 1.02, 1]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[12px] px-10 md:px-16 py-8 md:py-10 rounded-none font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl relative overflow-hidden group"
+                >
+                  <span className="relative z-10">Start Orchestrating</span>
+                  <motion.div 
+                    animate={{ x: ['-100%', '100%'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
+                  />
+                </Button>
+              </motion.div>
             </Link>
             <Link to="/vendors" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 text-[10px] px-8 md:px-12 py-6 md:py-8 rounded-none font-bold tracking-[0.3em] uppercase">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/5 text-[12px] px-10 md:px-16 py-8 md:py-10 rounded-none font-bold tracking-[0.4em] uppercase">
                 Curated Directory
               </Button>
             </Link>
