@@ -6,7 +6,6 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
 import TheNarrative from '@/components/landing/TheNarrative';
-import PricingSection from '@/components/landing/PricingSection';
 import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -77,8 +76,6 @@ const Index = () => {
 
         {/* THE IMMERSIVE NARRATIVE */}
         <TheNarrative />
-
-        <PricingSection />
         
         <FAQ />
 

@@ -2,9 +2,12 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShieldAlert, Zap, Globe, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, Zap, Globe, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const TheHook = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="py-24 md:py-40 px-6 bg-[#050505]">
       <div className="max-w-7xl mx-auto">
@@ -65,7 +68,10 @@ const TheHook = () => {
             
             <div className="relative glass-premium p-10 md:p-16 rounded-[4rem] border-white/10 shadow-2xl">
               <div className="text-center mb-12">
-                <Sparkles className="text-[#D4AF37] w-10 h-10 mx-auto mb-6" />
+                {/* Brand Logo Replacement */}
+                <div className="text-xl md:text-2xl font-light tracking-[0.5em] uppercase mb-6">
+                  Event Hub <span className="text-[#D4AF37]">NG</span>
+                </div>
                 <h3 className="text-3xl font-serif italic text-white mb-4">The Solution</h3>
                 <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">The EventHub Atelier</p>
               </div>
@@ -90,7 +96,7 @@ const TheHook = () => {
                   Standard Value: ₦150,000 — Currently FREE
                 </p>
                 <button 
-                  onClick={() => window.location.href = '/signup'}
+                  onClick={() => navigate('/create-event')}
                   className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl"
                 >
                   Claim My Masterpiece Key
