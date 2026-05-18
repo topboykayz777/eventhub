@@ -22,12 +22,12 @@ serve(async (req) => {
 
     if (action === 'get-price') {
       const prices = { 
-        'beta': 100, // Testing price
+        'beta': 0, // Now Free
         'Basic': 25000, 
         'Standard': 75000, 
         'Pro': 150000 
       }
-      return new Response(JSON.stringify({ amount: prices[payload.plan] || 25000 }), { 
+      return new Response(JSON.stringify({ amount: prices[payload.plan] || 0 }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       })
     }

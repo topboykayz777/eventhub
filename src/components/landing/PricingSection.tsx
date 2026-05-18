@@ -9,8 +9,8 @@ import { Shield, Zap, Users } from "lucide-react";
 
 const PricingSection = () => {
   const navigate = useNavigate();
-  const [spotsRemaining, setSpotsRemaining] = useState(50);
-  const TOTAL_BETA_SPOTS = 100; 
+  const [spotsRemaining, setSpotsRemaining] = useState(25);
+  const TOTAL_BETA_SPOTS = 25; 
 
   useEffect(() => {
     const fetchSignupCount = async () => {
@@ -57,12 +57,12 @@ const PricingSection = () => {
               </div>
 
               <div className="bg-white/5 py-4 px-6 rounded-2xl inline-block border border-white/5">
-                <span className="text-3xl font-serif italic text-white">₦100</span>
-                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest ml-2">Testing Rate</span>
+                <span className="text-3xl font-serif italic text-white">Free</span>
+                <span className="text-[8px] font-bold text-[#D4AF37] uppercase tracking-widest ml-2">Limited Entry</span>
               </div>
 
               <p className="text-gray-400 text-base leading-relaxed font-light max-w-sm mx-auto">
-                Get early access to the EventHub orchestration suite. Build, manage, and host your events with all premium tools unlocked for beta testing.
+                Get early access to the EventHub orchestration suite. Build, manage, and host your events with all premium tools unlocked for early testers.
               </p>
 
               <div className="grid grid-cols-3 gap-6 border-t border-b border-white/5 py-8">
@@ -88,7 +88,7 @@ const PricingSection = () => {
                   onClick={() => navigate("/signup")}
                   className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20 w-full md:w-auto"
                 >
-                  Secure Beta Access
+                  Secure Free Access
                 </Button>
               </div>
             </div>

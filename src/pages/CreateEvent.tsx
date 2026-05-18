@@ -10,8 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
-import { Palette, Sparkles, Calendar, MapPin, Type, Image as ImageIcon, ArrowRight, Check, Upload, X, Crown, Gem, Star, Heart, Flower2, Waves, Sun, Moon, Landmark, PenTool, Navigation, Zap, Cloud, Compass, GlassWater, Trees, Sunrise, Layers, Shield, ZapIcon, Flame, Cherry, Trees as PalmTree, Tent, Ghost, Palette as ColorPalette, Camera, Lock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Palette, Sparkles, Calendar, Type, Image as ImageIcon, Upload, X, Crown, Gem, Sun, Moon, Flower2, Waves, Heart, Landmark, Star, PenTool, Navigation, Camera, Ghost, Tent, Palmtree, Cherry, ZapIcon } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 
 const CreateEvent = () => {
@@ -104,10 +103,10 @@ const CreateEvent = () => {
     { id: 'neon', label: 'Electric Pulse', color: 'bg-[#00f3ff]', icon: ZapIcon },
     { id: 'royal', label: 'Royal Amethyst', color: 'bg-[#3b0764]', icon: Crown },
     { id: 'blossom', label: 'Sakura Spring', color: 'bg-[#fff1f2]', icon: Cherry },
-    { id: 'tropic', label: 'Tropical Jungle', color: 'bg-[#0d9488]', icon: PalmTree },
+    { id: 'tropic', label: 'Tropical Jungle', color: 'bg-[#0d9488]', icon: Palmtree },
     { id: 'desert', label: 'Oasis Blue', color: 'bg-[#d97706]', icon: Tent },
     { id: 'glitch', label: 'Glitch Noir', color: 'bg-[#ef4444]', icon: Ghost },
-    { id: 'minimal', label: 'Bauhaus Minimal', color: 'bg-[#2563eb]', icon: ColorPalette },
+    { id: 'minimal', label: 'Bauhaus Minimal', color: 'bg-[#2563eb]', icon: Palette },
     { id: 'noir', label: 'Noir Cinema', color: 'bg-white', icon: Camera }
   ];
 
@@ -130,7 +129,7 @@ const CreateEvent = () => {
             <div className="grid md:grid-cols-2 gap-10">
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Event Title</Label>
-                <Input required placeholder="e.g. The Balogun Wedding" className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light" value={formData.eventName} onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} />
+                <input required placeholder="e.g. The Balogun Wedding" className="h-16 w-full px-6 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light outline-none" value={formData.eventName} onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} />
               </div>
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Service Tier</Label>
@@ -139,14 +138,14 @@ const CreateEvent = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
-                    <SelectItem value="beta" className="text-[#D4AF37] font-bold">Beta Access (₦100) — UNLOCKED</SelectItem>
+                    <SelectItem value="beta" className="text-[#D4AF37] font-bold">Beta Access (FREE) — UNLOCKED</SelectItem>
                     <SelectItem value="Basic" disabled className="opacity-50">Basic (₦25,000) — Locked</SelectItem>
                     <SelectItem value="Standard" disabled className="opacity-50">Standard (₦75,000) — Locked</SelectItem>
                     <SelectItem value="Pro" disabled className="opacity-50">Pro (₦150,000) — Locked</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-[8px] text-[#D4AF37] font-black uppercase tracking-widest mt-2 flex items-center gap-2">
-                  <Sparkles size={10} /> Beta testers receive all premium features for ₦100.
+                  <Sparkles size={10} /> Beta testers receive all premium features for free.
                 </p>
               </div>
             </div>
@@ -161,18 +160,18 @@ const CreateEvent = () => {
               <div className="grid md:grid-cols-2 gap-10">
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Date & Time</Label>
-                  <Input type="datetime-local" required className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light" value={formData.eventDate} onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} />
+                  <input type="datetime-local" required className="h-16 w-full px-6 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light outline-none" value={formData.eventDate} onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} />
                 </div>
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Venue Name</Label>
-                  <Input required placeholder="Eko Hotel & Suites, VI, Lagos" className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light" value={formData.venue} onChange={(e) => setFormData({ ...formData, venue: e.target.value })} />
+                  <input required placeholder="Eko Hotel & Suites, VI, Lagos" className="h-16 w-full px-6 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light outline-none" value={formData.venue} onChange={(e) => setFormData({ ...formData, venue: e.target.value })} />
                 </div>
               </div>
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Exact Location Pin (Google Maps Link)</Label>
                 <div className="relative">
                   <Navigation className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4" />
-                  <Input placeholder="Paste the 'Share' link from Google Maps here..." className="h-16 pl-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light" value={formData.venue_map_url} onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} />
+                  <input placeholder="Paste the 'Share' link from Google Maps here..." className="h-16 w-full pl-16 px-6 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light outline-none" value={formData.venue_map_url} onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -198,7 +197,7 @@ const CreateEvent = () => {
                     </div>
                   </Label>
                 )}
-                <Input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
+                <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
               </div>
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Host's Message</Label>

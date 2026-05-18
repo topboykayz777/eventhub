@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
-import { CreditCard, ShieldCheck, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CreditCard, ShieldCheck, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { usePaystackPayment } from 'react-paystack';
 
@@ -16,6 +16,7 @@ const Payment = () => {
   const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activating, setActivating] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [amount, setAmount] = useState<number>(0);
@@ -35,7 +36,6 @@ const Payment = () => {
       }
       setEvent(data);
 
-      // Fetch secure price from Edge Function using the full hardcoded URL
       const currentPlan = upgradePlan || (data.plan || 'Basic');
       try {
         const response = await fetch('https://vilknsbrvakthefsgfwg.supabase.co/functions/v1/event-security', {
@@ -52,9 +52,8 @@ const Payment = () => {
         setAmount(priceData.amount);
       } catch (err) {
         console.error("Pricing Error:", err);
-        // Fallback to a safe default if the function is still deploying
-        const fallbacks: Record<string, number> = { 'Basic': 25000, 'Standard': 75000, 'Pro': 150000 };
-        setAmount(fallbacks[currentPlan] || 25000);
+        const fallbacks: Record<string, number> = { 'beta': 0, 'Basic': 25000, 'Standard': 75000, 'Pro': 150000 };
+        setAmount(fallbacks[currentPlan] || 0);
       }
       
       setLoading(false);
@@ -63,6 +62,7 @@ const Payment = () => {
   }, [id, navigate, upgradePlan]);
 
   const currentPlan = upgradePlan || (event?.plan || 'Basic');
+  const isBeta = currentPlan === 'beta';
 
   const config = {
     reference: (new Date()).getTime().toString(),
@@ -78,6 +78,24 @@ const Payment = () => {
   };
 
   const initializePayment = usePaystackPayment(config);
+
+  const handleFreeActivation = async () => {
+    setActivating(true);
+    const { error } = await supabase
+      .from('events')
+      .update({ is_paid: true, plan: currentPlan })
+      .eq('id', id);
+
+    if (error) {
+      showError("Activation failed. Contact support.");
+    } else {
+      setPaymentSuccess(true);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      showSuccess('Masterpiece Activated for Free!');
+      setTimeout(() => navigate('/dashboard'), 3000);
+    }
+    setActivating(false);
+  };
 
   const onSuccess = async (reference: any) => {
     const { error } = await supabase
@@ -124,39 +142,53 @@ const Payment = () => {
       <Navbar />
       <div className="max-w-md mx-auto py-20 px-6">
         <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 text-center shadow-2xl">
-          <div className="bg-[#D4AF37]/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CreditCard className="text-[#D4AF37] w-12 h-12" />
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 ${isBeta ? 'bg-[#D4AF37]/20 animate-pulse' : 'bg-[#D4AF37]/10'}`}>
+            {isBeta ? <Sparkles className="text-[#D4AF37] w-12 h-12" /> : <CreditCard className="text-[#D4AF37] w-12 h-12" />}
           </div>
           <h1 className="text-3xl font-serif italic mb-2 tracking-tight">
             {upgradePlan ? 'Upgrade Tier' : 'Activate Event'}
           </h1>
           <p className="text-gray-400 mb-10">
-            Plan: <span className="text-white font-bold">{currentPlan}</span><br/>
+            Plan: <span className="text-white font-bold">{currentPlan === 'beta' ? 'Free Beta' : currentPlan}</span><br/>
             <span className="text-[#D4AF37] italic">"{event.event_name}"</span>
           </p>
           <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5">
             <div className="text-5xl font-serif italic text-white mb-2">
-              ₦{amount.toLocaleString()}
+              {isBeta ? '₦0' : `₦${amount.toLocaleString()}`}
             </div>
           </div>
           
-          <Button 
-            onClick={() => initializePayment({ onSuccess, onClose })}
-            className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
-          >
-            Secure Activation
-          </Button>
+          {isBeta ? (
+            <Button 
+              onClick={handleFreeActivation}
+              disabled={activating}
+              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+            >
+              {activating ? <Loader2 className="animate-spin" /> : 'Claim Free Activation'}
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => initializePayment({ onSuccess, onClose })}
+              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+            >
+              Secure Activation
+            </Button>
+          )}
 
-          <div className="mt-8 p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex items-start gap-3 text-left">
-            <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-            <p className="text-[9px] text-blue-200/70 leading-relaxed">
-              If the window doesn't open, check your browser's **Address Bar** for a "Pop-up Blocked" icon and click "Allow".
-            </p>
-          </div>
+          {!isBeta && (
+            <div className="mt-8 p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex items-start gap-3 text-left">
+              <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-[9px] text-blue-200/70 leading-relaxed">
+                If the window doesn't open, check your browser's **Address Bar** for a "Pop-up Blocked" icon and click "Allow".
+              </p>
+            </div>
+          )}
 
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
             <ShieldCheck className="w-4 h-4" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Secured by Paystack</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">
+              {isBeta ? 'Early Access Program' : 'Secured by Paystack'}
+            </span>
           </div>
         </div>
       </div>
