@@ -12,8 +12,9 @@ const PricingSection = () => {
   const [spotsRemaining, setSpotsRemaining] = useState(25);
   const TOTAL_BETA_SPOTS = 25; 
 
-  useEffect(() => {
-    const fetchSignupCount = async () => {
+  const updateCount = async () => {
+    try {
+      // Fetch the actual count of profiles in the database
       const { count, error } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
@@ -22,9 +23,30 @@ const PricingSection = () => {
         const remaining = Math.max(0, TOTAL_BETA_SPOTS - count);
         setSpotsRemaining(remaining);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching signup count:", err);
+    }
+  };
 
-    fetchSignupCount();
+  useEffect(() => {
+    // Initial fetch
+    updateCount();
+
+    // Subscribe to new profile creations for real-time updates
+    const channel = supabase
+      .channel('profile-count-updates')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'profiles' },
+        () => {
+          updateCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
@@ -82,7 +104,7 @@ const PricingSection = () => {
 
               <div className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] animate-pulse">
-                  {spotsRemaining} spots remaining
+                  {spotsRemaining} {spotsRemaining === 1 ? 'spot' : 'spots'} remaining
                 </p>
                 <Button
                   onClick={() => navigate("/signup")}
