@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
+import HowItWorks from '@/components/landing/HowItWorks';
 import PricingSection from '@/components/landing/PricingSection';
 import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,8 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        <HowItWorks />
 
         <section className="py-16 md:py-20 lg:py-40 px-4 md:px-6 lg:px-8 bg-[#080808]">
           <div className="max-w-7xl mx-auto">
