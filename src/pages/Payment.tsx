@@ -6,9 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
-import { CreditCard, ShieldCheck, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { CreditCard, ShieldCheck, Loader2, CheckCircle2, AlertCircle, Sparkles, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { usePaystackPayment } from 'react-paystack';
+import { motion } from 'framer-motion';
 
 const Payment = () => {
   const { id } = useParams();
@@ -62,7 +63,7 @@ const Payment = () => {
   }, [id, navigate, upgradePlan]);
 
   const currentPlan = upgradePlan || (event?.plan || 'Basic');
-  const isBeta = currentPlan === 'beta';
+  const isFree = amount === 0;
 
   const config = {
     reference: (new Date()).getTime().toString(),
@@ -79,42 +80,41 @@ const Payment = () => {
 
   const initializePayment = usePaystackPayment(config);
 
-  const handleFreeActivation = async () => {
+  const performActivation = async () => {
     setActivating(true);
-    const { error } = await supabase
-      .from('events')
-      .update({ is_paid: true, plan: currentPlan })
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_paid: true, plan: currentPlan })
+        .eq('id', id);
 
-    if (error) {
-      showError("Activation failed. Contact support.");
-    } else {
+      if (error) throw error;
+
       setPaymentSuccess(true);
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-      showSuccess('Masterpiece Activated for Free!');
+      confetti({
+        particleCount: 200,
+        spread: 90,
+        origin: { y: 0.6 },
+        colors: ['#D4AF37', '#ffffff']
+      });
+      showSuccess(isFree ? 'Beta Access Activated!' : 'Masterpiece Activated!');
       setTimeout(() => navigate('/dashboard'), 3000);
-    }
-    setActivating(false);
-  };
-
-  const onSuccess = async (reference: any) => {
-    const { error } = await supabase
-      .from('events')
-      .update({ is_paid: true, plan: currentPlan })
-      .eq('id', id);
-
-    if (error) {
-      showError("Payment confirmed, but activation failed. Contact support.");
-    } else {
-      setPaymentSuccess(true);
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-      showSuccess('Masterpiece Activated!');
-      setTimeout(() => navigate('/dashboard'), 3000);
+    } catch (err: any) {
+      showError(err.message || "Activation failed. Please contact support.");
+    } finally {
+      setActivating(false);
     }
   };
 
-  const onClose = () => {
-    showError("Payment window closed.");
+  const handleAction = () => {
+    if (isFree) {
+      performActivation();
+    } else {
+      initializePayment({ 
+        onSuccess: () => performActivation(), 
+        onClose: () => showError("Payment window closed.") 
+      });
+    }
   };
 
   if (loading) return (
@@ -127,11 +127,15 @@ const Payment = () => {
     return (
       <div className="min-h-screen bg-[#0f0f0f] text-white flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <div className="bg-green-500/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CheckCircle2 className="text-green-500 w-12 h-12" />
-          </div>
+          <motion.div 
+            initial={{ scale: 0 }} 
+            animate={{ scale: 1 }} 
+            className="bg-[#D4AF37]/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8"
+          >
+            <CheckCircle2 className="text-[#D4AF37] w-12 h-12" />
+          </motion.div>
           <h1 className="text-4xl font-serif italic mb-4">Activation Complete</h1>
-          <p className="text-gray-500 mb-10">Your event is now live. Redirecting...</p>
+          <p className="text-gray-500 mb-10">Your event command center is now live. Redirecting to your dashboard...</p>
         </div>
       </div>
     );
@@ -141,10 +145,17 @@ const Payment = () => {
     <div className="min-h-screen bg-[#0f0f0f] text-white">
       <Navbar />
       <div className="max-w-md mx-auto py-20 px-6">
-        <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 text-center shadow-2xl">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 ${isBeta ? 'bg-[#D4AF37]/20 animate-pulse' : 'bg-[#D4AF37]/10'}`}>
-            {isBeta ? <Sparkles className="text-[#D4AF37] w-12 h-12" /> : <CreditCard className="text-[#D4AF37] w-12 h-12" />}
+        <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 text-center shadow-2xl relative overflow-hidden">
+          {isFree && (
+            <div className="absolute top-0 right-0 p-4">
+              <span className="bg-[#D4AF37] text-black text-[7px] font-black uppercase px-2 py-1 rotate-12">Limited Offer</span>
+            </div>
+          )}
+
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 ${isFree ? 'bg-[#D4AF37]/20 animate-pulse' : 'bg-[#D4AF37]/10'}`}>
+            {isFree ? <Sparkles className="text-[#D4AF37] w-12 h-12" /> : <CreditCard className="text-[#D4AF37] w-12 h-12" />}
           </div>
+          
           <h1 className="text-3xl font-serif italic mb-2 tracking-tight">
             {upgradePlan ? 'Upgrade Tier' : 'Activate Event'}
           </h1>
@@ -152,34 +163,34 @@ const Payment = () => {
             Plan: <span className="text-white font-bold">{currentPlan === 'beta' ? 'Free Beta' : currentPlan}</span><br/>
             <span className="text-[#D4AF37] italic">"{event.event_name}"</span>
           </p>
+
           <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5">
             <div className="text-5xl font-serif italic text-white mb-2">
-              {isBeta ? '₦0' : `₦${amount.toLocaleString()}`}
+              {isFree ? '₦0' : `₦${amount.toLocaleString()}`}
             </div>
+            <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500">Professional Suite Access</p>
           </div>
           
-          {isBeta ? (
-            <Button 
-              onClick={handleFreeActivation}
-              disabled={activating}
-              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
-            >
-              {activating ? <Loader2 className="animate-spin" /> : 'Claim Free Activation'}
-            </Button>
-          ) : (
-            <Button 
-              onClick={() => initializePayment({ onSuccess, onClose })}
-              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
-            >
-              Secure Activation
-            </Button>
-          )}
+          <Button 
+            onClick={handleAction}
+            disabled={activating}
+            className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl relative overflow-hidden group"
+          >
+            {activating ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                {isFree ? <Zap size={14} /> : <CreditCard size={14} />}
+                {isFree ? 'Initialize Free Activation' : 'Proceed to Secure Payment'}
+              </span>
+            )}
+          </Button>
 
-          {!isBeta && (
+          {!isFree && (
             <div className="mt-8 p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex items-start gap-3 text-left">
               <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
               <p className="text-[9px] text-blue-200/70 leading-relaxed">
-                If the window doesn't open, check your browser's **Address Bar** for a "Pop-up Blocked" icon and click "Allow".
+                A secure Paystack window will open. Ensure your pop-up blocker is disabled.
               </p>
             </div>
           )}
@@ -187,7 +198,7 @@ const Payment = () => {
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
             <ShieldCheck className="w-4 h-4" />
             <span className="text-[10px] font-bold uppercase tracking-widest">
-              {isBeta ? 'Early Access Program' : 'Secured by Paystack'}
+              {isFree ? 'Early Access Program' : 'Secured Orchestration'}
             </span>
           </div>
         </div>
