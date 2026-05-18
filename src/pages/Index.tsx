@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
+import TheHook from '@/components/landing/TheHook';
 import TheNarrative from '@/components/landing/TheNarrative';
 import PricingSection from '@/components/landing/PricingSection';
 import FAQ from '@/components/landing/FAQ';
@@ -71,7 +72,10 @@ const Index = () => {
           </div>
         </section>
 
-        {/* THE IMMERSIVE NARRATIVE (Replacing the old Mid section) */}
+        {/* THE HOOK (Direct Conversion Section) */}
+        <TheHook />
+
+        {/* THE IMMERSIVE NARRATIVE */}
         <TheNarrative />
 
         <PricingSection />
