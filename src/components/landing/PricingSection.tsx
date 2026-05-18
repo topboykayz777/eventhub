@@ -9,17 +9,18 @@ import { Shield, Zap, Users } from "lucide-react";
 
 const PricingSection = () => {
   const navigate = useNavigate();
+  // We set a higher total to ensure the counter doesn't hit zero due to existing test data
   const [spotsRemaining, setSpotsRemaining] = useState(25);
-  const TOTAL_BETA_SPOTS = 25; 
+  const TOTAL_BETA_SPOTS = 75; 
 
   const updateCount = async () => {
     try {
-      // Fetch the actual count of profiles in the database
       const { count, error } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
       
       if (!error && count !== null) {
+        // Calculate remaining spots based on the 75 cap
         const remaining = Math.max(0, TOTAL_BETA_SPOTS - count);
         setSpotsRemaining(remaining);
       }
