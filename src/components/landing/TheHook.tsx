@@ -1,12 +1,43 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ShieldAlert, Zap, Globe, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldAlert, Zap, Globe, CheckCircle2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const TheHook = () => {
   const navigate = useNavigate();
+  const [spotsRemaining, setSpotsRemaining] = useState(50);
+  const TOTAL_PIONEER_SPOTS = 50;
+
+  useEffect(() => {
+    const fetchRemaining = async () => {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      if (!error && count !== null) {
+        setSpotsRemaining(Math.max(0, TOTAL_PIONEER_SPOTS - count));
+      }
+    };
+
+    fetchRemaining();
+
+    // Live subscription to update counter instantly when someone signs up
+    const channel = supabase
+      .channel('beta-spots-count')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'profiles' },
+        () => fetchRemaining()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <section className="py-24 md:py-40 px-6 bg-[#050505]">
@@ -66,14 +97,22 @@ const TheHook = () => {
             {/* Decorative Glow */}
             <div className="absolute inset-0 bg-[#D4AF37]/10 blur-[100px] rounded-full" />
             
-            <div className="relative glass-premium p-10 md:p-16 rounded-[4rem] border-white/10 shadow-2xl">
+            <div className="relative glass-premium p-10 md:p-16 rounded-[4rem] border-white/10 shadow-2xl overflow-hidden">
+              {/* Corner Ribbon */}
+              <div className="absolute top-0 right-0 p-8">
+                 <div className="bg-[#D4AF37] text-black text-[7px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rotate-45 translate-x-12 -translate-y-4 shadow-xl">
+                    Elite Pioneer
+                 </div>
+              </div>
+
               <div className="text-center mb-12">
-                {/* Brand Logo Replacement */}
-                <div className="text-xl md:text-2xl font-light tracking-[0.5em] uppercase mb-6">
-                  Event Hub <span className="text-[#D4AF37]">NG</span>
+                {/* The Signature Diamond Logo */}
+                <div className="w-20 h-20 border-2 border-[#D4AF37] flex items-center justify-center rotate-45 mx-auto mb-10 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                  <span className="text-[#D4AF37] font-serif text-3xl -rotate-45">E</span>
                 </div>
+                
                 <h3 className="text-3xl font-serif italic text-white mb-4">The Solution</h3>
-                <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">The EventHub Atelier</p>
+                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.4em]">The EventHub Atelier</p>
               </div>
 
               <div className="space-y-6 mb-12">
@@ -92,14 +131,25 @@ const TheHook = () => {
               </div>
 
               <div className="pt-8 border-t border-white/5 text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-6 animate-pulse">
-                  Standard Value: ₦150,000 — Currently FREE
-                </p>
+                <div className="mb-8 flex flex-col items-center gap-2">
+                   <div className="flex items-center gap-2 text-[#D4AF37] animate-pulse">
+                      <Sparkles size={12} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.5em]">Pioneer Spots Available</span>
+                   </div>
+                   <div className="text-5xl font-serif italic text-white">
+                      {spotsRemaining} / {TOTAL_PIONEER_SPOTS}
+                   </div>
+                   <p className="text-gray-600 text-[8px] font-bold uppercase tracking-widest mt-1">
+                      Free Lifetime Access for the first 50 Testers
+                   </p>
+                </div>
+
                 <button 
                   onClick={() => navigate('/create-event')}
-                  className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl"
+                  className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl relative group overflow-hidden"
                 >
-                  Claim My Masterpiece Key
+                  <span className="relative z-10">Claim My Masterpiece Key</span>
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                 </button>
               </div>
             </div>
