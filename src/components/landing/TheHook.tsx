@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, Zap, Globe, CheckCircle2, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ShieldAlert, Zap, Globe, CheckCircle2, Sparkles, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,9 +24,8 @@ const TheHook = () => {
 
     fetchRemaining();
 
-    // Live subscription to update counter instantly when someone signs up
     const channel = supabase
-      .channel('beta-spots-count')
+      .channel('beta-spots-count-hook')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'profiles' },
@@ -94,11 +93,9 @@ const TheHook = () => {
             viewport={{ once: true }}
             className="relative"
           >
-            {/* Decorative Glow */}
             <div className="absolute inset-0 bg-[#D4AF37]/10 blur-[100px] rounded-full" />
             
             <div className="relative glass-premium p-10 md:p-16 rounded-[4rem] border-white/10 shadow-2xl overflow-hidden">
-              {/* Corner Ribbon */}
               <div className="absolute top-0 right-0 p-8">
                  <div className="bg-[#D4AF37] text-black text-[7px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rotate-45 translate-x-12 -translate-y-4 shadow-xl">
                     Elite Pioneer
@@ -106,25 +103,24 @@ const TheHook = () => {
               </div>
 
               <div className="text-center mb-12">
-                {/* The Signature Diamond Logo */}
                 <div className="w-20 h-20 border-2 border-[#D4AF37] flex items-center justify-center rotate-45 mx-auto mb-10 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
                   <span className="text-[#D4AF37] font-serif text-3xl -rotate-45">E</span>
                 </div>
                 
-                <h3 className="text-3xl font-serif italic text-white mb-4">The Solution</h3>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.4em]">The EventHub Atelier</p>
+                <h3 className="text-3xl font-serif italic text-white mb-4">The Founding Circle</h3>
+                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.4em]">Become a Founding Member</p>
               </div>
 
               <div className="space-y-6 mb-12">
                 {[
-                  "Professional Digital Invitations",
-                  "One-Touch WhatsApp Mass Broadcast",
-                  "Cinematic Live Vibe Screen",
-                  "0% Commission Digital Spraying",
-                  "Secure QR Access Control"
+                  "Complimentary Pro Tier Activation (Value ₦150k)",
+                  "Verified 'Founding Member' Profile Badge",
+                  "Direct Access to the Feature Concierge",
+                  "Priority Real-time Payout Verification",
+                  "Early Access to the Vendor Atelier"
                 ].map((text, i) => (
                   <div key={i} className="flex items-center gap-4">
-                    <CheckCircle2 className="text-[#D4AF37] w-4 h-4 shrink-0" />
+                    <Star className="text-[#D4AF37] w-4 h-4 shrink-0 fill-current" />
                     <span className="text-sm font-light text-gray-200">{text}</span>
                   </div>
                 ))}
@@ -134,13 +130,13 @@ const TheHook = () => {
                 <div className="mb-8 flex flex-col items-center gap-2">
                    <div className="flex items-center gap-2 text-[#D4AF37] animate-pulse">
                       <Sparkles size={12} />
-                      <span className="text-[10px] font-black uppercase tracking-[0.5em]">Pioneer Spots Available</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.5em]">Pioneer Invitations Remaining</span>
                    </div>
                    <div className="text-5xl font-serif italic text-white">
                       {spotsRemaining} / {TOTAL_PIONEER_SPOTS}
                    </div>
-                   <p className="text-gray-600 text-[8px] font-bold uppercase tracking-widest mt-1">
-                      Free Lifetime Access for the first 50 Testers
+                   <p className="text-gray-600 text-[8px] font-bold uppercase tracking-widest mt-2 max-w-[250px] mx-auto">
+                      Founding Status is reserved for the first 50 hosts to register.
                    </p>
                 </div>
 
@@ -148,7 +144,7 @@ const TheHook = () => {
                   onClick={() => navigate('/create-event')}
                   className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-none text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl relative group overflow-hidden"
                 >
-                  <span className="relative z-10">Claim My Masterpiece Key</span>
+                  <span className="relative z-10">Claim My Founding Membership</span>
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                 </button>
               </div>
