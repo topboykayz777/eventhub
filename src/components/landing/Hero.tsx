@@ -7,18 +7,20 @@ import { Button } from '@/components/ui/button';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f] pt-28 md:pt-32 pb-20">
-      {/* Background with higher opacity on desktop for depth */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f]">
+      {/* Immersive Background Layer */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
           src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
           className="w-full h-full object-cover opacity-10 md:opacity-20 animate-slow-zoom"
           alt="Luxury Event Background"
         />
+        {/* Dynamic Shadow & Depth Overlays */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f0f] via-transparent to-[#0f0f0f]" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full">
+      <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full pt-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
