@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect x="25" y="25" width="50" height="50" transform="rotate(45 50 50)" fill="#050505" stroke="#D4AF37" stroke-width="3"/>
-  <text x="50" y="61" font-family="serif" font-style="italic" font-size="28" fill="#D4AF37" text-anchor="middle">E</text>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="256" y="-35" width="340" height="340" rx="40" transform="rotate(45 256 -35)" fill="#D4AF37"/>
+  <path d="M180 180H332V210H215V245H320V275H215V310H332V340H180V180Z" fill="white"/>
 </svg>
