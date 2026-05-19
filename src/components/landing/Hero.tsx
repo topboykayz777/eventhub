@@ -27,21 +27,21 @@ const Hero = () => {
           transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
           className="flex flex-col items-center"
         >
-          <span className="text-[#D4AF37] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-6 md:mb-10 block">
+          <span className="text-[#D4AF37] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-6 md:mb-8 block">
             The Professional Orchestration Suite
           </span>
           
-          <h1 className="text-6xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-serif italic text-white mb-6 md:mb-8 leading-[0.85] tracking-tighter text-center">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[9rem] font-serif italic text-white mb-6 md:mb-10 leading-[1.1] tracking-tight text-center">
             The Art of <br className="hidden sm:block" />
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-xs sm:text-sm md:text-base text-gray-400 mb-12 md:mb-20 max-w-2xl mx-auto leading-relaxed font-light tracking-[0.2em] uppercase px-4 text-center opacity-80">
+          <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-[0.15em] uppercase px-4 text-center opacity-80">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
             Orchestrate weddings, galas, and elite events with surgical precision.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-10 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 w-full sm:w-auto">
             <Link to="/create-event" className="w-full sm:w-auto group">
               <motion.div
                 animate={{ 
@@ -55,14 +55,14 @@ const Hero = () => {
               >
                 <Button 
                   size="lg" 
-                  className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[12px] px-12 md:px-16 py-8 md:py-10 rounded-none font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl"
+                  className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl"
                 >
                   Start Orchestrating
                 </Button>
               </motion.div>
             </Link>
             <Link to="/vendors" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 hover:border-white/40 text-[12px] px-12 md:px-16 py-8 md:py-10 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 hover:border-white/40 text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
                 Curated Directory
               </Button>
             </Link>
