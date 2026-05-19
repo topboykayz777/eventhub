@@ -40,6 +40,8 @@ const Index = () => {
     }());
   }, []);
 
+  const seoTerms = ['Weddings', 'Galas', 'Product Launches', 'Charity Balls', 'Concerts', 'Anniversaries', 'Funerals', 'Beach Parties', 'Corporate Retreats', 'Lagos VI', 'Abuja Maitama', 'Lekki Phase 1', 'Banana Island', 'Eko Hotel', 'Transcorp Hilton'];
+
   return (
     <div className="min-h-screen bg-[#050505] selection:bg-[#D4AF37] selection:text-black overflow-x-hidden w-full flex flex-col items-center">
       <Navbar />
@@ -88,20 +90,6 @@ const Index = () => {
         <div className="w-full">
            <MockupGallery />
         </div>
-
-        {/* INTENT CLOUD (SEO & GEO Focus) */}
-        <section className="w-full py-24 bg-[#080808] border-y border-white/5">
-          <div className="max-w-7xl mx-auto px-6">
-             <div className="flex flex-col items-center text-center">
-                <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.6em] mb-8">The Universal Registry</span>
-                <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 opacity-40">
-                  {['Weddings', 'Galas', 'Product Launches', 'Charity Balls', 'Concerts', 'Anniversaries', 'Funerals', 'Beach Parties', 'Corporate Retreats', 'Lagos VI', 'Abuja Maitama', 'Lekki Phase 1', 'Banana Island', 'Eko Hotel', 'Transcorp Hilton'].map((term) => (
-                    <span key={term} className="text-xs md:text-sm font-light tracking-widest uppercase text-white hover:text-[#D4AF37] transition-colors cursor-default">{term}</span>
-                  ))}
-                </div>
-             </div>
-          </div>
-        </section>
         
         {/* FAQ - Spaced & Balanced */}
         <div className="w-full py-20 md:py-40">
@@ -128,7 +116,7 @@ const Index = () => {
       </main>
 
       <footer className="w-full bg-[#050505] text-white py-20 md:py-40 px-6 border-t border-white/5 flex flex-col items-center">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-24 w-full">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-24 w-full mb-20 md:mb-32">
           <div className="md:col-span-2 text-center md:text-left">
             <div className="text-2xl md:text-3xl font-light tracking-[0.5em] uppercase mb-8">
               Event Hub <span className="text-[#D4AF37]">NG</span>
@@ -164,7 +152,17 @@ const Index = () => {
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-24 md:mt-40 pt-12 border-t border-white/5 text-center text-gray-600 text-[10px] font-bold uppercase tracking-[0.5em] w-full">
+        
+        {/* Relocated SEO Intent Cloud */}
+        <div className="max-w-4xl mx-auto mb-16 px-6 opacity-20 hover:opacity-40 transition-opacity duration-700">
+           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+              {seoTerms.map((term) => (
+                <span key={term} className="text-[8px] md:text-[10px] font-light tracking-[0.3em] uppercase text-white cursor-default">{term}</span>
+              ))}
+           </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-12 border-t border-white/5 text-center text-gray-600 text-[10px] font-bold uppercase tracking-[0.5em] w-full">
           © 2026 Event Hub Nigeria. All Rights Reserved.
         </div>
       </footer>
