@@ -20,6 +20,9 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
   };
 
   const video = isVideo(url);
+  
+  // TECH FIX: Append seek time to force the browser to render the first frame as a poster instantly
+  const optimizedUrl = video ? `${url}#t=0.1` : url;
 
   return (
     <motion.div 
@@ -29,11 +32,15 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       transition={{ delay: (index % 6) * 0.05 }}
       whileHover={{ scale: 1.02 }}
       onClick={onClick}
-      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/5 will-change-transform rounded-2xl"
+      className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/[0.02] will-change-transform rounded-2xl"
     >
-      {!isLoaded && !hasError && (
+      {/* 
+        TECH FIX: We removed the hard 'spinner-only' state for videos. 
+        Metadata preloading handles the 'instant' feel now.
+      */}
+      {!isLoaded && !hasError && !video && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]/30" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]/20" />
         </div>
       )}
 
@@ -47,18 +54,17 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       {video ? (
         <div className="w-full h-full relative">
           <video 
-            src={url} 
-            className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+            src={optimizedUrl} 
+            className="w-full h-full object-cover"
             muted 
+            playsInline
             preload="metadata"
             onLoadedData={() => setIsLoaded(true)}
             onError={() => setHasError(true)}
           />
-          {isLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
-              <PlayCircle className="text-white/70 w-10 h-10" />
-            </div>
-          )}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-colors">
+            <PlayCircle className="text-white/80 w-10 h-10 drop-shadow-2xl" />
+          </div>
         </div>
       ) : (
         <img 
@@ -66,7 +72,7 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
           loading="lazy"
           decoding="async"
           fetchPriority="low"
-          className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           alt="" 
           onLoad={() => setIsLoaded(true)}
           onError={() => setHasError(true)}
