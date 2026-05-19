@@ -39,18 +39,18 @@ const Navbar = () => {
       <motion.nav 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 h-20 md:h-24 flex items-center transition-all duration-300 ${
           isScrolled 
-            ? 'bg-[#0f0f0f]/95 backdrop-blur-md shadow-lg' 
-            : 'bg-[#0f0f0f]/90 backdrop-blur-md'
+            ? 'bg-[#0f0f0f] shadow-2xl' 
+            : 'bg-[#0f0f0f]/98 backdrop-blur-xl'
         } text-white border-b border-white/5`}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-4 md:px-6 md:py-6 lg:px-8">
+        <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 md:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3 md:gap-4 group">
             <div className="w-10 h-10 md:w-12 md:h-12 border-2 border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
               <span className="text-[#D4AF37] font-serif text-lg md:text-xl -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
             </div>
-            <span className="text-lg md:text-xl lg:text-2xl font-bold tracking-[0.1em] md:tracking-[0.15em] lg:tracking-[0.2em] uppercase">
+            <span className="text-lg md:text-xl font-bold tracking-[0.2em] uppercase whitespace-nowrap">
               Event Hub <span className="text-[#D4AF37]">NG</span>
             </span>
           </Link>
@@ -61,7 +61,7 @@ const Navbar = () => {
               <Link 
                 key={link.path} 
                 to={link.path} 
-                className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] hover:text-[#D4AF37] transition-colors"
+                className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors"
               >
                 {link.name}
               </Link>
@@ -69,23 +69,23 @@ const Navbar = () => {
             
             {session ? (
               <div className="flex items-center gap-6 lg:gap-10">
-                <Link to="/profile" className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
-                  <UserCircle size={22} /> Profile
+                <Link to="/profile" className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
+                  <UserCircle size={18} /> Profile
                 </Link>
                 <button 
                   onClick={handleLogout}
-                  className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
+                  className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] text-[#D4AF37] hover:opacity-70 transition-opacity flex items-center gap-2"
                 >
-                  <LogOut size={20} /> Logout
+                  <LogOut size={16} /> Logout
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-6 lg:gap-10">
-                <Link to="/login" className="text-base lg:text-lg font-black uppercase tracking-[0.1em] md:tracking-[0.15em] hover:text-[#D4AF37] transition-colors">
+                <Link to="/login" className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors">
                   Sign In
                 </Link>
                 <Link to="/signup">
-                  <Button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-8 md:px-10 lg:px-12 py-6 md:py-7 lg:py-8 text-base lg:text-lg font-black tracking-[0.1em] md:tracking-[0.15em] uppercase">
+                  <Button className="bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-none px-6 lg:px-8 py-5 text-[10px] font-black tracking-[0.3em] uppercase">
                     Get Started
                   </Button>
                 </Link>
@@ -99,7 +99,7 @@ const Navbar = () => {
             className="md:hidden text-white p-2"
             onClick={() => setIsMenuOpen(true)}
           >
-            <Menu size={32} />
+            <Menu size={28} />
           </Button>
         </div>
       </motion.nav>

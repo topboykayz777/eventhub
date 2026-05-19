@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f]">
+    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f] pt-20 md:pt-24">
       {/* Immersive Background Layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
@@ -20,7 +20,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full pt-20">
+      <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
