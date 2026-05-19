@@ -1,25 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { showSuccess, showError } from '@/utils/toast';
-import { Sparkles, Calendar, Type, Image as ImageIcon, Upload, X, Crown, Gem, Sun, Moon, Flower2, Waves, Heart, Landmark, Star, PenTool, Navigation, Camera, ZapIcon, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Sparkles, Upload, X, Crown, Gem, Sun, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 import InfoButton from '@/components/dashboard/InfoButton';
+
+const DRAFT_KEY = 'eventhub_creation_draft';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({
-    eventName: '', eventDate: '', venue: '', venue_map_url: '',
-    message: '', plan: 'beta', theme: 'modern', photo_url: ''
+  
+  // Initializing state from LocalStorage if it exists
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    return saved ? JSON.parse(saved) : {
+      eventName: '', eventDate: '', venue: '', venue_map_url: '',
+      message: '', plan: 'beta', theme: 'modern', photo_url: ''
+    };
   });
+
+  // Save to LocalStorage whenever formData changes
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+  }, [formData]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
@@ -33,17 +44,27 @@ const CreateEvent = () => {
       const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
       setFormData(prev => ({ ...prev, photo_url: publicUrl }));
       showSuccess('Portrait Uploaded.');
-    } catch (error: any) { showError(error.message); } finally { setUploading(false); }
+    } catch (error: any) { 
+      showError("Please sign in to upload media, or continue with the details first."); 
+    } finally { setUploading(false); }
   };
 
   const handleSubmit = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // If not logged in, we save the draft and send them to sign up
+    if (!user) {
+      showSuccess("Draft saved. Please create an account to finalize.");
+      navigate('/signup');
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate('/login'); return; }
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
       const lastName = profile?.full_name?.split(' ').pop()?.toLowerCase() || 'event';
       const slug = `${formData.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}-${Math.floor(Math.random() * 1000)}`;
+      
       const { data: event, error } = await supabase.from('events').insert({
         host_id: user.id, event_name: formData.eventName,
         event_date: new Date(formData.eventDate).toISOString(),
@@ -51,7 +72,11 @@ const CreateEvent = () => {
         message: formData.message, plan: formData.plan,
         theme: formData.theme, slug, photo_url: formData.photo_url
       }).select().single();
+      
       if (error) throw error;
+      
+      // Clear the draft only AFTER successful creation
+      localStorage.removeItem(DRAFT_KEY);
       showSuccess('Masterpiece Created.');
       navigate(`/payment/${event.id}`);
     } catch (error: any) { showError(error.message); } finally { setLoading(false); }
@@ -141,7 +166,7 @@ const CreateEvent = () => {
           <div className="mt-16 flex gap-4">
             {step > 1 && <Button variant="ghost" onClick={() => setStep(step - 1)} className="flex-1 py-8 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white"><ArrowLeft size={16} className="mr-2" /> Back</Button>}
             {step < 4 ? (
-              <Button onClick={() => setStep(step + 1)} disabled={step === 1 && (!formData.eventName || !formData.photo_url)} className="flex-[2] bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">Next Step <ArrowRight size={16} className="ml-2" /></Button>
+              <Button onClick={() => setStep(step + 1)} disabled={step === 1 && (!formData.eventName)} className="flex-[2] bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">Next Step <ArrowRight size={16} className="ml-2" /></Button>
             ) : (
               <Button onClick={handleSubmit} disabled={loading} className="flex-[2] bg-[#D4AF37] hover:bg-[#B8860B] text-black py-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">{loading ? 'Creating...' : 'Finalize & Activate'}</Button>
             )}

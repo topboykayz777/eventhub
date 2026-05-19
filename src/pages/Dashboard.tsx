@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users, Wallet, Monitor, Ticket, Send, FileDown, Music, Edit3, Copy, ExternalLink, MessageSquare } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Plus, Loader2, LayoutDashboard, Sparkles, Users, Wallet, Monitor, Ticket, Send, FileDown, Edit3, Copy } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionProvider';
 
@@ -17,6 +16,8 @@ import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
 import BroadcastBox from '@/components/dashboard/BroadcastBox';
 import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 import DigitalSpray from '@/components/dashboard/DigitalSpray';
+
+const DRAFT_KEY = 'eventhub_creation_draft';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,10 +29,55 @@ const Dashboard = () => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRescuing, setIsRescuing] = useState(false);
+
+  // --- DRAFT RESCUE LOGIC ---
+  const rescueDraft = useCallback(async (currentUser: any) => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (!saved || isRescuing) return;
+    
+    setIsRescuing(true);
+    const draft = JSON.parse(saved);
+    
+    try {
+      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', currentUser.id).single();
+      const lastName = profile?.full_name?.split(' ').pop()?.toLowerCase() || 'event';
+      const slug = `${draft.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}-${Math.floor(Math.random() * 1000)}`;
+      
+      const { error } = await supabase.from('events').insert({
+        host_id: currentUser.id, 
+        event_name: draft.eventName,
+        event_date: draft.eventDate ? new Date(draft.eventDate).toISOString() : new Date().toISOString(),
+        venue: draft.venue, 
+        venue_map_url: draft.venue_map_url,
+        message: draft.message, 
+        plan: draft.plan,
+        theme: draft.theme, 
+        slug, 
+        photo_url: draft.photo_url
+      });
+
+      if (!error) {
+        localStorage.removeItem(DRAFT_KEY);
+        showSuccess(`Welcome! We've successfully initialized your "${draft.eventName}" celebration.`);
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
+      }
+    } catch (err) {
+      console.error("Rescue failed:", err);
+    } finally {
+      setIsRescuing(false);
+    }
+  }, [isRescuing, queryClient]);
 
   useEffect(() => {
-    if (!sessionLoading && !user) navigate('/login');
-  }, [user, sessionLoading, navigate]);
+    if (!sessionLoading) {
+      if (!user) {
+        navigate('/login');
+      } else {
+        rescueDraft(user);
+      }
+    }
+  }, [user, sessionLoading, navigate, rescueDraft]);
   
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-dashboard-data', user?.id],
@@ -83,7 +129,7 @@ const Dashboard = () => {
     return <div className="flex items-center justify-center min-h-screen bg-[#050505]"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
   }
 
-  const firstEvent = events[0]; // Focusing on the most recent event for the bento layout
+  const firstEvent = events[0];
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -110,7 +156,6 @@ const Dashboard = () => {
 
         {firstEvent ? (
           <div className="space-y-24">
-            {/* EVENT HEADER */}
             <div className="relative h-64 md:h-96 rounded-[3rem] overflow-hidden border border-white/10">
               <img src={firstEvent.photo_url} className="w-full h-full object-cover grayscale opacity-40" alt="" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
@@ -123,10 +168,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* THE BENTO GRID */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-              
-              {/* CATEGORY A: THE CONTROL ROOM */}
               <div className="md:col-span-12">
                 <h2 className="text-[11px] font-black uppercase tracking-[0.5em] text-[#D4AF37] mb-8 px-4 flex items-center gap-4">
                   <div className="h-px w-8 bg-[#D4AF37]/30" /> The Control Room
@@ -184,7 +226,6 @@ const Dashboard = () => {
                 </BentoTile>
               </div>
 
-              {/* CATEGORY B: THE STAGE */}
               <div className="md:col-span-12 mt-12">
                 <h2 className="text-[11px] font-black uppercase tracking-[0.5em] text-[#D4AF37] mb-8 px-4 flex items-center gap-4">
                   <div className="h-px w-8 bg-[#D4AF37]/30" /> The Stage
@@ -236,7 +277,6 @@ const Dashboard = () => {
                   <BroadcastBox eventId={firstEvent.id} currentMessage={firstEvent.message} />
                 </div>
               </BentoTile>
-
             </div>
           </div>
         ) : (

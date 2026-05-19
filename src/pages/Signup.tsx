@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError, showSuccess } from '@/utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Briefcase, Check, Mail, Lock, ArrowRight, Sparkles, LockIcon, Eye, EyeOff } from 'lucide-react';
+import { User, Briefcase, Check, Mail, Lock, ArrowRight, LockIcon, Eye, EyeOff } from 'lucide-react';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const Signup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (role === 'vendor') return; // Prevent submission for vendors
+    if (role === 'vendor') return;
 
     if (password !== confirmPassword) {
       showError("Passwords do not match.");
@@ -37,6 +37,7 @@ const Signup = () => {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           role: role,
         }
@@ -46,7 +47,7 @@ const Signup = () => {
     if (error) {
       showError(error.message);
     } else if (data.user) {
-      showSuccess("Verification email sent. Please check your inbox to activate your account.");
+      showSuccess("Verification email sent. Please check your inbox.");
     }
     
     setLoading(false);
