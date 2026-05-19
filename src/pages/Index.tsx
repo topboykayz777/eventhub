@@ -10,6 +10,7 @@ import MockupGallery from '@/components/landing/MockupGallery';
 import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { Instagram, Twitter } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const Index = () => {
@@ -133,10 +134,19 @@ const Index = () => {
           </div>
           <div className="text-center md:text-left">
             <h4 className="text-[11px] font-bold uppercase tracking-[0.5em] text-[#D4AF37] mb-10">Social</h4>
-            <ul className="space-y-6 text-gray-500 text-[11px] font-bold uppercase tracking-[0.4em]">
-              <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">LinkedIn</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
+            <ul className="space-y-6">
+              <li>
+                <a href="https://twitter.com/theeventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-[#D4AF37] transition-colors">
+                  <Twitter size={18} className="text-[#D4AF37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Twitter</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" className="flex items-center gap-3 text-gray-500 hover:text-[#D4AF37] transition-colors">
+                  <Instagram size={18} className="text-[#D4AF37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Instagram</span>
+                </a>
+              </li>
             </ul>
           </div>
         </div>

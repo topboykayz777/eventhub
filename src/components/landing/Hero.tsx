@@ -43,12 +43,23 @@ const Hero = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-10 w-full sm:w-auto">
             <Link to="/create-event" className="w-full sm:w-auto group">
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[12px] px-12 md:px-16 py-8 md:py-10 rounded-none font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-[0_10px_40px_rgba(212,175,55,0.2)]"
+              <motion.div
+                animate={{ 
+                  boxShadow: ["0 0 0px rgba(212,175,55,0)", "0 0 40px rgba(212,175,55,0.4)", "0 0 0px rgba(212,175,55,0)"],
+                  x: [0, -1, 1, -1, 1, 0]
+                }}
+                transition={{ 
+                  boxShadow: { repeat: Infinity, duration: 2 },
+                  x: { repeat: Infinity, duration: 4, repeatDelay: 1 }
+                }}
               >
-                Start Orchestrating
-              </Button>
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[12px] px-12 md:px-16 py-8 md:py-10 rounded-none font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl"
+                >
+                  Start Orchestrating
+                </Button>
+              </motion.div>
             </Link>
             <Link to="/vendors" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 hover:border-white/40 text-[12px] px-12 md:px-16 py-8 md:py-10 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
