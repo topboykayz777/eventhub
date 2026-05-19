@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Menu, X, UserCircle, LogOut } from 'lucide-react';
@@ -11,6 +11,7 @@ import { showSuccess } from '@/utils/toast';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,6 +27,13 @@ const Navbar = () => {
     setIsMenuOpen(false);
     showSuccess("Signed out successfully.");
     navigate('/');
+  };
+
+  const handleHomeClick = (e: React.MouseEvent) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const navLinks = [
@@ -46,7 +54,7 @@ const Navbar = () => {
         } text-white border-b border-white/5`}
       >
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 md:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 md:gap-4 group">
+          <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 md:gap-4 group">
             <div className="w-10 h-10 md:w-12 md:h-12 border-2 border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
               <span className="text-[#D4AF37] font-serif text-lg md:text-xl -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
             </div>
