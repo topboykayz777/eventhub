@@ -8,7 +8,7 @@
   "theme_color": "#D4AF37",
   "icons": [
     {
-      "src": "/icon.png?v=6",
+      "src": "/hub-icon.png?v=99",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"
