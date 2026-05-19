@@ -1,4 +1,6 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="256" y="50" width="290" height="290" transform="rotate(45 256 50)" fill="#050505" stroke="#D4AF37" stroke-width="20"/>
-  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="240" font-style="italic" font-weight="bold" fill="#D4AF37">E</text>
+  <!-- The Gold Diamond -->
+  <rect x="256" y="45" width="300" height="300" transform="rotate(45 256 45)" fill="#050505" stroke="#D4AF37" stroke-width="24"/>
+  <!-- The Serif E -->
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="260" font-style="italic" font-weight="900" fill="#D4AF37">E</text>
 </svg>
