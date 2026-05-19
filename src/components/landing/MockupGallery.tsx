@@ -83,37 +83,61 @@ const MockupGallery = () => {
               className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8"
             >
               {activeTab === 'ledger' ? (
-                <div className="md:col-span-12">
+                <div className="md:col-span-12 group">
                    <div className="bg-black/40 backdrop-blur-xl rounded-[2rem] md:rounded-[4rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-2xl">
-                      <img src={activeCategory?.images[0]} className="w-full h-auto rounded-[1.8rem] md:rounded-[3.8rem]" alt="Financial Ledger" />
+                      <img 
+                        src={activeCategory?.images[0]} 
+                        className="w-full h-auto rounded-[1.8rem] md:rounded-[3.8rem] transition-transform duration-700 group-hover:scale-105" 
+                        alt="Financial Ledger" 
+                      />
                    </div>
                 </div>
               ) : activeTab === 'dashboard' || activeTab === 'vibe' ? (
                 <>
-                  <div className="md:col-span-8">
+                  <div className="md:col-span-8 group">
                     <div className="bg-black/40 backdrop-blur-xl rounded-[2rem] md:rounded-[4rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-2xl h-full">
-                       <img src={activeCategory?.images[0]} className="w-full h-full object-cover rounded-[1.8rem] md:rounded-[3.8rem]" alt="Feature Focus" />
+                       <img 
+                         src={activeCategory?.images[0]} 
+                         className="w-full h-full object-cover rounded-[1.8rem] md:rounded-[3.8rem] transition-transform duration-700 group-hover:scale-105" 
+                         alt="Feature Focus" 
+                       />
                     </div>
                   </div>
                   <div className="md:col-span-4 flex flex-col gap-4 md:gap-8">
-                    <div className="bg-black/40 backdrop-blur-xl rounded-[1.5rem] md:rounded-[3rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-xl flex-1">
-                       <img src={activeCategory?.images[1]} className="w-full h-full object-cover rounded-[1.3rem] md:rounded-[2.8rem]" alt="Feature Detail 1" />
+                    <div className="bg-black/40 backdrop-blur-xl rounded-[1.5rem] md:rounded-[3rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-xl flex-1 group">
+                       <img 
+                         src={activeCategory?.images[1]} 
+                         className="w-full h-full object-cover rounded-[1.3rem] md:rounded-[2.8rem] transition-transform duration-700 group-hover:scale-105" 
+                         alt="Feature Detail 1" 
+                       />
                     </div>
-                    <div className="bg-black/40 backdrop-blur-xl rounded-[1.5rem] md:rounded-[3rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-xl flex-1">
-                       <img src={activeCategory?.images[2]} className="w-full h-full object-cover rounded-[1.3rem] md:rounded-[2.8rem]" alt="Feature Detail 2" />
+                    <div className="bg-black/40 backdrop-blur-xl rounded-[1.5rem] md:rounded-[3rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-xl flex-1 group">
+                       <img 
+                         src={activeCategory?.images[2]} 
+                         className="w-full h-full object-cover rounded-[1.3rem] md:rounded-[2.8rem] transition-transform duration-700 group-hover:scale-105" 
+                         alt="Feature Detail 2" 
+                       />
                     </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="md:col-span-6">
+                  <div className="md:col-span-6 group">
                     <div className="bg-black/40 backdrop-blur-xl rounded-[2rem] md:rounded-[4rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-2xl">
-                       <img src={activeCategory?.images[0]} className="w-full h-auto rounded-[1.8rem] md:rounded-[3.8rem]" alt="Feature Variant 1" />
+                       <img 
+                         src={activeCategory?.images[0]} 
+                         className="w-full h-auto rounded-[1.8rem] md:rounded-[3.8rem] transition-transform duration-700 group-hover:scale-105" 
+                         alt="Feature Variant 1" 
+                       />
                     </div>
                   </div>
-                  <div className="md:col-span-6">
+                  <div className="md:col-span-6 group">
                     <div className="bg-black/40 backdrop-blur-xl rounded-[2rem] md:rounded-[4rem] p-2 border border-[#D4AF37]/20 overflow-hidden shadow-2xl">
-                       <img src={activeCategory?.images[1]} className="w-full h-auto rounded-[1.8rem] md:rounded-[3.8rem]" alt="Feature Variant 2" />
+                       <img 
+                         src={activeCategory?.images[1]} 
+                         className="w-full h-auto rounded-[1.8rem] md:rounded-[3.8rem] transition-transform duration-700 group-hover:scale-105" 
+                         alt="Feature Variant 2" 
+                       />
                     </div>
                   </div>
                 </>

@@ -4,11 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import dashboardHero from '@/assets/mockups/dashboard-hero.png';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f] pt-28 md:pt-32 pb-20">
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f] pt-28 md:pt-32 pb-20">
       {/* Background with higher opacity on desktop for depth */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <img 
@@ -40,7 +39,7 @@ const Hero = () => {
             Orchestrate weddings, galas, and elite events with surgical precision.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-10 w-full sm:w-auto mb-20 md:mb-32">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-10 w-full sm:w-auto">
             <Link to="/create-event" className="w-full sm:w-auto group">
               <Button 
                 size="lg" 
@@ -55,27 +54,6 @@ const Hero = () => {
               </Button>
             </Link>
           </div>
-
-          {/* Fixed Mockup Placement: Scaled for mobile, wide for desktop */}
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-            className="w-full max-w-[1000px] mx-auto px-2"
-          >
-            <div className="relative group">
-               {/* Ambient Glow */}
-               <div className="absolute -inset-4 bg-[#D4AF37]/10 blur-[120px] rounded-full opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
-               
-               <div className="relative bg-black/40 backdrop-blur-3xl rounded-[1.5rem] md:rounded-[3.5rem] p-2 border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.9)] overflow-hidden">
-                  <img 
-                    src={dashboardHero} 
-                    className="w-full h-auto rounded-[1.3rem] md:rounded-[3.3rem] transform transition-transform duration-700 group-hover:scale-[1.02]" 
-                    alt="EventHub Platform Interface" 
-                  />
-               </div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </section>
