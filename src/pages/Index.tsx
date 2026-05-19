@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
 import TheNarrative from '@/components/landing/TheNarrative';
+import MockupGallery from '@/components/landing/MockupGallery';
 import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -71,11 +72,14 @@ const Index = () => {
           </div>
         </section>
 
-        {/* THE HOOK (Direct Conversion Section) */}
+        {/* THE HOOK */}
         <TheHook />
 
         {/* THE IMMERSIVE NARRATIVE */}
         <TheNarrative />
+
+        {/* THE ATELIER GALLERY (Dedicated Mockup Section) */}
+        <MockupGallery />
         
         <FAQ />
 
