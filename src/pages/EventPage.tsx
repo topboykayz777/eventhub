@@ -40,14 +40,35 @@ const EventPage = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Dynamic SEO Title Update
+  // Dynamic SEO & AIO Injection
   useEffect(() => {
     if (event?.event_name) {
       document.title = `${event.event_name} | Official Digital Invitation | EventHub NG`;
+      
+      // Inject Event Schema for AI/Google
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": event.event_name,
+        "startDate": event.event_date,
+        "location": {
+          "@type": "Place",
+          "name": event.venue,
+          "address": event.venue
+        },
+        "image": event.photo_url,
+        "description": event.message || `Official invitation for ${event.event_name}`,
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode"
+      });
+      document.head.appendChild(script);
+      return () => {
+        document.head.removeChild(script);
+        document.title = "EventHub Nigeria | The Professional Digital Orchestration Suite";
+      };
     }
-    return () => {
-      document.title = "EventHub Nigeria | The Professional Digital Orchestration Suite";
-    };
   }, [event]);
 
   const { data: submittedRsvp } = useQuery({

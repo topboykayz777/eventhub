@@ -88,6 +88,20 @@ const Index = () => {
         <div className="w-full">
            <MockupGallery />
         </div>
+
+        {/* INTENT CLOUD (SEO & GEO Focus) */}
+        <section className="w-full py-24 bg-[#080808] border-y border-white/5">
+          <div className="max-w-7xl mx-auto px-6">
+             <div className="flex flex-col items-center text-center">
+                <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.6em] mb-8">The Universal Registry</span>
+                <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 opacity-40">
+                  {['Weddings', 'Galas', 'Product Launches', 'Charity Balls', 'Concerts', 'Anniversaries', 'Funerals', 'Beach Parties', 'Corporate Retreats', 'Lagos VI', 'Abuja Maitama', 'Lekki Phase 1', 'Banana Island', 'Eko Hotel', 'Transcorp Hilton'].map((term) => (
+                    <span key={term} className="text-xs md:text-sm font-light tracking-widest uppercase text-white hover:text-[#D4AF37] transition-colors cursor-default">{term}</span>
+                  ))}
+                </div>
+             </div>
+          </div>
+        </section>
         
         {/* FAQ - Spaced & Balanced */}
         <div className="w-full py-20 md:py-40">
@@ -142,7 +156,7 @@ const Index = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="flex items-center gap-3 text-gray-500 hover:text-[#D4AF37] transition-colors">
+                <a href="https://instagram.com/eventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-[#D4AF37] transition-colors">
                   <Instagram size={18} className="text-[#D4AF37]" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Instagram</span>
                 </a>

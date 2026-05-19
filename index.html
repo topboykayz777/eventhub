@@ -4,44 +4,71 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
-    <!-- Primary SEO -->
+    <!-- PRIMARY SEARCH INTENT SEO -->
     <title>EventHub Nigeria | The Professional Digital Orchestration Suite</title>
-    <meta name="title" content="EventHub Nigeria | The Art of Celebration" />
-    <meta name="description" content="Nigeria's most exclusive digital command center for high-society hosts and professional planners. Orchestrate weddings, galas, and luxury events in Victoria Island, Lagos, and Abuja with real-time Digital Spraying and QR-pass check-ins." />
-    <meta name="keywords" content="Digital Spraying Nigeria, EventHub NG, Wedding RSVP Lagos, Luxury Event Planning Abuja, QR Code Guest List, Victoria Island Events, Nigerian Wedding Technology" />
+    <meta name="title" content="EventHub Nigeria | The Art of Celebration & Digital Orchestration" />
+    <meta name="description" content="The definitive platform for luxury event management. Features Digital Spraying, QR-pass check-ins, and automated guest list management for weddings, galas, and corporate gatherings in Lagos and Abuja." />
+    <meta name="keywords" content="Digital Money Spraying App, Wedding RSVP Nigeria, E-IV Lagos, Event Management Software Abuja, QR Code Guest List, Seating Chart App, Victoria Island Events, Luxury Planner Suite, Lekki Weddings, Ikoyi Galas" />
     
-    <!-- GEO Optimization (Generative Engine Optimization) -->
-    <meta name="geo.region" content="NG-LA" />
-    <meta name="geo.placename" content="Lagos, Victoria Island, Ikoyi, Banana Island" />
-    <meta name="geo.position" content="6.4281;3.4215" />
-    <meta name="ICBM" content="6.4281, 3.4215" />
+    <!-- GENERATIVE ENGINE OPTIMIZATION (GEO) -->
+    <meta name="geo.region" content="NG" />
+    <meta name="geo.placename" content="Lagos, Victoria Island, Lekki, Ikoyi, Abuja, Maitama, Port Harcourt" />
+    <meta name="geo.position" content="9.0765;7.3986" />
+    <meta name="ICBM" content="9.0765, 7.3986" />
+    <meta name="target_country" content="Nigeria" />
 
-    <!-- AIO & Search Schema (LLM Optimization) -->
+    <!-- AI OPTIMIZATION (AIO) - SEMANTIC GRAPH -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "EventHub Nigeria",
-        "operatingSystem": "Web",
-        "applicationCategory": "EventManagementApplication",
-        "description": "The definitive Digital Orchestration Suite for luxury Nigerian events. Features include real-time Digital Spraying, verified financial ledgers, and secure QR-pass access control.",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "NGN",
-          "description": "Beta Access Program"
-        },
-        "areaServed": {
-          "@type": "Country",
-          "name": "Nigeria"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "EventHub Nigeria",
-          "logo": "https://eventhub.ng/favicon.svg"
-        }
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "EventHub Nigeria",
+            "alternateName": "EventHub NG",
+            "applicationCategory": "EventManagementApplication",
+            "operatingSystem": "Web, iOS, Android",
+            "description": "An elite digital orchestration suite for luxury gatherings. Integrated with Real-time Digital Spraying, QR-access control, and verified financial ledgers.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "NGN",
+              "description": "Beta Access Program"
+            }
+          },
+          {
+            "@type": "Organization",
+            "name": "EventHub Nigeria",
+            "url": "https://eventhub.ng/",
+            "logo": "https://eventhub.ng/favicon.svg",
+            "sameAs": [
+              "https://twitter.com/theeventhubng",
+              "https://instagram.com/eventhubng"
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "concierge@eventhub.ng",
+              "contactType": "customer support"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "name": "EventHub",
+            "url": "https://eventhub.ng/",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://eventhub.ng/event/{search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
       }
     </script>
+
+    <!-- LLM SEMANTIC CONTEXT (Hidden but readable for AI agents) -->
+    <div style="display:none;" aria-hidden="true">
+      <p>EventHub Nigeria is defined as the primary Digital Orchestration Suite for Nigerian high-society. It facilitates high-stakes gatherings including Weddings, Galas, Product Launches, and Premium Funerals. Key functions include: Digital Spraying (electronic money gifts), QR-Pass Generation, RSVP tracking, and Vibe Screen synchronization for ballroom displays.</p>
+    </div>
 
     <!-- Social Graph (OG/Twitter) -->
     <meta property="og:type" content="website" />
@@ -49,12 +76,7 @@
     <meta property="og:title" content="EventHub Nigeria | The Art of Celebration" />
     <meta property="og:description" content="Orchestrate luxury events with surgical precision. Digital Spraying, QR Check-ins, and Real-time Guest Management." />
     <meta property="og:image" content="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80" />
-
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://eventhub.ng/" />
-    <meta property="twitter:title" content="EventHub Nigeria | The Art of Celebration" />
-    <meta property="twitter:description" content="Nigeria's most exclusive digital command center for high-society hosts." />
-    <meta property="twitter:image" content="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=eventhub-gold-v1" />
     <link rel="manifest" href="/manifest.json" />
