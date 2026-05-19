@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
@@ -39,6 +39,16 @@ const EventPage = () => {
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  // Dynamic SEO Title Update
+  useEffect(() => {
+    if (event?.event_name) {
+      document.title = `${event.event_name} | Official Digital Invitation | EventHub NG`;
+    }
+    return () => {
+      document.title = "EventHub Nigeria | The Professional Digital Orchestration Suite";
+    };
+  }, [event]);
 
   const { data: submittedRsvp } = useQuery({
     queryKey: ['my-rsvp', event?.id],
