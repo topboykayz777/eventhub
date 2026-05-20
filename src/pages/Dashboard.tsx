@@ -107,8 +107,8 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto py-24 px-6">
         <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-24">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block text-center md:text-left">Command Center</span>
-            <h1 className="text-4xl md:text-8xl font-serif italic text-center md:text-left">The <span className="text-[#D4AF37]">Orchestration</span></h1>
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Command Center</span>
+            <h1 className="text-4xl md:text-8xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
           </motion.div>
           <div className="flex gap-4 w-full md:w-auto">
             <Button variant="outline" onClick={handleManualRefresh} className="flex-1 md:flex-none border-border bg-card rounded-2xl px-8 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-muted"><RefreshCw className={`w-4 h-4 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync</Button>
@@ -120,18 +120,18 @@ const Dashboard = () => {
           {events.map((event: any, index: number) => (
             <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className={`border ${event.isCompleted ? 'border-border/50 bg-muted/20' : 'border-border bg-card'} rounded-[3rem] overflow-hidden shadow-sm`}>
               <div onClick={() => { const s = new Set(expandedEvents); s.has(event.id) ? s.delete(event.id) : s.add(event.id); setExpandedEvents(s); }} className="p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-muted/30 transition-colors">
-                <div className="flex flex-col md:flex-row items-center gap-10 w-full md:w-auto">
+                <div className="flex items-center gap-10 w-full md:w-auto">
                   <div className="relative shrink-0">
-                    <img src={event.photo_url} className="w-28 h-36 object-cover border border-border rounded-2xl" alt="" />
+                    <img src={event.photo_url} className={`w-28 h-36 object-cover border border-border rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
                     {event.isCompleted && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><CheckCircle2 className="text-white w-8 h-8" /></div>}
                   </div>
-                  <div className="text-center md:text-left">
+                  <div>
                     <h2 className={`text-3xl md:text-5xl font-serif italic mb-3 ${event.isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>{event.event_name}</h2>
                     <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-12 w-full md:w-auto justify-between border-t md:border-t-0 border-border pt-6 md:pt-0">
-                  <div className="text-center md:text-right">
+                  <div className="text-right">
                     <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Confirmed Guests</p>
                     <p className="text-3xl font-serif italic text-[#D4AF37]">{event.rsvps.length}</p>
                   </div>
@@ -143,22 +143,20 @@ const Dashboard = () => {
                 {expandedEvents.has(event.id) && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                     <div className="p-8 md:p-20 border-t border-border bg-background/50">
-                      <div className="grid lg:grid-cols-12 gap-12 lg:gap-20">
-                        <div className="lg:col-span-4 flex justify-center">
-                          <EventCard event={event} />
-                        </div>
-                        <div className="lg:col-span-8 flex flex-col items-center">
+                      <div className="grid lg:grid-cols-12 gap-20">
+                        <EventCard event={event} />
+                        <div className="lg:col-span-8">
                           <Tabs defaultValue="tools" className="w-full">
-                            <TabsList className="bg-transparent border-b border-border w-full justify-center lg:justify-start gap-12 mb-12 h-auto p-0">
+                            <TabsList className="bg-transparent border-b border-border w-full justify-start gap-12 mb-12 h-auto p-0">
                               <TabsTrigger value="tools" className="text-[10px] font-black uppercase tracking-[0.4em] pb-6 data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] text-foreground/50">Concierge Tools</TabsTrigger>
                               <TabsTrigger value="guests" className="text-[10px] font-black uppercase tracking-[0.4em] pb-6 data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] text-foreground/50">Guest Management</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="tools" className="outline-none w-full">
+                            <TabsContent value="tools" className="outline-none">
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
-                            <TabsContent value="guests" className="outline-none space-y-12 w-full">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                                <div className="bg-card border border-border p-10 rounded-[2rem] shadow-sm flex flex-col items-center justify-center text-center">
+                            <TabsContent value="guests" className="outline-none space-y-12">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="bg-card border border-border p-10 rounded-[2rem] shadow-sm flex flex-col justify-center">
                                   <div className="flex items-center mb-4">
                                     <Users className="text-[#D4AF37] w-5 h-5 mr-3" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Confirmed Guests</span>
@@ -166,7 +164,7 @@ const Dashboard = () => {
                                   </div>
                                   <div className="text-3xl font-serif italic text-foreground">{event.rsvps.length} Unique Entries</div>
                                 </div>
-                                <div className="bg-card border border-border p-10 rounded-[2rem] shadow-sm flex flex-col items-center justify-center text-center">
+                                <div className="bg-card border border-border p-10 rounded-[2rem] shadow-sm flex flex-col justify-center">
                                   <div className="flex items-center mb-4">
                                     <Sparkles className="text-[#D4AF37] w-5 h-5 mr-3" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Active Suite</span>
@@ -176,9 +174,9 @@ const Dashboard = () => {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="relative group">
-                                  <button onClick={() => navigate(`/guests/${event.id}`)} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] text-center px-4">
+                                  <button onClick={() => navigate(`/guests/${event.id}`)} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem]">
                                     <Users className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Rsvp'd Guests</span>
                                   </button>
@@ -186,7 +184,7 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="relative group">
-                                  <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] text-center px-4">
+                                  <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem]">
                                     <ScanLine className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Scan QR Pass</span>
                                   </button>
