@@ -368,14 +368,14 @@ const CreateEvent = () => {
               <Button 
                 type="submit" 
                 disabled={loading || uploading} 
-                className="w-full flex items-center justify-center bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[13px] md:text-[14px] font-black tracking-[0.4em] md:tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden px-8"
+                className="w-full flex items-center justify-center bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[12px] md:text-[14px] font-black tracking-[0.2em] md:tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden px-10"
               >
                 {loading ? (
-                  <div className="flex items-center justify-center w-full">
+                  <div className="flex items-center justify-center">
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (
-                  <span className="flex items-center justify-center gap-4 relative z-10 w-full text-center">
+                  <span className="flex items-center justify-center gap-4 relative z-10">
                     Initialize Orchestration <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-4 transition-transform shrink-0" />
                   </span>
                 )}
