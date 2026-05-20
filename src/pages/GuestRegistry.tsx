@@ -114,7 +114,7 @@ const GuestRegistry = () => {
         </div>
 
         {/* Guest List - No Outer Card, No Scroll */}
-        <div className="space-y-2">
+        <div className="space-y-2 pb-32 md:pb-0">
           {filteredRSVPs.map((rsvp: any) => (
             <div 
               key={rsvp.id} 
@@ -176,19 +176,33 @@ const GuestRegistry = () => {
         </div>
       </div>
 
-      {/* Floating Bulk Action Bar */}
+      {/* Floating Bulk Action Bar - Optimized for Mobile */}
       <AnimatePresence>
         {selectedIds.length > 0 && (
-          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] w-[95vw] max-w-2xl">
-            <div className="bg-[#D4AF37] p-6 md:p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-black/5">
+          <motion.div 
+            initial={{ y: 100, x: "-50%" }} 
+            animate={{ y: 0, x: "-50%" }} 
+            exit={{ y: 100, x: "-50%" }} 
+            className="fixed bottom-6 md:bottom-12 left-1/2 z-[100] w-[92vw] max-w-2xl"
+          >
+            <div className="bg-[#D4AF37] p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 border-4 border-black/5">
               <div className="text-black text-center md:text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest block">{selectedIds.length} Guests Selected</span>
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest block">{selectedIds.length} Guests Selected</span>
                 <p className="text-[8px] font-bold opacity-70 uppercase tracking-[0.2em]">Bulk Seating Protocol</p>
               </div>
-              <div className="flex gap-4 w-full md:w-auto">
-                <Input placeholder="Table #" className="w-24 bg-black/10 border-black/10 text-black placeholder:text-black/30 h-14 rounded-xl text-lg font-bold text-center" value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} />
-                <Button onClick={handleBulkSeating} disabled={isAssigning} className="flex-1 md:flex-none bg-black text-white hover:bg-black/80 h-14 px-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                  {isAssigning ? <Loader2 className="animate-spin" /> : 'Assign'}
+              <div className="flex gap-3 w-full md:w-auto">
+                <Input 
+                  placeholder="T#" 
+                  className="w-16 md:w-24 bg-black/10 border-black/10 text-black placeholder:text-black/30 h-12 md:h-14 rounded-xl text-lg font-bold text-center" 
+                  value={tableNumber} 
+                  onChange={(e) => setTableNumber(e.target.value)} 
+                />
+                <Button 
+                  onClick={handleBulkSeating} 
+                  disabled={isAssigning} 
+                  className="flex-1 md:flex-none bg-black text-white hover:bg-black/80 h-12 md:h-14 px-8 md:px-10 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl"
+                >
+                  {isAssigning ? <Loader2 className="animate-spin" /> : 'Assign Table'}
                 </Button>
               </div>
             </div>
