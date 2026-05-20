@@ -11,7 +11,7 @@ const Privacy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500 w-full overflow-x-hidden">
       <Navbar />
       
       <div className="max-w-4xl mx-auto py-24 md:py-40 px-6">

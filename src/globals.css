@@ -95,13 +95,16 @@ html, body {
   @apply bg-background text-foreground antialiased selection:bg-[#D4AF37] selection:text-black transition-colors duration-500;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
+  position: relative;
   -webkit-tap-highlight-color: transparent;
 }
 
 #root {
   @apply min-h-screen flex flex-col;
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
 }
 
