@@ -26,7 +26,7 @@ const InfoButton = ({ text }: { text: string }) => (
           <Info size={12} className="opacity-60" />
         </button>
       </TooltipTrigger>
-      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[10px] font-medium p-3 max-w-[200px] shadow-2xl rounded-xl">
+      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl leading-relaxed z-[200]">
         {text}
       </TooltipContent>
     </Tooltip>
@@ -67,11 +67,11 @@ const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <div className="lg:col-span-4 w-full">
-      <div className="relative aspect-[4/5] w-full overflow-hidden border border-white/10 group rounded-[2.5rem] md:rounded-[3rem]">
+      <div className="relative aspect-[4/5] w-full overflow-hidden border border-white/10 group rounded-[2.5rem] md:rounded-[3rem] bg-black">
         {isVideo(event.photo_url) ? (
           <video 
             src={event.photo_url} 
-            className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110`}
+            className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-110 pointer-events-none`}
             muted
             loop
             autoPlay
@@ -105,7 +105,7 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
 
         <div className="absolute bottom-8 left-8 right-8">
-          <h2 className="text-3xl font-serif italic text-white mb-4 line-clamp-2">{event.event_name}</h2>
+          <h2 className="text-3xl font-serif italic text-white mb-4 line-clamp-2 leading-tight">{event.event_name}</h2>
           <div className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
             <div className="flex items-center gap-2"><Calendar className="w-3 h-3 text-[#D4AF37] shrink-0" /> {new Date(event.event_date).toLocaleDateString()}</div>
             <div className="flex items-center gap-2"><MapPin className="w-3 h-3 text-[#D4AF37] shrink-0" /> <span className="truncate">{event.venue}</span></div>
@@ -119,7 +119,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={() => navigate(`/edit-event/${event.id}`)} 
           className="w-full rounded-2xl border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-white/10"
         >
-          <Edit className="w-3 h-3 mr-2 shrink-0" /> Edit Event Page <InfoButton text="Change your event name, date, venue, or the photos and videos in your gallery." />
+          <Edit className="w-3 h-3 mr-2 shrink-0" /> Edit Event Page <InfoButton text="Open the orchestration studio to refine your celebration's identity. Here you can update the event title, change the date and venue, or refresh your visual gallery with new cinematic portraits and captured moments." />
         </Button>
         
         <Button 
@@ -127,7 +127,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={() => window.open(`/event/${event.slug}`, '_blank')}
           className="w-full rounded-2xl border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto"
         >
-          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="Open your live website to see exactly what your guests will see when they visit your link." />
+          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="View your live digital monument exactly as your guests will experience it. Test the countdown timer, preview the aesthetic theme, and verify all details are perfectly orchestrated before sharing." />
         </Button>
 
         <Button 
@@ -141,7 +141,7 @@ const EventCard = ({ event }: EventCardProps) => {
           }`}
         >
           <Power className="w-3 h-3 mr-2 shrink-0" />
-          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Make this event active again to receive new guests." : "Mark the event as finished to stop new RSVPs and lock the guest list."} />
+          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Bring your event back to life. This will reactivate the RSVP registry and restore all live digital features for further coordination and guest entry." : "Officially finalize your celebration to lock the guest list and archive the experience. This will disable new RSVPs and mark the event as successfully orchestrated."} />
         </Button>
       </div>
     </div>

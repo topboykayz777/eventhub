@@ -87,7 +87,7 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <Dialog>
         <TooltipWrapper text="View and save a high-quality picture of your invitation to share on your WhatsApp status or groups.">
           <DialogTrigger asChild>
@@ -116,13 +116,6 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
           </div>
         </DialogContent>
       </Dialog>
-
-      <TooltipWrapper text="Get your unique event link to send directly to your guests on any messaging app.">
-        <button onClick={handleCopyLink} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
-          {isCopying ? <Sparkles className="w-8 h-8 text-green-500" /> : <Copy className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />}
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">{isCopying ? 'Link Copied' : 'Copy Event Link'}</span>
-        </button>
-      </TooltipWrapper>
 
       <TooltipWrapper text="Open your financial vault to see guest gifts and manage your event budget.">
         <button onClick={() => navigate(`/budget/${event.id}`)} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">

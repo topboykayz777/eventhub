@@ -8,6 +8,7 @@ import { Menu, X, UserCircle, LogOut } from 'lucide-react';
 import { useSession } from '@/components/SessionProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { showSuccess } from '@/utils/toast';
+import { ThemeToggle } from './ThemeToggle';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -65,6 +66,10 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8 lg:gap-12">
+            <div className="flex items-center gap-6 mr-4">
+              <ThemeToggle />
+            </div>
+            
             {navLinks.map((link) => (
               <Link 
                 key={link.path} 
@@ -102,13 +107,16 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <Button 
-            variant="ghost" 
-            className="md:hidden text-white p-2"
-            onClick={() => setIsMenuOpen(true)}
-          >
-            <Menu size={28} />
-          </Button>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <Button 
+              variant="ghost" 
+              className="text-white p-2"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu size={28} />
+            </Button>
+          </div>
         </div>
       </motion.nav>
 
