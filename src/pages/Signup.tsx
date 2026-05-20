@@ -36,6 +36,7 @@ const Signup = () => {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/login`,
         data: {
           role: role,
         }
