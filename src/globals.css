@@ -4,54 +4,54 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    --background: 0 0% 97%; /* Soft Ivory/Gallery White */
+    --foreground: 0 0% 10%; /* Deep Charcoal */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
-    --primary: 45 60% 53%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96%;
+    --primary: 45 60% 53%; /* Signature Gold */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 92%;
     --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 96%;
+    --muted: 0 0% 92%;
     --muted-foreground: 0 0% 45%;
     --accent: 45 60% 53%;
     --accent-foreground: 0 0% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
     --ring: 45 60% 53%;
-    --radius: 1rem;
+    --radius: 1.5rem;
   }
 
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
+    --background: 0 0% 4%; /* Deepest Black */
+    --foreground: 0 0% 100%; /* Pure White */
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 100%;
     --primary: 45 60% 53%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 12%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%;
     --accent: 45 60% 53%;
-    --accent-foreground: 0 0% 5%;
+    --accent-foreground: 0 0% 10%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
     --ring: 45 60% 53%;
   }
 }
 
 @layer utilities {
   .glass-premium {
-    @apply bg-white/[0.03] backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
+    @apply bg-white/70 dark:bg-white/[0.03] backdrop-blur-2xl border border-black/5 dark:border-white/10 shadow-xl dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
   }
   
   .gold-gradient {
@@ -71,14 +71,13 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 3px;
+    width: 4px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #D4AF37;
-    border-radius: 10px;
+    @apply bg-[#D4AF37]/50 rounded-full;
   }
 }
 
@@ -89,11 +88,11 @@
 
 @keyframes slow-zoom {
   0% { transform: scale(1); }
-  100% { transform: scale(1.1); }
+  100% { transform: scale(1.05); }
 }
 
 html, body {
-  @apply bg-background text-foreground antialiased selection:bg-[#D4AF37] selection:text-black transition-colors duration-300;
+  @apply bg-background text-foreground antialiased selection:bg-[#D4AF37] selection:text-black transition-colors duration-500;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
   overflow-x: hidden;

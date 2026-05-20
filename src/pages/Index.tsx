@@ -43,15 +43,15 @@ const Index = () => {
   const seoTerms = ['Weddings', 'Galas', 'Product Launches', 'Charity Balls', 'Concerts', 'Anniversaries', 'Funerals', 'Beach Parties', 'Corporate Retreats', 'Lagos VI', 'Abuja Maitama', 'Lekki Phase 1', 'Banana Island', 'Eko Hotel', 'Transcorp Hilton'];
 
   return (
-    <div className="min-h-screen bg-[#050505] selection:bg-[#D4AF37] selection:text-black overflow-x-hidden w-full flex flex-col items-center">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500 selection:bg-[#D4AF37] selection:text-black overflow-x-hidden w-full flex flex-col items-center">
       <Navbar />
       
       <main className="w-full flex flex-col items-center">
         {/* HERO SECTION */}
         <Hero />
         
-        {/* STATS STRIP - Perfectly Centered */}
-        <section className="w-full py-16 md:py-32 border-y border-white/5 bg-[#080808]">
+        {/* STATS STRIP */}
+        <section className="w-full py-16 md:py-32 border-y border-border bg-muted/30">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-24">
               {[
@@ -69,41 +69,41 @@ const Index = () => {
                   className="text-center"
                 >
                   <div className="text-3xl md:text-6xl font-serif italic text-[#D4AF37] mb-3">{stat.value}</div>
-                  <div className="text-[9px] md:text-[11px] text-gray-500 uppercase tracking-[0.4em] font-bold">{stat.label}</div>
+                  <div className="text-[9px] md:text-[11px] text-muted-foreground uppercase tracking-[0.4em] font-bold">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* THE HOOK (Direct Conversion Section) */}
-        <div className="w-full">
+        {/* THE HOOK */}
+        <div className="w-full bg-background">
            <TheHook />
         </div>
 
         {/* THE IMMERSIVE NARRATIVE */}
-        <div className="w-full">
+        <div className="w-full bg-background">
            <TheNarrative />
         </div>
 
-        {/* THE ATELIER GALLERY - Deep Purple & Gold */}
+        {/* THE ATELIER GALLERY */}
         <div className="w-full">
            <MockupGallery />
         </div>
         
-        {/* FAQ - Spaced & Balanced */}
-        <div className="w-full py-20 md:py-40">
+        {/* FAQ */}
+        <div className="w-full bg-background py-20 md:py-40">
            <FAQ />
         </div>
 
         {/* FINAL CALL TO ACTION */}
-        <section className="w-full py-32 md:py-60 px-6 text-center bg-[#050505] relative overflow-hidden flex flex-col items-center">
+        <section className="w-full py-32 md:py-60 px-6 text-center bg-background relative overflow-hidden flex flex-col items-center">
           <div className="absolute inset-0 bg-[#D4AF37]/5 blur-[150px] rounded-full -translate-y-1/2" />
           <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
-            <h2 className="text-5xl md:text-8xl lg:text-9xl font-serif italic text-white mb-8 md:mb-16 leading-tight">
+            <h2 className="text-5xl md:text-8xl lg:text-9xl font-serif italic text-foreground mb-8 md:mb-16 leading-tight">
               Master Your <br /> <span className="text-[#D4AF37]">Craft</span>
             </h2>
-            <p className="text-sm md:text-xl text-gray-400 mb-12 md:mb-24 font-light tracking-[0.3em] md:tracking-[0.5em] uppercase max-w-2xl">
+            <p className="text-sm md:text-xl text-muted-foreground mb-12 md:mb-24 font-light tracking-[0.3em] md:tracking-[0.5em] uppercase max-w-2xl">
               The definitive tool for the modern event professional.
             </p>
             <Link to="/create-event">
@@ -115,36 +115,36 @@ const Index = () => {
         </section>
       </main>
 
-      <footer className="w-full bg-[#050505] text-white py-20 md:py-40 px-6 border-t border-white/5 flex flex-col items-center">
+      <footer className="w-full bg-background text-foreground py-20 md:py-40 px-6 border-t border-border flex flex-col items-center">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-24 w-full mb-20 md:mb-32">
           <div className="md:col-span-2 text-center md:text-left">
             <div className="text-2xl md:text-3xl font-light tracking-[0.5em] uppercase mb-8">
               Event Hub <span className="text-[#D4AF37]">NG</span>
             </div>
-            <p className="text-gray-500 max-w-md text-base leading-relaxed font-light tracking-wide mx-auto md:mx-0">
+            <p className="text-muted-foreground max-w-md text-base leading-relaxed font-light tracking-wide mx-auto md:mx-0">
               The definitive orchestration suite for luxury event management in Nigeria. Curating excellence since 2026.
             </p>
           </div>
           <div className="text-center md:text-left">
             <h4 className="text-[11px] font-bold uppercase tracking-[0.5em] text-[#D4AF37] mb-10">Navigation</h4>
-            <ul className="space-y-6 text-gray-500 text-[11px] font-bold uppercase tracking-[0.4em]">
-              <li><Link to="/create-event" className="hover:text-white transition-colors">Create</Link></li>
-              <li><Link to="/vendors" className="hover:text-white transition-colors">Directory</Link></li>
-              <li><Link to="/support" className="hover:text-white transition-colors">Support</Link></li>
-              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy & Terms</Link></li>
+            <ul className="space-y-6 text-muted-foreground text-[11px] font-bold uppercase tracking-[0.4em]">
+              <li><Link to="/create-event" className="hover:text-foreground transition-colors">Create</Link></li>
+              <li><Link to="/vendors" className="hover:text-foreground transition-colors">Directory</Link></li>
+              <li><Link to="/support" className="hover:text-foreground transition-colors">Support</Link></li>
+              <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy & Terms</Link></li>
             </ul>
           </div>
           <div className="text-center md:text-left">
             <h4 className="text-[11px] font-bold uppercase tracking-[0.5em] text-[#D4AF37] mb-10">Social</h4>
             <ul className="space-y-6">
               <li>
-                <a href="https://twitter.com/theeventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-[#D4AF37] transition-colors">
+                <a href="https://twitter.com/theeventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors">
                   <Twitter size={18} className="text-[#D4AF37]" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Twitter</span>
                 </a>
               </li>
               <li>
-                <a href="https://instagram.com/eventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-[#D4AF37] transition-colors">
+                <a href="https://instagram.com/eventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors">
                   <Instagram size={18} className="text-[#D4AF37]" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Instagram</span>
                 </a>
@@ -153,16 +153,15 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Relocated SEO Intent Cloud */}
-        <div className="max-w-4xl mx-auto mb-16 px-6 opacity-20 hover:opacity-40 transition-opacity duration-700">
+        <div className="max-w-4xl mx-auto mb-16 px-6 opacity-40 hover:opacity-100 transition-opacity duration-700">
            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
               {seoTerms.map((term) => (
-                <span key={term} className="text-[8px] md:text-[10px] font-light tracking-[0.3em] uppercase text-white cursor-default">{term}</span>
+                <span key={term} className="text-[8px] md:text-[10px] font-light tracking-[0.3em] uppercase text-foreground/60 cursor-default">{term}</span>
               ))}
            </div>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-12 border-t border-white/5 text-center text-gray-600 text-[10px] font-bold uppercase tracking-[0.5em] w-full">
+        <div className="max-w-7xl mx-auto pt-12 border-t border-border text-center text-muted-foreground text-[10px] font-bold uppercase tracking-[0.5em] w-full">
           © 2026 Event Hub Nigeria. All Rights Reserved.
         </div>
       </footer>

@@ -48,41 +48,39 @@ const Navbar = () => {
       <motion.nav 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`fixed top-0 left-0 right-0 z-50 h-20 md:h-24 flex items-center transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 h-20 md:h-24 flex items-center transition-all duration-300 border-b ${
           isScrolled 
-            ? 'bg-[#0f0f0f] shadow-2xl' 
-            : 'bg-[#0f0f0f]/98 backdrop-blur-xl'
-        } text-white border-b border-white/5`}
+            ? 'bg-background/95 backdrop-blur-xl shadow-lg border-border' 
+            : 'bg-transparent border-transparent'
+        }`}
       >
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 md:px-6 lg:px-8">
           <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 md:gap-4 group">
             <div className="w-10 h-10 md:w-12 md:h-12 border-2 border-[#D4AF37] flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-500">
               <span className="text-[#D4AF37] font-serif text-lg md:text-xl -rotate-45 group-hover:rotate-0 transition-transform duration-500">E</span>
             </div>
-            <span className="text-lg md:text-xl font-bold tracking-[0.2em] uppercase whitespace-nowrap">
+            <span className="text-lg md:text-xl font-bold tracking-[0.2em] uppercase whitespace-nowrap text-foreground">
               Event Hub <span className="text-[#D4AF37]">NG</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8 lg:gap-12">
-            <div className="flex items-center gap-6 mr-4">
-              <ThemeToggle />
-            </div>
-            
             {navLinks.map((link) => (
               <Link 
                 key={link.path} 
                 to={link.path} 
-                className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors"
+                className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors text-foreground/70"
               >
                 {link.name}
               </Link>
             ))}
             
+            <ThemeToggle />
+
             {session ? (
               <div className="flex items-center gap-6 lg:gap-10">
-                <Link to="/profile" className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
+                <Link to="/profile" className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors flex items-center gap-2 text-foreground/70">
                   <UserCircle size={18} /> Profile
                 </Link>
                 <button 
@@ -94,7 +92,7 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-6 lg:gap-10">
-                <Link to="/login" className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors">
+                <Link to="/login" className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors text-foreground/70">
                   Sign In
                 </Link>
                 <Link to="/signup">
@@ -107,11 +105,11 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-4 md:hidden">
             <ThemeToggle />
             <Button 
               variant="ghost" 
-              className="text-white p-2"
+              className="text-foreground p-2"
               onClick={() => setIsMenuOpen(true)}
             >
               <Menu size={28} />
@@ -128,18 +126,18 @@ const Navbar = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[60] bg-[#0f0f0f] flex flex-col p-8"
+            className="fixed inset-0 z-[60] bg-background flex flex-col p-8"
           >
             <div className="flex justify-between items-center mb-16">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 border-2 border-[#D4AF37] flex items-center justify-center rotate-45">
                   <span className="text-[#D4AF37] font-serif text-lg -rotate-45">E</span>
                 </div>
-                <span className="text-xl font-bold tracking-[0.1em] uppercase">Event Hub <span className="text-[#D4AF37]">NG</span></span>
+                <span className="text-xl font-bold tracking-[0.1em] uppercase text-foreground">Event Hub <span className="text-[#D4AF37]">NG</span></span>
               </div>
               <Button 
                 variant="ghost" 
-                className="text-white p-2"
+                className="text-foreground p-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <X size={36} />
@@ -152,7 +150,7 @@ const Navbar = () => {
                   key={link.path} 
                   to={link.path} 
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-4xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
+                  className="text-4xl font-serif italic text-foreground hover:text-[#D4AF37] transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -163,7 +161,7 @@ const Navbar = () => {
                   <Link 
                     to="/profile" 
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-4xl font-serif italic text-white hover:text-[#D4AF37] transition-colors"
+                    className="text-4xl font-serif italic text-foreground hover:text-[#D4AF37] transition-colors"
                   >
                     Profile
                   </Link>
@@ -175,11 +173,11 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col gap-8 pt-10 border-t border-white/5">
+                <div className="flex flex-col gap-8 pt-10 border-t border-border">
                   <Link 
                     to="/login" 
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-2xl font-black uppercase tracking-[0.1em] text-white"
+                    className="text-2xl font-black uppercase tracking-[0.1em] text-foreground"
                   >
                     Sign In
                   </Link>
@@ -193,7 +191,7 @@ const Navbar = () => {
             </div>
 
             <div className="mt-auto text-center pb-6">
-              <p className="text-sm text-gray-600 uppercase tracking-[0.3em]">© 2026 Event Hub Nigeria</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-[0.3em]">© 2026 Event Hub Nigeria</p>
             </div>
           </motion.div>
         )}
