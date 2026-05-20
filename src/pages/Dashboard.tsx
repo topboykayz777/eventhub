@@ -96,6 +96,12 @@ const Dashboard = () => {
     }
   };
 
+  const isVideo = (url: string) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   if (sessionLoading || (isLoading && events.length === 0)) {
     return <div className="flex items-center justify-center min-h-screen bg-background"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
   }
@@ -122,7 +128,18 @@ const Dashboard = () => {
               <div onClick={() => { const s = new Set(expandedEvents); s.has(event.id) ? s.delete(event.id) : s.add(event.id); setExpandedEvents(s); }} className="p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-muted/30 transition-colors">
                 <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full md:w-auto text-center md:text-left">
                   <div className="relative shrink-0">
-                    <img src={event.photo_url} className={`w-28 h-36 object-cover border border-border rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+                    {isVideo(event.photo_url) ? (
+                      <video 
+                        src={event.photo_url} 
+                        className={`w-28 h-36 object-cover border border-border rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img src={event.photo_url} className={`w-28 h-36 object-cover border border-border rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
+                    )}
                     {event.isCompleted && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><CheckCircle2 className="text-white w-8 h-8" /></div>}
                   </div>
                   <div>
