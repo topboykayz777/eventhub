@@ -4,10 +4,33 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import confetti from 'canvas-confetti';
 
 const Hero = () => {
+  const handleBackgroundClick = (e: React.MouseEvent) => {
+    // Only trigger if clicking the background, not buttons
+    if ((e.target as HTMLElement).closest('button')) return;
+
+    const x = e.clientX / window.innerWidth;
+    const y = e.clientY / window.innerHeight;
+
+    confetti({
+      particleCount: 15,
+      spread: 50,
+      startVelocity: 30,
+      origin: { x, y },
+      colors: ['#D4AF37', '#F9E4B7', '#B8860B'],
+      gravity: 1.2,
+      scalar: 0.8,
+      ticks: 100,
+    });
+  };
+
   return (
-    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24">
+    <section 
+      onClick={handleBackgroundClick}
+      className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24 cursor-crosshair"
+    >
       {/* Immersive Background Layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
@@ -15,16 +38,24 @@ const Hero = () => {
           className="w-full h-full object-cover opacity-10 md:opacity-20 animate-slow-zoom dark:grayscale"
           alt="Luxury Event Background"
         />
-        {/* Dynamic Shadow & Depth Overlays */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
         <div className="absolute inset-0 bg-black/5 dark:bg-black/40" />
       </div>
 
+      {/* The Silk Reveal Mask - A decorative element that slides away */}
+      <motion.div 
+        initial={{ y: "0%" }}
+        animate={{ y: "-100%" }}
+        transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1], delay: 0.2 }}
+        className="absolute inset-0 z-40 bg-gradient-to-b from-black via-zinc-900 to-black pointer-events-none"
+      />
+
       <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full">
+        {/* Content Container with Silk Slide Up */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
+          initial={{ opacity: 0, y: 100, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1], delay: 0.4 }}
           className="flex flex-col items-center"
         >
           <span className="text-[#D4AF37] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-6 md:mb-8 block">
@@ -46,11 +77,9 @@ const Hero = () => {
               <motion.div
                 animate={{ 
                   boxShadow: ["0 0 0px rgba(212,175,55,0)", "0 0 40px rgba(212,175,55,0.4)", "0 0 0px rgba(212,175,55,0)"],
-                  x: [0, -1, 1, -1, 1, 0]
                 }}
                 transition={{ 
                   boxShadow: { repeat: Infinity, duration: 2 },
-                  x: { repeat: Infinity, duration: 4, repeatDelay: 1 }
                 }}
               >
                 <Button 
