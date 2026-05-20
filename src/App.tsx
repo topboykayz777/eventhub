@@ -45,14 +45,28 @@ const queryClient = new QueryClient({
 
 const AuthHandler = () => {
   const navigate = useNavigate();
+  
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // 1. Listen for the specific PASSWORD_RECOVERY event from Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         navigate('/reset-password');
       }
     });
+
+    // 2. Fallback: Check the URL immediately for recovery parameters 
+    // This handles cases where the event fires before the component mounts or Supabase redirects to root
+    const hash = window.location.hash;
+    if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
+      // If we're on the root or login and have a recovery hash, force move to reset page
+      if (window.location.pathname === '/' || window.location.pathname === '/login') {
+        navigate('/reset-password');
+      }
+    }
+
     return () => subscription.unsubscribe();
   }, [navigate]);
+
   return null;
 };
 
