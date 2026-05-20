@@ -97,20 +97,22 @@ const Index = () => {
         </div>
 
         {/* FINAL CALL TO ACTION */}
-        <section className="w-full py-32 md:py-60 px-6 text-center bg-background relative overflow-hidden flex flex-col items-center">
+        <section className="w-full py-32 md:py-60 px-6 bg-background relative overflow-hidden flex flex-col items-center">
           <div className="absolute inset-0 bg-[#D4AF37]/5 blur-[150px] rounded-full -translate-y-1/2" />
-          <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
-            <h2 className="text-5xl md:text-8xl lg:text-9xl font-serif italic text-foreground mb-8 md:mb-16 leading-tight">
+          <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center w-full">
+            <h2 className="text-5xl md:text-8xl lg:text-9xl font-serif italic text-foreground mb-8 md:mb-16 leading-tight text-center w-full">
               Master Your <br /> <span className="text-[#D4AF37]">Craft</span>
             </h2>
-            <p className="text-sm md:text-xl text-muted-foreground mb-12 md:mb-24 font-light tracking-[0.3em] md:tracking-[0.5em] uppercase max-w-2xl">
+            <p className="text-sm md:text-xl text-muted-foreground mb-12 md:mb-24 font-light tracking-[0.3em] md:tracking-[0.5em] uppercase max-w-2xl text-center">
               The definitive tool for the modern event professional.
             </p>
-            <Link to="/create-event">
-              <Button className="bg-[#D4AF37] text-black px-12 md:px-24 py-8 md:py-12 rounded-none text-[11px] md:text-xs font-black tracking-[0.5em] uppercase hover:bg-[#B8860B] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20">
-                Begin Your Celebration
-              </Button>
-            </Link>
+            <div className="flex justify-center w-full">
+              <Link to="/create-event">
+                <Button className="bg-[#D4AF37] text-black px-12 md:px-24 py-8 md:py-12 rounded-none text-[11px] md:text-xs font-black tracking-[0.5em] uppercase hover:bg-[#B8860B] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20">
+                  Begin Your Celebration
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
       </main>
@@ -138,13 +140,13 @@ const Index = () => {
             <h4 className="text-[11px] font-bold uppercase tracking-[0.5em] text-[#D4AF37] mb-10">Social</h4>
             <ul className="space-y-6">
               <li>
-                <a href="https://twitter.com/theeventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors">
+                <a href="https://twitter.com/theeventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors justify-center md:justify-start">
                   <Twitter size={18} className="text-[#D4AF37]" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Twitter</span>
                 </a>
               </li>
               <li>
-                <a href="https://instagram.com/eventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors">
+                <a href="https://instagram.com/eventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors justify-center md:justify-start">
                   <Instagram size={18} className="text-[#D4AF37]" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Instagram</span>
                 </a>
