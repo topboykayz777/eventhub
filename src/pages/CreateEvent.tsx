@@ -383,24 +383,26 @@ const CreateEvent = () => {
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className="w-full"
+              className="w-full flex justify-center"
             >
               <Button 
                 type="submit" 
                 disabled={loading || uploading} 
-                className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[14px] font-black tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden"
+                className="w-full flex items-center justify-center bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[14px] font-black tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden"
               >
                 {loading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <div className="flex items-center justify-center w-full">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
                 ) : (
-                  <span className="flex items-center justify-center gap-4 relative z-10">
+                  <span className="flex items-center justify-center gap-4 relative z-10 w-full">
                     Initialize Orchestration <ArrowRight className="w-6 h-6 group-hover:translate-x-4 transition-transform" />
                   </span>
                 )}
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </Button>
             </motion.div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-12">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-12 text-center">
               Secure Entry Protocol • Part 01
             </p>
           </div>
