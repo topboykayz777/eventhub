@@ -34,90 +34,90 @@ import { Button } from '@/components/ui/button';
 
 const steps = [
   {
-    title: "1. The Registry",
-    desc: "Create your host account to begin. Think of this as your personal master key that unlocks the entire EventHub orchestration suite.",
+    title: "1. Create Account",
+    desc: "Sign up to start planning. This gives you access to all your event tools in one dashboard.",
     icon: UserPlus
   },
   {
-    title: "2. The Architecture",
-    desc: "Design your event page in one go. Pick your theme, set the venue, and upload a stunning portrait. This is the digital face of your celebration.",
+    title: "2. Build Your Page",
+    desc: "Design your event website. Choose a theme and upload your photo to make it look amazing.",
     icon: Layout
   },
   {
-    title: "3. The Ignition",
-    desc: "Activate your page by choosing a service tier. Once the small fee is settled, your unique link goes live and is ready to receive guests.",
+    title: "3. Make it Live",
+    desc: "Activate your page by paying the service fee. Once done, your unique link is ready for guests.",
     icon: CreditCard
   },
   {
-    title: "4. The First Dispatch",
-    desc: "Copy your unique event link and send it manually to your inner circle. As they click and RSVP, their phone numbers are saved to your dashboard.",
+    title: "4. Share the Link",
+    desc: "Send your event link to your friends and family on WhatsApp so they can start signing up.",
     icon: Share2
   },
   {
-    title: "5. The Digital Vault",
-    desc: "As guests 'Spray' you with digital gifts, you'll see every transfer in your 'Ledger'. Check your bank app, then hit 'Approve' to trigger the big screen celebration.",
+    title: "5. Verify Gifts",
+    desc: "When guests send you money (Spraying), check your bank alert and approve it in the app to show a celebration on screen.",
     icon: Wallet
   },
   {
-    title: "6. The Mass Broadcast",
-    desc: "Now that you have a list of confirmed guests, use the WhatsApp Blast tool to send mass updates—like dress code reminders—to everyone at once.",
+    title: "6. Send Reminders",
+    desc: "Easily send messages to all your signed-up guests at once using our WhatsApp tool.",
     icon: Send
   },
   {
-    title: "7. The Red Carpet",
-    desc: "On the big day, use your phone to scan guest QR codes for instant check-in. Connect a laptop to a TV to show the Vibe Screen and watch the party come alive.",
+    title: "7. Event Day",
+    desc: "Scan guest QR codes at the entrance to check them in. Connect a laptop to a TV to show the live party screen.",
     icon: Monitor
   },
   {
-    title: "8. The Eternal Shrine",
-    desc: "The party might end, but your page never dies. It remains live forever as a digital monument—a place to revisit photos and messages for years to come.",
+    title: "8. Keep the Memory",
+    desc: "Your event page stays online forever. You can always come back to see the photos and messages.",
     icon: Heart
   }
 ];
 
-const faqSections = [
+const guideSections = [
   {
-    category: "Getting Started",
+    category: "The Basics",
     questions: [
       {
-        q: "What is EventHub Nigeria?",
-        a: "EventHub is a premium digital orchestration suite designed for high-society hosts and professional planners in Nigeria. We provide integrated tools for RSVPs, check-ins, and financial tracking."
+        q: "What exactly is EventHub?",
+        a: "EventHub is a simple tool that helps you manage your events in Nigeria. It handles guest lists, digital 'spraying', and scanning invites at the door."
       },
       {
-        q: "What is the 'Beta Access' tier?",
-        a: "Our Beta tier allows early adopters to test all foundational features at a significantly reduced rate (₦100) during our testing phase."
+        q: "Is it really free for now?",
+        a: "Yes! Our current Beta plan gives you access to every feature for free while we are testing the platform."
       }
     ]
   },
   {
-    category: "Events & Customization",
+    category: "Managing Your Event",
     questions: [
       {
-        q: "Can I edit details after the page is live?",
-        a: "Yes. You can refine your event title, venue, theme, and gallery at any time from your dashboard. For security, event dates are locked after activation."
+        q: "Can I change my event info later?",
+        a: "Yes. You can update the name, location, and photos anytime from your dashboard. However, you cannot change the event date once it is live."
       },
       {
-        q: "What media formats are supported?",
-        a: "Our Standard and Pro tiers support both high-resolution images and HD video files (up to 50MB per file) for your memory wall."
+        q: "Does it support videos?",
+        a: "Yes, you can upload videos for your main event photo to make the page look more cinematic."
       }
     ]
   },
   {
-    category: "Digital Spraying",
+    category: "Money & Spraying",
     questions: [
       {
-        q: "How does the Digital Spray work?",
-        a: "Guests honor the host by sending direct transfers. They notify the host through the app, which triggers a cinematic gift box explosion on the Vibe Screen once the host verifies the bank alert."
+        q: "How do I receive money from guests?",
+        a: "Guests send money directly to your bank account via transfer. EventHub just shows the notification and handles the celebration on screen."
       },
       {
-        q: "Is the spraying automated?",
-        a: "We use a verified manual transfer system to ensure 100% of the funds reach your bank account without platform commissions."
+        q: "Do you take a commission?",
+        a: "No. Since guests transfer directly to you, we don't touch the money or take any percentage."
       }
     ]
   }
 ];
 
-const FAQPage = () => {
+const Guide = () => {
   const navigate = useNavigate();
 
   return (
@@ -138,24 +138,24 @@ const FAQPage = () => {
             animate={{ opacity: 1 }}
             className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block"
           >
-            The Knowledge Base
+            The Simple Guide
           </motion.span>
           <motion.h1             
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-8xl font-serif italic mb-8"
           >
-            How to <span className="text-[#D4AF37]">Orchestrate</span>
+            How it <span className="text-[#D4AF37]">Works</span>
           </motion.h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-light tracking-wide">
-            The definitive guide to orchestrating your celebration on the EventHub platform.
+            Follow these simple steps to set up and manage your event.
           </p>
         </div>
 
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-border" />
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 8-Step Journey</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 8 Simple Steps</h2>
             <div className="h-px flex-1 bg-border" />
           </div>
 
@@ -184,12 +184,12 @@ const FAQPage = () => {
         <section className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-border" />
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">Frequently Asked Questions</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">Common Questions</h2>
             <div className="h-px flex-1 bg-border" />
           </div>
 
           <div className="space-y-20">
-            {faqSections.map((section, idx) => (
+            {guideSections.map((section, idx) => (
               <div key={idx}>
                 <h3 className="text-2xl font-serif italic mb-8 flex items-center gap-4">
                   <HelpCircle className="text-[#D4AF37] w-5 h-5" />
@@ -224,13 +224,13 @@ const FAQPage = () => {
           className="mt-40 text-center p-20 rounded-[4rem] bg-gradient-to-b from-secondary/30 to-transparent border border-border"
         >
           <Zap className="text-[#D4AF37] w-12 h-12 mx-auto mb-8 animate-pulse" />
-          <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Need more assistance?</h2>
-          <p className="text-muted-foreground mb-10 uppercase tracking-widest text-[10px] font-bold">Our customer concierge is available 24/7</p>
+          <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Need more help?</h2>
+          <p className="text-muted-foreground mb-10 uppercase tracking-widest text-[10px] font-bold">Our team is here 24/7</p>
           <button 
             onClick={() => window.location.href = '/support'}
             className="bg-[#D4AF37] text-black px-12 py-8 rounded-none text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#B8860B] transition-all duration-500 shadow-lg"
           >
-            Contact Support
+            Message Support
           </button>
         </motion.div>
       </div>
@@ -238,4 +238,4 @@ const FAQPage = () => {
   );
 };
 
-export default FAQPage;
+export default Guide;

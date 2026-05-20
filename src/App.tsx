@@ -28,7 +28,7 @@ import VendorProfile from "./pages/VendorProfile";
 import VibeScreen from "./pages/VibeScreen";
 import SprayPage from "./pages/SprayPage";
 import Support from "./pages/Support";
-import FAQPage from "./pages/FAQPage";
+import Guide from "./pages/Guide";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
@@ -77,7 +77,7 @@ const AppRoutes = () => {
       <Route path="/vendors" element={<VendorDirectory />} />
       <Route path="/vendor/:id" element={<VendorProfile />} />
       <Route path="/support" element={<Support />} />
-      <Route path="/faq" element={<FAQPage />} />
+      <Route path="/guide" element={<Guide />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
