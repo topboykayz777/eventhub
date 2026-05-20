@@ -26,7 +26,7 @@ const TooltipWrapper = ({ children, text }: { children: React.ReactNode, text: s
       <TooltipTrigger asChild>
         {children}
       </TooltipTrigger>
-      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[10px] font-medium p-3 max-w-[200px] shadow-2xl rounded-xl z-[200]">
+      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
         {text}
       </TooltipContent>
     </Tooltip>
@@ -42,7 +42,6 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   const isStarted = new Date() >= new Date(event.event_date);
   const isFinished = event.is_finished;
   const isLive = isStarted && !isFinished;
-
   const hasFullAccess = event.plan === 'Pro' || event.plan === 'beta';
 
   const handleCopyLink = (e: React.MouseEvent) => {
@@ -50,17 +49,17 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
     setIsCopying(true);
     const url = `${window.location.origin}/event/${event.slug}`;
     navigator.clipboard.writeText(url);
-    showSuccess("RSVP Link copied to clipboard.");
+    showSuccess("Event Link Copied.");
     setTimeout(() => setIsCopying(false), 2000);
   };
 
   const handleVibeClick = () => {
     if (!isStarted) {
-      showError("The Vibe Screen activates once the event commences.");
+      showError("The Vibe Screen activates once the event begins.");
       return;
     }
     if (isFinished) {
-      showError("This event has concluded. The Vibe Screen is no longer active.");
+      showError("This event has ended. The screen is no longer active.");
       return;
     }
     window.open(`/vibe/${event.slug}`, '_blank');
@@ -69,110 +68,81 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   const handleDownloadInvite = async () => {
     if (!inviteRef.current) return;
     setIsDownloading(true);
-    
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       const canvas = await html2canvas(inviteRef.current, {
-        backgroundColor: '#0a0a0a',
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        logging: false
+        backgroundColor: '#0a0a0a', scale: 3, useCORS: true, allowTaint: true, logging: false
       });
-      
       const image = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement('a');
       link.href = image;
       link.download = `${event.event_name.replace(/\s+/g, '_')}_Invitation.png`;
       link.click();
-      showSuccess("Invitation downloaded successfully.");
+      showSuccess("Invitation Saved.");
     } catch (err) {
-      showError("Could not generate invitation image.");
+      showError("Failed to save image.");
     } finally {
       setIsDownloading(false);
     }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div className="flex flex-col gap-4">
-        <Dialog>
-          <TooltipWrapper text="Generate and download a high-resolution digital invitation to share on your status or groups.">
-            <DialogTrigger asChild>
-              <button className="bg-white/5 border border-white/5 p-10 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem] w-full">
-                <ImageIcon className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Digital Invite</span>
-              </button>
-            </DialogTrigger>
-          </TooltipWrapper>
-          <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-lg w-[95vw] p-0 overflow-hidden rounded-[3rem]">
-            <div className="relative h-full max-h-[90vh] flex flex-col">
-              <DialogHeader className="p-8 border-b border-white/5 shrink-0">
-                <DialogTitle className="text-2xl font-serif italic">The Digital Invitation</DialogTitle>
-              </DialogHeader>
-              <ScrollArea className="flex-1 p-8">
-                <div className="pb-12 flex justify-center">
-                  <DigitalInvite ref={inviteRef} event={event} />
-                </div>
-              </ScrollArea>
-              <div className="p-8 border-t border-white/5 bg-black/40 shrink-0 flex gap-4">
-                <button 
-                  onClick={handleDownloadInvite}
-                  disabled={isDownloading}
-                  className="flex-1 py-5 bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[10px] font-bold uppercase tracking-widest transition-all rounded-2xl flex items-center justify-center gap-2"
-                >
-                  {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={14} />}
-                  {isDownloading ? 'Generating...' : 'Download IV'}
-                </button>
-                <DialogClose asChild>
-                  <button className="flex-1 py-5 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest transition-all rounded-2xl">
-                    Close
-                  </button>
-                </DialogClose>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <TooltipWrapper text="Copy your unique event URL to your clipboard for easy manual sharing.">
-          <button 
-            onClick={handleCopyLink}
-            className="bg-white/5 border border-white/5 py-6 flex items-center justify-center gap-3 hover:bg-white/10 transition-all group rounded-2xl w-full"
-          >
-            {isCopying ? <Sparkles className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-[#D4AF37]" />}
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">Copy Event Link</span>
-          </button>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Dialog>
+        <TooltipWrapper text="Save a high-quality picture of your invitation to share on your WhatsApp status or groups.">
+          <DialogTrigger asChild>
+            <button className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+              <ImageIcon className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Digital Invite</span>
+            </button>
+          </DialogTrigger>
         </TooltipWrapper>
-      </div>
+        <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-lg w-[95vw] p-0 overflow-hidden rounded-[3rem]">
+          <div className="relative h-full max-h-[90vh] flex flex-col">
+            <DialogHeader className="p-8 border-b border-white/5 shrink-0">
+              <DialogTitle className="text-2xl font-serif italic">Your Digital Invitation</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="flex-1 p-8">
+              <div className="pb-12 flex justify-center"><DigitalInvite ref={inviteRef} event={event} /></div>
+            </ScrollArea>
+            <div className="p-8 border-t border-white/5 bg-black/40 shrink-0 flex gap-4">
+              <button onClick={handleDownloadInvite} disabled={isDownloading} className="flex-1 py-5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2">
+                {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={14} />} {isDownloading ? 'Processing...' : 'Save to Gallery'}
+              </button>
+              <DialogClose asChild><button className="flex-1 py-5 bg-white/5 text-[10px] font-bold uppercase tracking-widest rounded-2xl">Close</button></DialogClose>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      <TooltipWrapper text="Access your financial ledger to track income, approve digital sprays, and manage event expenses.">
-        <button onClick={() => navigate(`/budget/${event.id}`)} className="bg-white/5 border border-white/5 p-10 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+      <TooltipWrapper text="Get your unique event link to send directly to your guests on any messaging app.">
+        <button onClick={handleCopyLink} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+          {isCopying ? <Sparkles className="w-8 h-8 text-green-500" /> : <Copy className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />}
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">{isCopying ? 'Link Copied' : 'Copy Event Link'}</span>
+        </button>
+      </TooltipWrapper>
+
+      <TooltipWrapper text="Open your financial vault to see guest gifts and manage your event budget.">
+        <button onClick={() => navigate(`/budget/${event.id}`)} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
           <Wallet className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Financial Suite</span>
         </button>
       </TooltipWrapper>
 
-      <TooltipWrapper text="Launch the live event screen for ballroom projection. Features real-time check-in alerts and spray animations.">
-        <button onClick={handleVibeClick} className={`p-10 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${isLive ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'}`}>
+      <TooltipWrapper text="Launch the live screen to show on a TV. It displays arrivals and gift alerts in real-time.">
+        <button onClick={handleVibeClick} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${isLive ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'}`}>
           {isLive ? <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" /> : <Lock className="w-8 h-8 text-gray-600" />}
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">
-            {isFinished ? 'Vibe Concluded' : isStarted ? 'Vibe Screen' : 'Vibe Locked'}
-          </span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Vibe Screen</span>
         </button>
       </TooltipWrapper>
 
-      <TooltipWrapper text={hasFullAccess ? "Dispatch official invitations and digital passes to your entire guest list via WhatsApp instantly." : "Upgrade to unlock the industrial-speed WhatsApp dispatcher tool."}>
-        {hasFullAccess ? (
-          <button onClick={onSendWhatsAppBlast} className="bg-[#25D366]/10 border border-[#25D366]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#25D366]/20 transition-all group rounded-[2rem]">
-            <Send className="w-8 h-8 text-[#25D366] group-hover:scale-110 transition-transform" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#25D366]">WhatsApp Blast</span>
-          </button>
-        ) : (
-          <button onClick={() => navigate(`/payment/${event.id}?upgrade=Pro`)} className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-10 flex flex-col items-center justify-center gap-6 hover:bg-[#D4AF37]/20 transition-all group rounded-[2rem]">
-            <Sparkles className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37]">Upgrade to Pro</span>
-          </button>
-        )}
+      <TooltipWrapper text={hasFullAccess ? "Send official invitations and digital passes to your entire guest list via WhatsApp instantly." : "Unlock the high-speed WhatsApp dispatcher to reach all your guests at once."}>
+        <button onClick={hasFullAccess ? onSendWhatsAppBlast : () => navigate(`/payment/${event.id}?upgrade=Pro`)} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${hasFullAccess ? 'bg-[#25D366]/10 border-[#25D366]/20 hover:bg-[#25D366]/20' : 'bg-[#D4AF37]/10 border-[#D4AF37]/20 hover:bg-[#D4AF37]/20'}`}>
+          <Send className={`w-8 h-8 group-hover:scale-110 transition-transform ${hasFullAccess ? 'text-[#25D366]' : 'text-[#D4AF37]'}`} />
+          <span className={`text-[10px] font-bold uppercase tracking-[0.3em] ${hasFullAccess ? 'text-[#25D366]' : 'text-[#D4AF37]'}`}>
+            {hasFullAccess ? 'WhatsApp Blast' : 'Upgrade to Pro'}
+          </span>
+        </button>
       </TooltipWrapper>
     </div>
   );

@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Loader2, MessageSquare, X, Info } from 'lucide-react';
+import { MessageSquare, Info, Loader2, X } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -18,15 +19,13 @@ interface BroadcastBoxProps {
   currentMessage?: string;
 }
 
-const InfoButton = ({ text }: { text: string }) => (
+const TooltipWrapper = ({ children, text }: { children: React.ReactNode, text: string }) => (
   <TooltipProvider delayDuration={0}>
     <Tooltip>
       <TooltipTrigger asChild>
-        <button type="button" className="inline-flex items-center justify-center ml-2 text-gray-500 hover:text-[#D4AF37] transition-all">
-          <Info size={12} className="opacity-60" />
-        </button>
+        {children}
       </TooltipTrigger>
-      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[10px] font-medium p-3 max-w-[200px] shadow-2xl rounded-xl z-[200]">
+      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
         {text}
       </TooltipContent>
     </Tooltip>
@@ -48,65 +47,52 @@ const BroadcastBox = ({ eventId, currentMessage }: BroadcastBoxProps) => {
 
     if (error) showError(error.message);
     else {
-      showSuccess("Host's Message updated live.");
-    }
-    setLoading(false);
-  };
-
-  const clearMessage = async () => {
-    setLoading(true);
-    const { error } = await supabase
-      .from('events')
-      .update({ message: null })
-      .eq('id', eventId);
-
-    if (error) showError(error.message);
-    else {
-      setMessage('');
-      showSuccess("Host's Message cleared.");
+      showSuccess("Public page updated.");
     }
     setLoading(false);
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 items-center bg-white/[0.03] border border-white/10 p-8 rounded-[2rem] mb-12 shadow-xl">
-      <div className="flex items-center gap-5 shrink-0">
-        <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-          <MessageSquare className="text-[#D4AF37] w-6 h-6" />
-        </div>
-        <div className="flex flex-col">
-          <div className="flex items-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Live Broadcast</span>
-            <InfoButton text="Messages set here appear instantly on both your public event page and the Vibe Screen for your guests to see." />
+    <Dialog>
+      <TooltipWrapper text="Post a live announcement that appears instantly at the top of your public event page for all guests to see.">
+        <DialogTrigger asChild>
+          <button className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+            <MessageSquare className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Live Broadcast</span>
+          </button>
+        </DialogTrigger>
+      </TooltipWrapper>
+      <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-lg w-[95vw] rounded-[3rem] p-10">
+        <DialogHeader>
+          <DialogTitle className="text-3xl font-serif italic mb-2">The Broadcast</DialogTitle>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-8">Page-Top Announcement</p>
+        </DialogHeader>
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <p className="text-xs text-gray-500 leading-relaxed italic">
+              "Your message will appear as a scrolling banner or bold header on your live event page."
+            </p>
+            <Input 
+              placeholder="e.g. The Red Carpet is now open!" 
+              className="bg-white/5 border-white/10 h-16 rounded-2xl text-lg font-light focus-visible:ring-[#D4AF37]/30"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
           </div>
-          {currentMessage && (
-            <button 
-              onClick={clearMessage}
-              className="text-[8px] font-black uppercase tracking-[0.2em] text-red-500/70 hover:text-red-500 flex items-center gap-1 transition-colors mt-1"
-            >
-              <X className="w-2 h-2" /> Clear Message
-            </button>
-          )}
+          <div className="flex gap-4">
+            <DialogClose asChild>
+              <Button 
+                onClick={handleUpdateMessage}
+                disabled={loading || !message.trim()}
+                className="flex-1 h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update Event Page'}
+              </Button>
+            </DialogClose>
+          </div>
         </div>
-      </div>
-
-      <div className="flex-1 w-full flex gap-4">
-        <Input 
-          placeholder="Update your message (e.g. 'The Buffet is Open!')" 
-          className="bg-black/20 border-white/10 h-16 rounded-2xl text-sm font-light focus-visible:ring-[#D4AF37]/30"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleUpdateMessage()}
-        />
-        <Button 
-          onClick={handleUpdateMessage}
-          disabled={loading || !message.trim()}
-          className="h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl px-10 text-[10px] font-black uppercase tracking-[0.2em] shrink-0 transition-all duration-500"
-        >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Dispatch</>}
-        </Button>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
