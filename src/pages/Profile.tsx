@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Mail, Building2, CreditCard, CheckCircle2, Loader2, LogOut, ShieldCheck, Wallet } from 'lucide-react';
+import { User, Mail, Building2, CreditCard, CheckCircle2, Loader2, LogOut, ShieldCheck, Wallet, ArrowLeft } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -122,8 +122,6 @@ const Profile = () => {
     }
 
     setVerifying(true);
-    // Manual verification simulation - in a real app, you'd call a lookup API
-    // But since we are removing Paystack logic, we'll just simulate a successful check
     setTimeout(() => {
       setVerifying(false);
       showSuccess("Account details verified for manual processing.");
@@ -149,9 +147,18 @@ const Profile = () => {
       
       <div className="max-w-4xl mx-auto py-24 px-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-6">
-          <div>
-            <h1 className="text-4xl font-serif italic mb-2">Account <span className="text-[#D4AF37]">Settings</span></h1>
-            <p className="text-gray-500 font-light tracking-widest uppercase text-[10px]">Manage your profile and payout details</p>
+          <div className="flex flex-col gap-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)} 
+              className="w-fit text-gray-500 hover:text-[#D4AF37] p-0 flex items-center gap-2"
+            >
+              <ArrowLeft size={16} /> Back
+            </Button>
+            <div>
+              <h1 className="text-4xl font-serif italic mb-2">Account <span className="text-[#D4AF37]">Settings</span></h1>
+              <p className="text-gray-500 font-light tracking-widest uppercase text-[10px]">Manage your profile and payout details</p>
+            </div>
           </div>
           <Button 
             variant="outline" 
@@ -163,7 +170,6 @@ const Profile = () => {
         </div>
 
         <div className="grid gap-8">
-          {/* Basic Info */}
           <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden">
             <CardHeader className="border-b border-white/5 p-8">
               <div className="flex items-center gap-4">
@@ -211,7 +217,6 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* Payout Details */}
           <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden">
             <CardHeader className="border-b border-white/5 p-8">
               <div className="flex items-center gap-4">

@@ -7,24 +7,45 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users } from 'lucide-react';
+import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users, ScanLine } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionProvider';
 
 import EventCard from '@/components/dashboard/EventCard';
-import GuestList from '@/components/dashboard/GuestList';
 import ConciergeTools from '@/components/dashboard/ConciergeTools';
 import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
 import BroadcastBox from '@/components/dashboard/BroadcastBox';
 import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 import DigitalSpray from '@/components/dashboard/DigitalSpray';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const InfoButton = ({ text }: { text: string }) => (
+  <TooltipProvider delayDuration={0}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" className="inline-flex items-center justify-center ml-2 text-gray-500 hover:text-[#D4AF37] transition-all">
+          <Info size={12} className="opacity-60" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium p-3 max-w-[200px] shadow-2xl rounded-xl z-[200]">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+import { Info } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: sessionLoading } = useSession();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isBlastOpen, setIsBlastOpen] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
@@ -139,9 +160,43 @@ const Dashboard = () => {
                             <TabsContent value="tools" className="outline-none">
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
-                            <TabsContent value="guests" className="outline-none">
-                              <GuestList event={event} rsvps={event.rsvps} searchQuery={searchQuery} onSearchChange={setSearchQuery} onOpenScanner={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} onUpdate={() => queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] })} />
-                              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <TabsContent value="guests" className="outline-none space-y-12">
+                              {/* Stats Strip */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="bg-white/5 border border-white/10 p-10 rounded-[2rem] shadow-lg flex flex-col justify-center">
+                                  <div className="flex items-center mb-4">
+                                    <Users className="text-[#D4AF37] w-5 h-5 mr-3" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">Confirmed Guests</span>
+                                    <InfoButton text="The total number of people who have registered for your event and received a digital pass." />
+                                  </div>
+                                  <div className="text-3xl font-serif italic">{event.rsvps.length} Unique Entries</div>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 p-10 rounded-[2rem] shadow-lg flex flex-col justify-center">
+                                  <div className="flex items-center mb-4">
+                                    <Sparkles className="text-[#D4AF37] w-5 h-5 mr-3" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">Active Suite</span>
+                                    <InfoButton text="Your currently active professional tier. This determines your features and media storage limits." />
+                                  </div>
+                                  <div className="text-3xl font-serif italic uppercase tracking-widest text-[#D4AF37]">{event.plan} Plan</div>
+                                </div>
+                              </div>
+
+                              {/* Tool Grid */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <TooltipWrapper text="Open the full guest vault. Here you can search through names, see seating arrangements, and export your DJ's vibe list or security files.">
+                                  <button onClick={() => navigate(`/guests/${event.id}`)} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+                                    <Users className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Rsvp'd Guests</span>
+                                  </button>
+                                </TooltipWrapper>
+
+                                <TooltipWrapper text="Launch the check-in scanner. Use your camera to instantly verify guest QR passes at the entrance for lightning-fast entry.">
+                                  <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+                                    <ScanLine className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Scan QR Pass</span>
+                                  </button>
+                                </TooltipWrapper>
+
                                 <BroadcastBox eventId={event.id} currentMessage={event.message} />
                               </div>
                             </TabsContent>
@@ -162,5 +217,19 @@ const Dashboard = () => {
     </div>
   );
 };
+
+// Helper internal component for tooltips
+const TooltipWrapper = ({ children, text }: { children: React.ReactNode, text: string }) => (
+  <TooltipProvider delayDuration={0}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 export default Dashboard;

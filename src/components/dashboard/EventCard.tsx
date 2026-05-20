@@ -119,7 +119,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={() => navigate(`/edit-event/${event.id}`)} 
           className="w-full rounded-2xl border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-white/10"
         >
-          <Edit className="w-3 h-3 mr-2 shrink-0" /> Edit Event Page <InfoButton text="Refine your event details, theme, and gallery media." />
+          <Edit className="w-3 h-3 mr-2 shrink-0" /> Edit Event Page <InfoButton text="Change your event name, date, venue, or the photos and videos in your gallery." />
         </Button>
         
         <Button 
@@ -127,7 +127,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={() => window.open(`/event/${event.slug}`, '_blank')}
           className="w-full rounded-2xl border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto"
         >
-          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="View your live public landing page as your guests see it." />
+          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="Open your live website to see exactly what your guests will see when they visit your link." />
         </Button>
 
         <Button 
@@ -141,7 +141,7 @@ const EventCard = ({ event }: EventCardProps) => {
           }`}
         >
           <Power className="w-3 h-3 mr-2 shrink-0" />
-          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Make this event active again to receive more guests." : "Stop new RSVPs and mark the celebration as complete."} />
+          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Make this event active again to receive new guests." : "Mark the event as finished to stop new RSVPs and lock the guest list."} />
         </Button>
       </div>
     </div>

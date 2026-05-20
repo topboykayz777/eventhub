@@ -44,8 +44,8 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   const isLive = isStarted && !isFinished;
   const hasFullAccess = event.plan === 'Pro' || event.plan === 'beta';
 
-  const handleCopyLink = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCopyLink = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setIsCopying(true);
     const url = `${window.location.origin}/event/${event.slug}`;
     navigator.clipboard.writeText(url);
@@ -89,7 +89,7 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <Dialog>
-        <TooltipWrapper text="Save a high-quality picture of your invitation to share on your WhatsApp status or groups.">
+        <TooltipWrapper text="View and save a high-quality picture of your invitation to share on your WhatsApp status or groups.">
           <DialogTrigger asChild>
             <button className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
               <ImageIcon className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
@@ -109,7 +109,9 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
               <button onClick={handleDownloadInvite} disabled={isDownloading} className="flex-1 py-5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2">
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={14} />} {isDownloading ? 'Processing...' : 'Save to Gallery'}
               </button>
-              <DialogClose asChild><button className="flex-1 py-5 bg-white/5 text-[10px] font-bold uppercase tracking-widest rounded-2xl">Close</button></DialogClose>
+              <button onClick={() => handleCopyLink()} className="flex-1 py-5 bg-white/5 text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 border border-white/5 hover:bg-white/10 transition-all">
+                <Copy size={14} className="text-[#D4AF37]" /> {isCopying ? 'Copied' : 'Copy Link'}
+              </button>
             </div>
           </div>
         </DialogContent>
@@ -129,14 +131,14 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
         </button>
       </TooltipWrapper>
 
-      <TooltipWrapper text="Launch the live screen to show on a TV. It displays arrivals and gift alerts in real-time.">
+      <TooltipWrapper text="Launch the live screen to show on a TV. It displays guest arrivals and gift alerts in real-time as they happen.">
         <button onClick={handleVibeClick} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${isLive ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'}`}>
           {isLive ? <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" /> : <Lock className="w-8 h-8 text-gray-600" />}
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Vibe Screen</span>
         </button>
       </TooltipWrapper>
 
-      <TooltipWrapper text={hasFullAccess ? "Send official invitations and digital passes to your entire guest list via WhatsApp instantly." : "Unlock the high-speed WhatsApp dispatcher to reach all your guests at once."}>
+      <TooltipWrapper text={hasFullAccess ? "Dispatch official invitations and digital passes to your entire guest list via WhatsApp instantly." : "Unlock the high-speed WhatsApp dispatcher to reach all your guests at once."}>
         <button onClick={hasFullAccess ? onSendWhatsAppBlast : () => navigate(`/payment/${event.id}?upgrade=Pro`)} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${hasFullAccess ? 'bg-[#25D366]/10 border-[#25D366]/20 hover:bg-[#25D366]/20' : 'bg-[#D4AF37]/10 border-[#D4AF37]/20 hover:bg-[#D4AF37]/20'}`}>
           <Send className={`w-8 h-8 group-hover:scale-110 transition-transform ${hasFullAccess ? 'text-[#25D366]' : 'text-[#D4AF37]'}`} />
           <span className={`text-[10px] font-bold uppercase tracking-[0.3em] ${hasFullAccess ? 'text-[#25D366]' : 'text-[#D4AF37]'}`}>

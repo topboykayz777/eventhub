@@ -21,6 +21,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import EditEvent from "./pages/EditEvent";
 import BudgetTracker from "./pages/BudgetTracker";
+import GuestRegistry from "./pages/GuestRegistry";
 import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
 import VibeScreen from "./pages/VibeScreen";
@@ -33,9 +34,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Data is considered fresh for 5 minutes (reduces redundant API calls)
       staleTime: 1000 * 60 * 5,
-      // Keep unused data in memory for 10 minutes before garbage collection
       gcTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
       retry: 1,
@@ -73,6 +72,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/budget/:id" element={<BudgetTracker />} />
+      <Route path="/guests/:id" element={<GuestRegistry />} />
       <Route path="/vendors" element={<VendorDirectory />} />
       <Route path="/vendor/:id" element={<VendorProfile />} />
       <Route path="/support" element={<Support />} />
