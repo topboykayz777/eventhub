@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
-import InfoButton from '../components/InfoButton';
+import InfoButton from '@/components/InfoButton';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -300,7 +300,7 @@ const CreateEvent = () => {
               </Label>
               <Textarea 
                 placeholder="Share dress code, parking info, or a warm welcome..." 
-                className="min-h-[180px] bg-secondary border border-border rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 leading-relaxed outline-none transition-all text-foreground placeholder:text-muted-foreground/30 text-center placeholder:text-center" 
+                className="min-h-[180px] bg-secondary border-border rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 leading-relaxed outline-none transition-all text-foreground placeholder:text-muted-foreground/30 text-center placeholder:text-center" 
                 value={formData.message} 
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
               />

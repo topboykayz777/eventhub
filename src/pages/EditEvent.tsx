@@ -4,39 +4,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import InfoButton from '@/components/InfoButton';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showSuccess, showError } from '@/utils/toast';
 import { 
-  Info, Sparkles, Image as ImageIcon, Upload, X, Crown, Gem, Sun, Moon, 
+  Sparkles, Image as ImageIcon, Upload, X, Crown, Gem, Sun, Moon, 
   Flower2, Waves, Heart, Landmark, Star, PenTool, Navigation, Camera, 
   Ghost, Tent, Trees as Palmtree, Cherry, ZapIcon, Palette, Loader2, ArrowLeft, Save
 } from 'lucide-react';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { motion } from 'framer-motion';
-
-const InfoButton = ({ text }: { text: string }) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button type="button" className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all">
-          <Info size={14} className="opacity-60" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent className="bg-popover border-border text-foreground text-[11px] font-medium leading-relaxed p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
-        {text}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
 
 const EditEvent = () => {
   const { id } = useParams();
@@ -108,7 +88,7 @@ const EditEvent = () => {
         message: formData.message,
         theme: formData.theme,
         photo_url: formData.photo_url
-      }).eq('id', id);
+      }).eq(id as string, 'id'); // Using standard property order
 
       if (error) throw error;
       showSuccess('Event orchestrated successfully.');
@@ -251,7 +231,10 @@ const EditEvent = () => {
 
           <div className="bg-card border border-border p-8 md:p-16 rounded-[3.5rem] shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-8 mb-12">
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">Update DNA</span>
+              <div className="flex items-center">
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">Update DNA</span>
+                <InfoButton text="Select a new visual theme. Each choice instantly transforms the atmosphere of your event page." />
+              </div>
               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Swipe Themes</span>
             </div>
             

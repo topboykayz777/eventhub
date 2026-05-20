@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import InfoButton from '@/components/InfoButton';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
@@ -18,27 +19,6 @@ import QRScannerOverlay from '@/components/dashboard/QRScannerOverlay';
 import BroadcastBox from '@/components/dashboard/BroadcastBox';
 import WhatsAppBlast from '@/components/dashboard/WhatsAppBlast';
 import DigitalSpray from '@/components/dashboard/DigitalSpray';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-const InfoButton = ({ text }: { text: string }) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button type="button" className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all">
-          <Info size={12} className="opacity-60" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent className="bg-popover border-border text-foreground text-[11px] font-medium p-3 max-w-[200px] shadow-2xl rounded-xl z-[200]">
-        {text}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -195,19 +175,21 @@ const Dashboard = () => {
                               </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <TooltipWrapper text="Open the full guest archive. Manage seating charts, search names, and export your vibe lists.">
-                                  <button onClick={() => navigate(`/guests/${event.id}`)} className="bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem]">
+                                <div className="relative group">
+                                  <button onClick={() => navigate(`/guests/${event.id}`)} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem]">
                                     <Users className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Rsvp'd Guests</span>
                                   </button>
-                                </TooltipWrapper>
+                                  <div className="absolute top-4 right-4"><InfoButton text="Open the full guest archive. Manage seating charts, search names, and export your vibe lists." /></div>
+                                </div>
 
-                                <TooltipWrapper text="Launch the red carpet scanner. Verify guest QR passes instantly for a seamless entry experience.">
-                                  <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem]">
+                                <div className="relative group">
+                                  <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem]">
                                     <ScanLine className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Scan QR Pass</span>
                                   </button>
-                                </TooltipWrapper>
+                                  <div className="absolute top-4 right-4"><InfoButton text="Launch the red carpet scanner. Verify guest QR passes instantly for a seamless entry experience." /></div>
+                                </div>
 
                                 <BroadcastBox eventId={event.id} currentMessage={event.message} />
                               </div>
@@ -229,18 +211,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-const TooltipWrapper = ({ children, text }: { children: React.ReactNode, text: string }) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        {children}
-      </TooltipTrigger>
-      <TooltipContent className="bg-popover border-border text-foreground text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
-        {text}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
 
 export default Dashboard;

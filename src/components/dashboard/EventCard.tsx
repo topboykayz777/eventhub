@@ -7,38 +7,11 @@ import { Calendar, MapPin, Edit, CheckCircle2, Power, ExternalLink, Info } from 
 import { showSuccess, showError } from '@/utils/toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import InfoButton from '@/components/InfoButton';
 
 interface EventCardProps {
   event: any;
 }
-
-const InfoButton = ({ text }: { text: string }) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button 
-          type="button" 
-          className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all active:scale-95"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Info size={14} className="opacity-70" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent 
-        side="top"
-        className="bg-popover border-border text-foreground text-[11px] font-medium p-4 max-w-[280px] md:max-w-[320px] shadow-2xl rounded-2xl leading-relaxed z-[200]"
-      >
-        {text}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
 
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
@@ -122,35 +95,44 @@ const EventCard = ({ event }: EventCardProps) => {
       </div>
       
       <div className="mt-8 flex flex-col gap-4">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate(`/edit-event/${event.id}`)} 
-          className="w-full rounded-2xl border-border bg-card text-foreground text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-muted transition-all group"
-        >
-          <Edit className="w-3 h-3 mr-2 shrink-0 opacity-60 group-hover:opacity-100" /> Edit Event Page <InfoButton text="Refine your event's digital presence. Update the title, date, and venue, or refresh your visual gallery with new cinematic portraits and captured moments." />
-        </Button>
+        <div className="relative">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(`/edit-event/${event.id}`)} 
+            className="w-full rounded-2xl border-border bg-card text-foreground text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-muted transition-all group"
+          >
+            <Edit className="w-3 h-3 mr-2 shrink-0 opacity-60 group-hover:opacity-100" /> Edit Event Page
+          </Button>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2"><InfoButton text="Refine your event's digital presence. Update the title, date, and venue, or refresh your visual gallery with new cinematic portraits and captured moments." /></div>
+        </div>
         
-        <Button 
-          variant="outline" 
-          onClick={() => window.open(`/event/${event.slug}`, '_blank')}
-          className="w-full rounded-2xl border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-[#D4AF37]/10"
-        >
-          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="Experience your event link exactly as your guests will. Preview the live animations, registration flows, and overall digital aesthetic." />
-        </Button>
+        <div className="relative">
+          <Button 
+            variant="outline" 
+            onClick={() => window.open(`/event/${event.slug}`, '_blank')}
+            className="w-full rounded-2xl border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-[#D4AF37]/10"
+          >
+            <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page
+          </Button>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2"><InfoButton text="Experience your event link exactly as your guests will. Preview the live animations, registration flows, and overall digital aesthetic." /></div>
+        </div>
 
-        <Button 
-          variant="outline" 
-          disabled={loading}
-          onClick={toggleFinished}
-          className={`w-full rounded-2xl py-6 h-auto text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${
-            isFinished 
-              ? 'bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20' 
-              : 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20'
-          }`}
-        >
-          <Power className="w-3 h-3 mr-2 shrink-0" />
-          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Bring your event back to life. This will reactivate the guest registry and restore all live features." : "Officially finalize your celebration to lock the guest registry and archive the experience."} />
-        </Button>
+        <div className="relative">
+          <Button 
+            variant="outline" 
+            disabled={loading}
+            onClick={toggleFinished}
+            className={`w-full rounded-2xl py-6 h-auto text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${
+              isFinished 
+                ? 'bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20' 
+                : 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20'
+            }`}
+          >
+            <Power className="w-3 h-3 mr-2 shrink-0" />
+            {isFinished ? 'Reopen Event' : 'Conclude Event'}
+          </Button>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2"><InfoButton text={isFinished ? "Bring your event back to life. This will reactivate the guest registry and restore all live features." : "Officially finalize your celebration to lock the guest registry and archive the experience."} /></div>
+        </div>
       </div>
     </div>
   );
