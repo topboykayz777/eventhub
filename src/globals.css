@@ -4,6 +4,29 @@
 
 @layer base {
   :root {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 45 60% 53%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 45 60% 53%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 45 60% 53%;
+    --radius: 1rem;
+  }
+
+  .dark {
     --background: 0 0% 5%;
     --foreground: 0 0% 98%;
     --card: 0 0% 8%;
@@ -23,7 +46,6 @@
     --border: 0 0% 15%;
     --input: 0 0% 15%;
     --ring: 45 60% 53%;
-    --radius: 1rem;
   }
 }
 
@@ -52,7 +74,7 @@
     width: 3px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: #050505;
+    background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #D4AF37;
@@ -67,11 +89,11 @@
 
 @keyframes slow-zoom {
   0% { transform: scale(1); }
-  100% { transform: scale(1.2); }
+  100% { transform: scale(1.1); }
 }
 
 html, body {
-  @apply bg-[#050505] text-white antialiased selection:bg-[#D4AF37] selection:text-black;
+  @apply bg-background text-foreground antialiased selection:bg-[#D4AF37] selection:text-black transition-colors duration-300;
   font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   width: 100%;
   overflow-x: hidden;
