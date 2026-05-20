@@ -28,11 +28,11 @@ const InfoButton = ({ text }: { text: string }) => (
   <TooltipProvider delayDuration={0}>
     <Tooltip>
       <TooltipTrigger asChild>
-        <button type="button" className="inline-flex items-center justify-center ml-2 text-gray-500 hover:text-[#D4AF37] transition-all hover:scale-110">
+        <button type="button" className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all hover:scale-110">
           <Info size={14} className="opacity-60" />
         </button>
       </TooltipTrigger>
-      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium leading-relaxed p-4 max-w-[240px] shadow-2xl rounded-2xl">
+      <TooltipContent className="bg-popover border-border text-foreground text-[11px] font-medium leading-relaxed p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
         {text}
       </TooltipContent>
     </Tooltip>
@@ -137,7 +137,7 @@ const CreateEvent = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
       
       <div className="max-w-4xl mx-auto py-24 md:py-32 px-6">
@@ -150,7 +150,7 @@ const CreateEvent = () => {
           <h1 className="text-4xl md:text-7xl font-serif italic leading-tight">
             Create Your <span className="text-[#D4AF37]">Event</span>
           </h1>
-          <p className="text-gray-500 text-sm font-light mt-4 max-w-md leading-relaxed">
+          <p className="text-muted-foreground text-sm font-light mt-4 max-w-md leading-relaxed">
             Fill in the particulars of your celebration to begin the digital orchestration.
           </p>
         </motion.div>
@@ -161,40 +161,39 @@ const CreateEvent = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 p-8 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group"
+            className="bg-card border border-border p-8 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#D4AF37]/10 transition-colors" />
-            <div className="flex items-center gap-4 border-b border-white/5 pb-8 mb-12">
+            <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">01</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">The Identity</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Identity</span>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                   Event Title <InfoButton text="Enter the name of your event. This title will be the headline on your public page and printed on every guest's digital pass." />
                 </Label>
                 <input 
                   required 
                   placeholder="The Balogun Gala..." 
-                  className="h-16 w-full px-0 bg-transparent border-b border-white/10 rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-gray-800" 
+                  className="h-16 w-full px-0 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30" 
                   value={formData.eventName} 
                   onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} 
                 />
               </div>
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                   Access Level <InfoButton text="Beta is our all-access pass. It unlocks everything from the live Vibe Screen for your ballroom to the industrial WhatsApp dispatcher." />
                 </Label>
                 <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="beta">
-                  <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6">
+                  <SelectTrigger className="h-16 bg-secondary border border-border rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-white/10 text-white rounded-2xl">
+                  <SelectContent className="bg-popover border-border text-foreground rounded-2xl">
                     <SelectItem value="beta">Free Beta Access (Full Suite)</SelectItem>
-                    <SelectItem value="Basic" disabled className="opacity-30">Basic Tier (Coming Soon)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -206,36 +205,36 @@ const CreateEvent = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-2xl border border-white/5 p-8 md:p-16 rounded-[3rem] shadow-2xl relative"
+            className="bg-card border border-border p-8 md:p-16 rounded-[3rem] shadow-2xl relative"
           >
-            <div className="flex items-center gap-4 border-b border-white/5 pb-8 mb-12">
+            <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">02</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">The Logistics</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Logistics</span>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12 mb-12">
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                   Date & Time <InfoButton text="Specify the start time. A live countdown will appear on your page, building anticipation for your guests until the moment you begin." />
                 </Label>
                 <input 
                   type="datetime-local" 
                   required 
-                  className="h-16 w-full px-6 bg-white/5 border border-white/10 rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all" 
+                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground" 
                   value={formData.eventDate} 
                   onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} 
                 />
               </div>
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                   Venue Name <InfoButton text="Where is the magic happening? This address will be clearly displayed for all guests to see on their invitations." />
                 </Label>
                 <input 
                   required 
                   placeholder="Eko Hotel & Suites..." 
-                  className="h-16 w-full px-6 bg-white/5 border border-white/10 rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all" 
+                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40" 
                   value={formData.venue} 
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })} 
                 />
@@ -243,14 +242,14 @@ const CreateEvent = () => {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                 Location GPS <InfoButton text="Copy the 'Share' link from Google Maps and paste it here. Guests will see a 'Navigate' button for one-tap directions to the gate." />
               </Label>
               <div className="relative">
                 <Navigation className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4 opacity-50" />
                 <input 
                   placeholder="Paste Google Maps 'Share' link here..." 
-                  className="h-16 w-full pl-16 px-6 bg-white/5 border border-white/10 rounded-2xl focus:border-[#D4AF37] text-sm font-light outline-none transition-all" 
+                  className="h-16 w-full pl-16 px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-sm font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40" 
                   value={formData.venue_map_url} 
                   onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} 
                 />
@@ -263,21 +262,21 @@ const CreateEvent = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-[#0A0A0A] border border-white/10 p-8 md:p-16 rounded-[3.5rem] shadow-[0_0_60px_rgba(0,0,0,0.5)] relative"
+            className="bg-card border border-border p-8 md:p-16 rounded-[3.5rem] shadow-2xl relative"
           >
-            <div className="flex items-center gap-4 border-b border-white/5 pb-8 mb-12">
+            <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">03</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">The Presentation</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Presentation</span>
             </div>
             
             <div className="space-y-8">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                 Cover Portrait <InfoButton text="Choose a stunning image or a 15-second video. This cinematic backdrop is the first thing guests see when they open your link." />
               </Label>
               {formData.photo_url ? (
-                <div className="relative aspect-video w-full overflow-hidden border border-white/10 group rounded-[2.5rem] shadow-2xl">
+                <div className="relative aspect-video w-full overflow-hidden border border-border group rounded-[2.5rem] shadow-2xl">
                   <img src={formData.photo_url} className="w-full h-full object-cover" alt="Preview" />
                   <button 
                     type="button" 
@@ -289,18 +288,18 @@ const CreateEvent = () => {
                 </div>
               ) : (
                 <Label htmlFor="photo-upload" className="cursor-pointer">
-                  <div className="h-72 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-6 hover:bg-white/[0.02] hover:border-[#D4AF37]/50 transition-all bg-white/5 group rounded-[2.5rem]">
+                  <div className="h-72 border-2 border-dashed border-border flex flex-col items-center justify-center gap-6 hover:bg-secondary transition-all bg-secondary/50 group rounded-[2.5rem]">
                     {uploading ? (
                       <div className="flex flex-col items-center gap-4">
                         <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37]" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Processing Artwork...</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Processing Artwork...</span>
                       </div>
                     ) : (
                       <>
-                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Upload className="text-gray-700 w-8 h-8 group-hover:text-[#D4AF37] transition-all" />
+                        <div className="w-16 h-16 rounded-full bg-background border border-border flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Upload className="text-muted-foreground w-8 h-8 group-hover:text-[#D4AF37] transition-all" />
                         </div>
-                        <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-600">Upload Media</span>
+                        <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground">Upload Media</span>
                       </>
                     )}
                   </div>
@@ -310,12 +309,12 @@ const CreateEvent = () => {
             </div>
 
             <div className="mt-12 space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                 Guest Directive <InfoButton text="Share a personal welcome or dress code instructions. This appears in the 'Particulars' section of your page." />
               </Label>
               <Textarea 
                 placeholder="Share dress code, parking info, or a warm welcome..." 
-                className="min-h-[180px] bg-white/5 border-white/10 rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 leading-relaxed outline-none transition-all" 
+                className="min-h-[180px] bg-secondary border border-border rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 leading-relaxed outline-none transition-all text-foreground placeholder:text-muted-foreground/30" 
                 value={formData.message} 
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
               />
@@ -327,16 +326,16 @@ const CreateEvent = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5 p-8 md:p-16 rounded-[3.5rem] shadow-2xl relative overflow-hidden"
+            className="bg-card border border-border p-8 md:p-16 rounded-[3.5rem] shadow-2xl relative overflow-hidden"
           >
-            <div className="flex items-center justify-between border-b border-white/5 pb-8 mb-12">
+            <div className="flex items-center justify-between border-b border-border pb-8 mb-12">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                   <span className="text-[#D4AF37] font-black text-xs">04</span>
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">The Aesthetic</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Aesthetic</span>
               </div>
-              <div className="flex items-center text-[9px] font-black text-gray-600 uppercase tracking-widest">
+              <div className="flex items-center text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                 Swipe to explore <InfoButton text="Select a visual DNA. Each theme changes the typography, color palette, and atmosphere of your entire event page to match your prestige level." />
               </div>
             </div>
@@ -349,7 +348,7 @@ const CreateEvent = () => {
                     type="button" 
                     onClick={() => setFormData({ ...formData, theme: t.id })} 
                     className={`relative w-64 h-48 shrink-0 border-2 transition-all text-left overflow-hidden group rounded-[2.5rem] ${
-                      formData.theme === t.id ? 'border-[#D4AF37] scale-[1.05] shadow-[0_0_50px_rgba(212,175,55,0.3)]' : 'border-white/5 opacity-60 hover:opacity-100 hover:border-white/20'
+                      formData.theme === t.id ? 'border-[#D4AF37] scale-[1.05] shadow-[0_0_50px_rgba(212,175,55,0.3)]' : 'border-border opacity-60 hover:opacity-100 hover:border-[#D4AF37]/30'
                     }`}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${t.color}`} />
@@ -370,7 +369,7 @@ const CreateEvent = () => {
                   </button>
                 ))}
               </div>
-              <ScrollBar orientation="horizontal" className="bg-white/5 h-2 rounded-full" />
+              <ScrollBar orientation="horizontal" className="bg-secondary h-2 rounded-full" />
             </ScrollArea>
           </motion.div>
 
@@ -395,7 +394,7 @@ const CreateEvent = () => {
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </Button>
             </motion.div>
-            <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] mt-12">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-12">
               Secure Entry Protocol • Part 01
             </p>
           </div>

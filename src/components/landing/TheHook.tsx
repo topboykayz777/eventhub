@@ -39,7 +39,7 @@ const TheHook = () => {
   }, []);
 
   return (
-    <section className="py-24 md:py-40 px-6 bg-[#050505]">
+    <section className="py-24 md:py-40 px-6 bg-background">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           
@@ -51,8 +51,8 @@ const TheHook = () => {
           >
             <div>
               <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.5em] mb-6 block">The Problem</span>
-              <h2 className="text-4xl md:text-6xl font-serif italic text-white leading-tight">
-                Traditional Planning is <span className="text-gray-600 line-through decoration-[#D4AF37]">Broken.</span>
+              <h2 className="text-4xl md:text-6xl font-serif italic text-foreground leading-tight">
+                Traditional Planning is <span className="text-muted-foreground line-through decoration-[#D4AF37]">Broken.</span>
               </h2>
             </div>
 
@@ -75,12 +75,12 @@ const TheHook = () => {
                 }
               ].map((item, i) => (
                 <div key={i} className="flex gap-6 group">
-                  <div className="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#D4AF37]/50 transition-colors">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-secondary border border-border flex items-center justify-center group-hover:border-[#D4AF37]/50 transition-colors">
                     <item.icon className="text-[#D4AF37] w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-serif italic text-white mb-1">{item.title}</h3>
-                    <p className="text-gray-500 text-sm font-light leading-relaxed">{item.desc}</p>
+                    <h3 className="text-lg font-serif italic text-foreground mb-1">{item.title}</h3>
+                    <p className="text-muted-foreground text-sm font-light leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -95,7 +95,7 @@ const TheHook = () => {
           >
             <div className="absolute inset-0 bg-[#D4AF37]/10 blur-[100px] rounded-full" />
             
-            <div className="relative glass-premium p-10 md:p-16 rounded-[4rem] border-white/10 shadow-2xl overflow-hidden">
+            <div className="relative bg-card border border-border p-10 md:p-16 rounded-[4rem] shadow-2xl overflow-hidden">
               <div className="absolute top-0 right-0 p-8">
                  <div className="bg-[#D4AF37] text-black text-[7px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rotate-45 translate-x-12 -translate-y-4 shadow-xl">
                     Elite Pioneer
@@ -107,8 +107,8 @@ const TheHook = () => {
                   <span className="text-[#D4AF37] font-serif text-3xl -rotate-45">E</span>
                 </div>
                 
-                <h3 className="text-3xl font-serif italic text-white mb-4">The Founding Circle</h3>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.4em]">Become a Founding Member</p>
+                <h3 className="text-3xl font-serif italic text-foreground mb-4">The Founding Circle</h3>
+                <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.4em]">Become a Founding Member</p>
               </div>
 
               <div className="space-y-6 mb-12">
@@ -121,21 +121,21 @@ const TheHook = () => {
                 ].map((text, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <Star className="text-[#D4AF37] w-4 h-4 shrink-0 fill-current" />
-                    <span className="text-sm font-light text-gray-200">{text}</span>
+                    <span className="text-sm font-light text-foreground/80">{text}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="pt-8 border-t border-white/5 text-center">
+              <div className="pt-8 border-t border-border text-center">
                 <div className="mb-8 flex flex-col items-center gap-2">
                    <div className="flex items-center gap-2 text-[#D4AF37] animate-pulse">
                       <Sparkles size={12} />
                       <span className="text-[10px] font-black uppercase tracking-[0.5em]">Pioneer Invitations Remaining</span>
                    </div>
-                   <div className="text-5xl font-serif italic text-white">
+                   <div className="text-5xl font-serif italic text-foreground">
                       {spotsRemaining} / {TOTAL_PIONEER_SPOTS}
                    </div>
-                   <p className="text-gray-600 text-[8px] font-bold uppercase tracking-widest mt-2 max-w-[250px] mx-auto">
+                   <p className="text-muted-foreground text-[8px] font-bold uppercase tracking-widest mt-2 max-w-[250px] mx-auto">
                       Founding Status is reserved for the first 50 hosts to register.
                    </p>
                 </div>

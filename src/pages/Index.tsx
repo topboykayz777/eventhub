@@ -51,7 +51,7 @@ const Index = () => {
         <Hero />
         
         {/* STATS STRIP */}
-        <section className="w-full py-16 md:py-32 border-y border-border bg-muted/30">
+        <section className="w-full py-16 md:py-32 border-y border-border bg-secondary/50">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-24">
               {[

@@ -7,17 +7,17 @@ import { Button } from '@/components/ui/button';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0f0f0f] pt-20 md:pt-24">
+    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24">
       {/* Immersive Background Layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
           src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
-          className="w-full h-full object-cover opacity-10 md:opacity-20 animate-slow-zoom"
+          className="w-full h-full object-cover opacity-10 md:opacity-20 animate-slow-zoom dark:grayscale"
           alt="Luxury Event Background"
         />
         {/* Dynamic Shadow & Depth Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f0f] via-transparent to-[#0f0f0f]" />
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        <div className="absolute inset-0 bg-black/5 dark:bg-black/40" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full">
@@ -31,12 +31,12 @@ const Hero = () => {
             The Professional Orchestration Suite
           </span>
           
-          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[9rem] font-serif italic text-white mb-6 md:mb-10 leading-[1.1] tracking-tight text-center">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[9rem] font-serif italic text-foreground mb-6 md:mb-10 leading-[1.1] tracking-tight text-center">
             The Art of <br className="hidden sm:block" />
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-[0.15em] uppercase px-4 text-center opacity-80">
+          <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-[0.15em] uppercase px-4 text-center">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
             Orchestrate weddings, galas, and elite events with surgical precision.
           </p>
@@ -62,7 +62,7 @@ const Hero = () => {
               </motion.div>
             </Link>
             <Link to="/vendors" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 hover:border-white/40 text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-border text-foreground hover:bg-secondary text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
                 Curated Directory
               </Button>
             </Link>

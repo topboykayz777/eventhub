@@ -18,7 +18,7 @@ const NarrativeAct = ({
   const isInView = useInView(ref, { margin: "-40% 0px -40% 0px" });
 
   return (
-    <div ref={ref} className="min-h-[40vh] flex flex-col justify-center py-20 border-l border-white/5 pl-12 relative">
+    <div ref={ref} className="min-h-[40vh] flex flex-col justify-center py-20 border-l border-border pl-12 relative">
       <div className={`absolute left-[-5px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#D4AF37] transition-all duration-500 ${isInView ? 'scale-150 shadow-[0_0_15px_rgba(212,175,55,1)]' : 'scale-50 opacity-20'}`} />
       
       <motion.div
@@ -32,10 +32,10 @@ const NarrativeAct = ({
         <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.5em] mb-6 block">
           Act 0{index + 1} — {subtitle}
         </span>
-        <h2 className="text-3xl md:text-5xl font-serif italic text-white mb-6 leading-tight">
+        <h2 className="text-3xl md:text-5xl font-serif italic text-foreground mb-6 leading-tight">
           {title}
         </h2>
-        <p className="text-gray-400 text-base font-light leading-relaxed tracking-wide max-w-xl">
+        <p className="text-muted-foreground text-base font-light leading-relaxed tracking-wide max-w-xl">
           {description}
         </p>
       </motion.div>
@@ -68,11 +68,11 @@ const TheNarrative = () => {
   ];
 
   return (
-    <section className="bg-[#050505] py-32">
+    <section className="bg-background py-32">
       <div className="max-w-4xl mx-auto px-6">
         <div className="mb-24 text-center">
-          <h2 className="text-4xl font-serif italic text-white mb-4">The Narrative of <span className="text-[#D4AF37]">Excellence</span></h2>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em]">A Symphony of Features</p>
+          <h2 className="text-4xl font-serif italic text-foreground mb-4">The Narrative of <span className="text-[#D4AF37]">Excellence</span></h2>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em]">A Symphony of Features</p>
         </div>
         <div>
           {acts.map((act, i) => (
