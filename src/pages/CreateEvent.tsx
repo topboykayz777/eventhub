@@ -44,7 +44,7 @@ const CreateEvent = () => {
       setFormData(prev => ({ ...prev, photo_url: publicUrl }));
       showSuccess('Portrait Uploaded.');
     } catch (error: any) { 
-      showError("Please sign in to upload media, or continue with details first."); 
+      showError("Please sign in to upload media."); 
     } finally { setUploading(false); }
   };
 
@@ -116,7 +116,7 @@ const CreateEvent = () => {
                 <input required placeholder="Enter Title..." className="w-full bg-white/5 border-b border-white/10 h-16 px-0 text-3xl font-light outline-none focus:border-[#D4AF37] transition-all" value={formData.eventName} onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} />
               </div>
               <div className="space-y-4">
-                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Cover Portrait</Label><InfoButton text="Upload the best photo of the host; this is the first thing guests will see." /></div>
+                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Cover Portrait</Label><InfoButton text="Upload the best photo of the host; this is the first thing guests will see on their invitation." /></div>
                 {formData.photo_url ? (
                   <div className="relative h-80 rounded-[3rem] overflow-hidden border border-white/10"><img src={formData.photo_url} className="w-full h-full object-cover" alt="" /><button onClick={() => setFormData({ ...formData, photo_url: '' })} className="absolute top-6 right-6 bg-black/50 p-3 rounded-full text-white backdrop-blur-md"><X size={20} /></button></div>
                 ) : (
@@ -132,15 +132,15 @@ const CreateEvent = () => {
           {step === 2 && (
             <div className="space-y-12 animate-silk-reveal">
               <div className="space-y-4">
-                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Date & Time</Label><InfoButton text="When does the magic happen?" /></div>
+                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Date & Time</Label><InfoButton text="When does the magic happen? This will be displayed on the Digital IV and Digital Pass." /></div>
                 <input type="datetime-local" className="w-full bg-white/5 border-b border-white/10 h-16 px-0 text-3xl font-light outline-none" value={formData.eventDate} onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} />
               </div>
               <div className="space-y-4">
-                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Venue Address</Label><InfoButton text="Where should the guests go?" /></div>
+                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Venue Address</Label><InfoButton text="The physical location of the event. Please be as precise as possible." /></div>
                 <input placeholder="Eko Hotel, Victoria Island..." className="w-full bg-white/5 border-b border-white/10 h-16 px-0 text-3xl font-light outline-none" value={formData.venue} onChange={(e) => setFormData({ ...formData, venue: e.target.value })} />
               </div>
               <div className="space-y-4">
-                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Google Maps Link</Label><InfoButton text="Paste the Maps URL so guests can navigate with one tap." /></div>
+                <div className="flex justify-between items-center"><Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Google Maps Link</Label><InfoButton text="Paste the Maps URL from Google. This allows guests to get driving directions with one tap." /></div>
                 <input placeholder="https://maps.google.com/..." className="w-full bg-white/5 border-b border-white/10 h-16 px-0 text-sm font-light outline-none text-gray-400" value={formData.venue_map_url} onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} />
               </div>
             </div>
@@ -153,7 +153,7 @@ const CreateEvent = () => {
                   <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Aesthetic Palette</Label>
                   <p className="text-[10px] text-[#D4AF37] font-bold mt-1">Swipe to explore 20 elite themes</p>
                 </div>
-                <InfoButton text="Select the visual tone of your event." />
+                <InfoButton text="Select the visual tone of your event. This controls the colors and style of the guest invitation and Vibe Screen." />
               </div>
               
               <div ref={carouselRef} className="flex gap-4 overflow-x-auto pb-8 scrollbar-thin scrollbar-thumb-[#D4AF37]/20 snap-x">
