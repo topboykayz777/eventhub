@@ -108,7 +108,7 @@ const Index = () => {
             </p>
             <Link to="/create-event">
               <Button className="bg-[#D4AF37] text-black px-12 md:px-24 py-8 md:py-12 rounded-none text-[11px] md:text-xs font-black tracking-[0.5em] uppercase hover:bg-[#B8860B] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20">
-                Begin Orchestration
+                Begin Your Celebration
               </Button>
             </Link>
           </div>

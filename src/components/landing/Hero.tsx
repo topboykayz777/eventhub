@@ -57,7 +57,7 @@ const Hero = () => {
                   size="lg" 
                   className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#B8860B] text-black text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-black tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl"
                 >
-                  Start Orchestrating
+                  Begin Your Celebration
                 </Button>
               </motion.div>
             </Link>
