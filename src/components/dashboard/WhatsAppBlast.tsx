@@ -64,19 +64,19 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-xl transition-colors duration-500">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-xl bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl"
+        className="w-full max-w-xl bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl transition-colors duration-500"
       >
-        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+        <div className="p-8 border-b border-border flex justify-between items-center bg-muted/30">
           <div>
-            <h3 className="text-white font-serif italic text-xl">Industrial Dispatcher</h3>
+            <h3 className="text-foreground font-serif italic text-xl">Industrial Dispatcher</h3>
             <p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-[0.3em] mt-1">Staccato-Speed Invitations</p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+            <X size={24} />
           </button>
         </div>
 
@@ -92,16 +92,16 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
               >
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Target {currentIndex + 1} of {guests.length}</span>
-                    <h4 className="text-3xl text-white font-light tracking-tight">{currentGuest?.guest_name}</h4>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Target {currentIndex + 1} of {guests.length}</span>
+                    <h4 className="text-3xl text-foreground font-light tracking-tight">{currentGuest?.guest_name}</h4>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
-                    <Zap className="text-[#D4AF37] w-5 h-5" />
+                  <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20 shadow-sm">
+                    <Zap className="text-[#D4AF37] w-6 h-6" />
                   </div>
                 </div>
 
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-3">
-                   <p className="text-xs text-gray-400 font-mono leading-relaxed italic">
+                <div className="bg-muted/40 rounded-2xl p-6 border border-border space-y-3">
+                   <p className="text-xs text-muted-foreground font-mono leading-relaxed italic">
                      "Hi {currentGuest?.guest_name}, your Digital Pass for {event.event_name} is ready! {currentGuest?.table_number ? `Your Table: ${currentGuest.table_number}` : ''}..."
                    </p>
                 </div>
@@ -109,16 +109,16 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
                 <div className="flex flex-col gap-4">
                   <Button 
                     onClick={handleSend}
-                    className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-20 rounded-none text-[11px] font-black uppercase tracking-[0.5em] group"
+                    className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-20 rounded-[1.2rem] text-[11px] font-black uppercase tracking-[0.5em] group shadow-lg"
                   >
                     <span>Launch WhatsApp</span>
-                    <Send size={14} className="ml-3 group-hover:translate-x-1 transition-transform" />
+                    <Send size={16} className="ml-3 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${isAutoAdvanceEnabled ? 'bg-green-500 animate-pulse' : 'bg-gray-700'}`} />
-                      <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Auto-Advance Active</span>
+                      <div className={`w-2 h-2 rounded-full ${isAutoAdvanceEnabled ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'}`} />
+                      <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Auto-Advance Active</span>
                     </div>
                     <button 
                       onClick={() => setIsAutoAdvanceEnabled(!isAutoAdvanceEnabled)}
@@ -136,24 +136,24 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
                 <CheckCircle2 className="text-green-500 w-10 h-10" />
               </div>
               <div>
-                <h4 className="text-2xl text-white font-serif italic mb-2">Orchestration Complete</h4>
-                <p className="text-gray-500 text-sm font-light">All active guests have been dispatched.</p>
+                <h4 className="text-2xl text-foreground font-serif italic mb-2">Orchestration Complete</h4>
+                <p className="text-muted-foreground text-sm font-light">All active guests have been dispatched.</p>
               </div>
-              <Button onClick={onClose} variant="outline" className="border-white/10 text-white rounded-none w-full py-8 text-[10px] font-black uppercase tracking-widest">
+              <Button onClick={onClose} variant="outline" className="border-border text-foreground rounded-[1.2rem] w-full py-8 text-[11px] font-black uppercase tracking-widest hover:bg-muted">
                 Return to Dashboard
               </Button>
             </div>
           )}
         </div>
 
-        <div className="bg-white/[0.02] p-6 flex items-center justify-center gap-6">
-           <div className="flex items-center gap-2 text-gray-600">
-              <Smartphone size={12} />
+        <div className="bg-muted/20 p-6 flex items-center justify-center gap-6 border-t border-border">
+           <div className="flex items-center gap-2 text-muted-foreground">
+              <Smartphone size={14} />
               <span className="text-[8px] font-black uppercase tracking-widest">Native Protocol Optimized</span>
            </div>
-           <div className="w-px h-3 bg-white/10" />
-           <div className="flex items-center gap-2 text-gray-600">
-              <Zap size={12} />
+           <div className="w-px h-3 bg-border" />
+           <div className="flex items-center gap-2 text-muted-foreground">
+              <Zap size={14} />
               <span className="text-[8px] font-black uppercase tracking-widest">Staccato Flow</span>
            </div>
         </div>
