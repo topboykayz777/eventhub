@@ -24,7 +24,7 @@ const InfoButton = ({ text }: { text: string }) => (
       <TooltipTrigger asChild>
         <button 
           type="button" 
-          className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-primary transition-all active:scale-95"
+          className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all active:scale-95"
           onClick={(e) => e.stopPropagation()}
         >
           <Info size={14} className="opacity-70" />
@@ -74,9 +74,10 @@ const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <div className="lg:col-span-4 w-full">
-      <div className="relative aspect-[4/5] w-full overflow-hidden border border-border group rounded-[2.5rem] md:rounded-[3rem] bg-black">
+      <div className="relative aspect-[4/5] w-full overflow-hidden border border-border group rounded-[2.5rem] md:rounded-[3rem] bg-black shadow-lg">
         {isVideo(event.photo_url) ? (
           <video 
+            key={event.photo_url}
             src={event.photo_url} 
             className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'grayscale group-hover:grayscale-0'} transition-all duration-1000 group-hover:scale-105 pointer-events-none`}
             muted
@@ -91,11 +92,11 @@ const EventCard = ({ event }: EventCardProps) => {
             alt={event.event_name}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
         
         <div className="absolute top-6 right-6 flex flex-col gap-2 items-end">
           {isFinished ? (
-            <span className="bg-gray-500 text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-widest flex items-center gap-1 rounded-full backdrop-blur-md">
+            <span className="bg-gray-500/80 backdrop-blur-md text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-widest flex items-center gap-1 rounded-full border border-white/10">
               <CheckCircle2 size={10} /> Concluded
             </span>
           ) : event.is_paid ? (
@@ -113,7 +114,7 @@ const EventCard = ({ event }: EventCardProps) => {
 
         <div className="absolute bottom-8 left-8 right-8">
           <h2 className="text-3xl font-serif italic text-white mb-4 line-clamp-2 leading-tight">{event.event_name}</h2>
-          <div className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
+          <div className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">
             <div className="flex items-center gap-2"><Calendar className="w-3 h-3 text-[#D4AF37] shrink-0" /> {new Date(event.event_date).toLocaleDateString()}</div>
             <div className="flex items-center gap-2"><MapPin className="w-3 h-3 text-[#D4AF37] shrink-0" /> <span className="truncate">{event.venue}</span></div>
           </div>
@@ -126,7 +127,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={() => navigate(`/edit-event/${event.id}`)} 
           className="w-full rounded-2xl border-border bg-card text-foreground text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-muted transition-all group"
         >
-          <Edit className="w-3 h-3 mr-2 shrink-0 opacity-60 group-hover:opacity-100" /> Edit Event Page <InfoButton text="Refine your event's digital presence. Update the title, date, and venue, or refresh your visual gallery with new cinematic portraits and captured moments. This is your primary orchestration suite." />
+          <Edit className="w-3 h-3 mr-2 shrink-0 opacity-60 group-hover:opacity-100" /> Edit Event Page <InfoButton text="Refine your event's digital presence. Update the title, date, and venue, or refresh your visual gallery with new cinematic portraits and captured moments." />
         </Button>
         
         <Button 
@@ -134,7 +135,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={() => window.open(`/event/${event.slug}`, '_blank')}
           className="w-full rounded-2xl border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] py-6 h-auto hover:bg-[#D4AF37]/10"
         >
-          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="Experience your event link exactly as your guests will. Preview the live animations, registration flows, and overall digital aesthetic across all mobile and desktop devices." />
+          <ExternalLink className="w-3 h-3 mr-2 shrink-0" /> Check Event Page <InfoButton text="Experience your event link exactly as your guests will. Preview the live animations, registration flows, and overall digital aesthetic." />
         </Button>
 
         <Button 
@@ -148,7 +149,7 @@ const EventCard = ({ event }: EventCardProps) => {
           }`}
         >
           <Power className="w-3 h-3 mr-2 shrink-0" />
-          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Bring your event back to life. This will reactivate the guest registry and restore all live features, allowing you to resume check-ins and receive digital sprays." : "Officially finalize your celebration to lock the guest registry and archive the experience. This will disable new sign-ups and mark the event as successfully orchestrated."} />
+          {isFinished ? 'Reopen Event' : 'Conclude Event'} <InfoButton text={isFinished ? "Bring your event back to life. This will reactivate the guest registry and restore all live features." : "Officially finalize your celebration to lock the guest registry and archive the experience."} />
         </Button>
       </div>
     </div>
