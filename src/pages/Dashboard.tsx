@@ -142,22 +142,22 @@ const Dashboard = () => {
               <AnimatePresence>
                 {expandedEvents.has(event.id) && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                    <div className="p-8 md:p-20 border-t border-border bg-background/50">
-                      <div className="grid lg:grid-cols-12 gap-12 md:gap-20">
+                    <div className="p-8 md:p-20 border-t border-border bg-background/50 flex flex-col items-center w-full">
+                      <div className="grid lg:grid-cols-12 gap-12 md:gap-20 w-full max-w-6xl items-start">
                         <div className="lg:col-span-4 flex justify-center w-full">
                            <EventCard event={event} />
                         </div>
-                        <div className="lg:col-span-8 w-full">
+                        <div className="lg:col-span-8 w-full flex flex-col items-center md:items-start">
                           <Tabs defaultValue="tools" className="w-full">
                             <TabsList className="bg-transparent border-b border-border w-full justify-center md:justify-start gap-8 md:gap-12 mb-12 h-auto p-0 flex-wrap">
                               <TabsTrigger value="tools" className="text-[10px] font-black uppercase tracking-[0.4em] pb-6 data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] text-foreground/50 transition-all">Concierge Tools</TabsTrigger>
                               <TabsTrigger value="guests" className="text-[10px] font-black uppercase tracking-[0.4em] pb-6 data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] text-foreground/50 transition-all">Guest Management</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="tools" className="outline-none">
+                            <TabsContent value="tools" className="outline-none w-full">
                               <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
-                            <TabsContent value="guests" className="outline-none space-y-12">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <TabsContent value="guests" className="outline-none space-y-12 w-full">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
                                 <div className="bg-card border border-border p-8 md:p-10 rounded-[2rem] shadow-sm flex flex-col justify-center items-center md:items-start text-center md:text-left">
                                   <div className="flex items-center mb-4">
                                     <Users className="text-[#D4AF37] w-5 h-5 mr-3" />
@@ -176,8 +176,8 @@ const Dashboard = () => {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="relative group">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                                <div className="relative group w-full">
                                   <button onClick={() => navigate(`/guests/${event.id}`)} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] px-6">
                                     <Users className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Rsvp'd Guests</span>
@@ -185,7 +185,7 @@ const Dashboard = () => {
                                   <div className="absolute top-4 right-4"><InfoButton text="Open the full guest archive. Manage seating charts, search names, and export your vibe lists." /></div>
                                 </div>
 
-                                <div className="relative group">
+                                <div className="relative group w-full">
                                   <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] px-6">
                                     <ScanLine className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Scan QR Pass</span>
