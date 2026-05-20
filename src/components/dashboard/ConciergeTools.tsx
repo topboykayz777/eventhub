@@ -26,7 +26,7 @@ const TooltipWrapper = ({ children, text }: { children: React.ReactNode, text: s
       <TooltipTrigger asChild>
         {children}
       </TooltipTrigger>
-      <TooltipContent className="bg-[#1a1a1a] border-[#D4AF37]/20 text-white text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
+      <TooltipContent className="bg-popover border-border text-foreground text-[11px] font-medium p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
         {text}
       </TooltipContent>
     </Tooltip>
@@ -91,25 +91,25 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
       <Dialog>
         <TooltipWrapper text="View and save a high-quality picture of your invitation to share on your WhatsApp status or groups.">
           <DialogTrigger asChild>
-            <button className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+            <button className="bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-secondary/50 transition-all group rounded-[2rem] shadow-sm">
               <ImageIcon className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Digital Invite</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Digital Invite</span>
             </button>
           </DialogTrigger>
         </TooltipWrapper>
-        <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-lg w-[95vw] p-0 overflow-hidden rounded-[3rem]">
+        <DialogContent className="bg-popover border-border text-foreground max-w-lg w-[95vw] p-0 overflow-hidden rounded-[3rem] shadow-2xl">
           <div className="relative h-full max-h-[90vh] flex flex-col">
-            <DialogHeader className="p-8 border-b border-white/5 shrink-0">
+            <DialogHeader className="p-8 border-b border-border shrink-0">
               <DialogTitle className="text-2xl font-serif italic">Your Digital Invitation</DialogTitle>
             </DialogHeader>
             <ScrollArea className="flex-1 p-8">
               <div className="pb-12 flex justify-center"><DigitalInvite ref={inviteRef} event={event} /></div>
             </ScrollArea>
-            <div className="p-8 border-t border-white/5 bg-black/40 shrink-0 flex gap-4">
-              <button onClick={handleDownloadInvite} disabled={isDownloading} className="flex-1 py-5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2">
+            <div className="p-8 border-t border-border bg-secondary/50 shrink-0 flex gap-4">
+              <button onClick={handleDownloadInvite} disabled={isDownloading} className="flex-1 py-5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 shadow-lg">
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={14} />} {isDownloading ? 'Processing...' : 'Save to Gallery'}
               </button>
-              <button onClick={() => handleCopyLink()} className="flex-1 py-5 bg-white/5 text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 border border-white/5 hover:bg-white/10 transition-all">
+              <button onClick={() => handleCopyLink()} className="flex-1 py-5 bg-card text-foreground text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 border border-border hover:bg-secondary transition-all">
                 <Copy size={14} className="text-[#D4AF37]" /> {isCopying ? 'Copied' : 'Copy Link'}
               </button>
             </div>
@@ -118,21 +118,21 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
       </Dialog>
 
       <TooltipWrapper text="Open your financial vault to see guest gifts and manage your event budget.">
-        <button onClick={() => navigate(`/budget/${event.id}`)} className="bg-white/5 border border-white/5 h-40 flex flex-col items-center justify-center gap-6 hover:bg-white/10 transition-all group rounded-[2rem]">
+        <button onClick={() => navigate(`/budget/${event.id}`)} className="bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-secondary/50 transition-all group rounded-[2rem] shadow-sm">
           <Wallet className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Financial Suite</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Financial Suite</span>
         </button>
       </TooltipWrapper>
 
       <TooltipWrapper text="Launch the live screen to show on a TV. It displays guest arrivals and gift alerts in real-time as they happen.">
-        <button onClick={handleVibeClick} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${isLive ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-black/20 border-white/5 opacity-50 cursor-not-allowed'}`}>
-          {isLive ? <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" /> : <Lock className="w-8 h-8 text-gray-600" />}
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Vibe Screen</span>
+        <button onClick={handleVibeClick} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] shadow-sm ${isLive ? 'bg-card border-border hover:bg-secondary/50' : 'bg-secondary/50 border-border opacity-50 cursor-not-allowed'}`}>
+          {isLive ? <Monitor className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" /> : <Lock className="w-8 h-8 text-muted-foreground" />}
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Vibe Screen</span>
         </button>
       </TooltipWrapper>
 
       <TooltipWrapper text={hasFullAccess ? "Dispatch official invitations and digital passes to your entire guest list via WhatsApp instantly." : "Unlock the high-speed WhatsApp dispatcher to reach all your guests at once."}>
-        <button onClick={hasFullAccess ? onSendWhatsAppBlast : () => navigate(`/payment/${event.id}?upgrade=Pro`)} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] ${hasFullAccess ? 'bg-[#25D366]/10 border-[#25D366]/20 hover:bg-[#25D366]/20' : 'bg-[#D4AF37]/10 border-[#D4AF37]/20 hover:bg-[#D4AF37]/20'}`}>
+        <button onClick={hasFullAccess ? onSendWhatsAppBlast : () => navigate(`/payment/${event.id}?upgrade=Pro`)} className={`h-40 flex flex-col items-center justify-center gap-6 transition-all group border rounded-[2rem] shadow-sm ${hasFullAccess ? 'bg-[#25D366]/10 border-[#25D366]/20 hover:bg-[#25D366]/20' : 'bg-[#D4AF37]/10 border-[#D4AF37]/20 hover:bg-[#D4AF37]/20'}`}>
           <Send className={`w-8 h-8 group-hover:scale-110 transition-transform ${hasFullAccess ? 'text-[#25D366]' : 'text-[#D4AF37]'}`} />
           <span className={`text-[10px] font-bold uppercase tracking-[0.3em] ${hasFullAccess ? 'text-[#25D366]' : 'text-[#D4AF37]'}`}>
             {hasFullAccess ? 'WhatsApp Blast' : 'Upgrade to Pro'}

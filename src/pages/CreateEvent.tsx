@@ -13,7 +13,7 @@ import {
   Info, Sparkles, Calendar, Type, Image as ImageIcon, 
   Upload, X, Crown, Gem, Sun, Moon, Flower2, Waves, Heart, 
   Landmark, Star, PenTool, Navigation, Camera, Ghost, Tent, 
-  Trees as Palmtree, Cherry, ZapIcon, Palette, Loader2, ArrowRight
+  Trees as Palmtree, Cherry, ZapIcon, Palette, Loader2, ArrowRight, ArrowLeft
 } from 'lucide-react';
 import { 
   Tooltip, 
@@ -146,6 +146,13 @@ const CreateEvent = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-24"
         >
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)} 
+            className="mb-8 text-muted-foreground hover:text-[#D4AF37] p-0 flex items-center gap-2 group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
+          </Button>
           <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase mb-4 block">The Studio</span>
           <h1 className="text-4xl md:text-7xl font-serif italic leading-tight">
             Create Your <span className="text-[#D4AF37]">Event</span>
@@ -163,7 +170,6 @@ const CreateEvent = () => {
             viewport={{ once: true }}
             className="bg-card border border-border p-8 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#D4AF37]/10 transition-colors" />
             <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">01</span>
@@ -179,7 +185,7 @@ const CreateEvent = () => {
                 <input 
                   required 
                   placeholder="The Balogun Gala..." 
-                  className="h-16 w-full px-0 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30" 
+                  className="h-16 w-full px-0 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30 text-foreground" 
                   value={formData.eventName} 
                   onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} 
                 />
@@ -373,7 +379,6 @@ const CreateEvent = () => {
             </ScrollArea>
           </motion.div>
 
-          {/* Action Area */}
           <div className="pt-20 text-center">
             <motion.div
               whileHover={{ scale: 1.01 }}
@@ -382,7 +387,7 @@ const CreateEvent = () => {
               <Button 
                 type="submit" 
                 disabled={loading || uploading} 
-                className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[14px] font-black tracking-[0.5em] uppercase transition-all duration-500 shadow-[0_20px_80px_rgba(212,175,55,0.2)] group relative overflow-hidden"
+                className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[14px] font-black tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden"
               >
                 {loading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />

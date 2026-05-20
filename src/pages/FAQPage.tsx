@@ -26,8 +26,11 @@ import {
   Monitor,
   Heart,
   Send,
-  QrCode
+  QrCode,
+  ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const steps = [
   {
@@ -115,12 +118,21 @@ const faqSections = [
 ];
 
 const FAQPage = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       
       <div className="max-w-7xl mx-auto py-24 md:py-40 px-6">
         <div className="text-center mb-32">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)} 
+            className="mb-8 text-muted-foreground hover:text-[#D4AF37] p-0"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          </Button>
           <motion.span 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -135,16 +147,16 @@ const FAQPage = () => {
           >
             How to <span className="text-[#D4AF37]">Orchestrate</span>
           </motion.h1>
-          <p className="text-gray-500 max-w-2xl mx-auto font-light tracking-wide">
+          <p className="text-muted-foreground max-w-2xl mx-auto font-light tracking-wide">
             The definitive guide to orchestrating your celebration on the EventHub platform.
           </p>
         </div>
 
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
-            <div className="h-px flex-1 bg-white/5" />
+            <div className="h-px flex-1 bg-border" />
             <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 8-Step Journey</h2>
-            <div className="h-px flex-1 bg-white/5" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-16">
@@ -157,11 +169,11 @@ const FAQPage = () => {
                 transition={{ delay: i * 0.1 }}
                 className="text-center group"
               >
-                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500">
+                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500 border border-border/50">
                   <step.icon className="text-[#D4AF37] w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed font-light px-4">
+                <p className="text-muted-foreground text-sm leading-relaxed font-light px-4">
                   {step.desc}
                 </p>
               </motion.div>
@@ -171,9 +183,9 @@ const FAQPage = () => {
 
         <section className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-16">
-            <div className="h-px flex-1 bg-white/5" />
+            <div className="h-px flex-1 bg-border" />
             <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">Frequently Asked Questions</h2>
-            <div className="h-px flex-1 bg-white/5" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <div className="space-y-20">
@@ -188,14 +200,14 @@ const FAQPage = () => {
                     <AccordionItem 
                       key={i}                       
                       value={`${idx}-${i}`} 
-                      className="border-white/5 bg-white/[0.02] px-8 rounded-3xl overflow-hidden hover:bg-white/[0.04] transition-all"
+                      className="border-border bg-card px-8 rounded-3xl overflow-hidden hover:bg-secondary/50 transition-all shadow-sm"
                     >
                       <AccordionTrigger className="py-6 hover:no-underline text-left group">
                         <span className="text-lg font-light tracking-wide group-hover:text-[#D4AF37] transition-colors">
                           {item.q}
                         </span>
                       </AccordionTrigger>
-                      <AccordionContent className="pb-6 text-gray-400 leading-relaxed font-light text-base">
+                      <AccordionContent className="pb-6 text-muted-foreground leading-relaxed font-light text-base">
                         {item.a}
                       </AccordionContent>
                     </AccordionItem>
@@ -209,14 +221,14 @@ const FAQPage = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="mt-40 text-center p-20 rounded-[4rem] bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5"
+          className="mt-40 text-center p-20 rounded-[4rem] bg-gradient-to-b from-secondary/30 to-transparent border border-border"
         >
           <Zap className="text-[#D4AF37] w-12 h-12 mx-auto mb-8 animate-pulse" />
           <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Need more assistance?</h2>
-          <p className="text-gray-500 mb-10 uppercase tracking-widest text-[10px] font-bold">Our customer concierge is available 24/7</p>
+          <p className="text-muted-foreground mb-10 uppercase tracking-widest text-[10px] font-bold">Our customer concierge is available 24/7</p>
           <button 
             onClick={() => window.location.href = '/support'}
-            className="bg-[#D4AF37] text-black px-12 py-8 rounded-none text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#B8860B] transition-all duration-500"
+            className="bg-[#D4AF37] text-black px-12 py-8 rounded-none text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#B8860B] transition-all duration-500 shadow-lg"
           >
             Contact Support
           </button>

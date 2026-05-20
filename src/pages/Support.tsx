@@ -33,7 +33,7 @@ const Support = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       
       <div className="max-w-3xl mx-auto py-24 md:py-40 px-6">
@@ -45,15 +45,15 @@ const Support = () => {
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)} 
-            className="mb-8 text-gray-500 hover:text-[#D4AF37] p-0"
+            className="mb-8 text-muted-foreground hover:text-[#D4AF37] p-0"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
-          <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8">
+          <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8 border border-[#D4AF37]/20">
             <Headphones className="text-[#D4AF37] w-10 h-10" />
           </div>
           <h1 className="text-4xl md:text-6xl font-serif italic mb-6">Customer <span className="text-[#D4AF37]">Concierge</span></h1>
-          <p className="text-gray-400 text-lg font-light tracking-wide">
+          <p className="text-muted-foreground text-lg font-light tracking-wide">
             How can we assist you in orchestrating your celebration?
           </p>
         </motion.div>
@@ -62,26 +62,26 @@ const Support = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/5 backdrop-blur-xl p-8 md:p-16 rounded-[3rem] border border-white/10 shadow-2xl"
+          className="bg-card border border-border p-8 md:p-16 rounded-[3rem] shadow-2xl"
         >
           <form onSubmit={handleSubmit} className="space-y-10">
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Subject of Inquiry</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Subject of Inquiry</Label>
               <Input 
                 required 
                 placeholder="e.g. Payment Issue, Feature Request"
-                className="h-16 bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
+                className="h-16 bg-secondary border-border rounded-none focus:border-[#D4AF37]/50 text-lg font-light"
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               />
             </div>
 
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Detailed Message</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Detailed Message</Label>
               <Textarea 
                 required 
                 placeholder="Please describe your request in detail..."
-                className="min-h-[200px] bg-white/5 border-white/10 rounded-none focus:border-[#D4AF37]/50 text-lg font-light resize-none"
+                className="min-h-[200px] bg-secondary border-border rounded-none focus:border-[#D4AF37]/50 text-lg font-light resize-none px-6 py-6"
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               />
@@ -89,17 +89,17 @@ const Support = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500"
+              className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-lg"
             >
               Send Request <Send className="ml-2 w-4 h-4" />
             </Button>
 
-            <div className="flex items-center justify-center gap-6 pt-6 border-t border-white/5">
-              <div className="flex items-center gap-2 text-gray-500">
+            <div className="flex items-center justify-center gap-6 pt-6 border-t border-border">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
                 <span className="text-[8px] font-bold uppercase tracking-widest">Priority Support</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-500">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <MessageSquare className="w-4 h-4 text-[#D4AF37]" />
                 <span className="text-[8px] font-bold uppercase tracking-widest">24/7 Response</span>
               </div>
