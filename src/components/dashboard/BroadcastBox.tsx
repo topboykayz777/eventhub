@@ -35,37 +35,37 @@ const BroadcastBox = ({ eventId, currentMessage }: BroadcastBoxProps) => {
   };
 
   return (
-    <div className="relative group">
+    <div className="relative group w-full">
       <Dialog>
         <DialogTrigger asChild>
-          <button className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-secondary/50 transition-all group rounded-[2rem] shadow-sm">
+          <button className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-secondary/50 transition-all group rounded-[2rem] shadow-sm text-center px-4">
             <MessageSquare className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Live Broadcast</span>
           </button>
         </DialogTrigger>
         <DialogContent className="bg-popover border-border text-foreground max-w-lg w-[95vw] rounded-[3rem] p-10 shadow-2xl">
-          <DialogHeader>
+          <DialogHeader className="text-center flex flex-col items-center">
             <DialogTitle className="text-3xl font-serif italic mb-2">The Broadcast</DialogTitle>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-8">Page-Top Announcement</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-8 text-center">Page-Top Announcement</p>
           </DialogHeader>
           <div className="space-y-8">
-            <div className="space-y-4">
+            <div className="space-y-4 text-center">
               <p className="text-xs text-muted-foreground leading-relaxed italic">
                 "Your message will appear as a scrolling banner or bold header on your live event page."
               </p>
               <Input 
                 placeholder="e.g. The Red Carpet is now open!" 
-                className="bg-secondary border-border h-16 rounded-2xl text-lg font-light focus-visible:ring-[#D4AF37]/30"
+                className="bg-secondary border-border h-16 rounded-2xl text-lg font-light focus-visible:ring-[#D4AF37]/30 text-center"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
             </div>
             <div className="flex gap-4">
-              <DialogClose asChild>
+              <DialogClose asChild className="w-full">
                 <Button 
                   onClick={handleUpdateMessage}
                   disabled={loading || !message.trim()}
-                  className="flex-1 h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg"
+                  className="w-full h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg flex items-center justify-center"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update Event Page'}
                 </Button>
