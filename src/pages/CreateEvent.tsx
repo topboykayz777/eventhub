@@ -144,7 +144,7 @@ const CreateEvent = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-24"
+          className="mb-24 text-center flex flex-col items-center"
         >
           <Button 
             variant="ghost" 
@@ -170,7 +170,7 @@ const CreateEvent = () => {
             viewport={{ once: true }}
             className="bg-card border border-border p-8 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group"
           >
-            <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
+            <div className="flex flex-col items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">01</span>
               </div>
@@ -178,28 +178,28 @@ const CreateEvent = () => {
             </div>
             
             <div className="grid md:grid-cols-2 gap-12">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+              <div className="space-y-3 flex flex-col items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                   Event Title <InfoButton text="Enter the name of your event. This title will be the headline on your public page and printed on every guest's digital pass." />
                 </Label>
                 <input 
                   required 
                   placeholder="The Balogun Gala..." 
-                  className="h-16 w-full px-0 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30 text-foreground" 
+                  className="h-16 w-full px-0 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30 text-foreground text-center placeholder:text-center" 
                   value={formData.eventName} 
                   onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} 
                 />
               </div>
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+              <div className="space-y-3 flex flex-col items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                   Access Level <InfoButton text="Beta is our all-access pass. It unlocks everything from the live Vibe Screen for your ballroom to the industrial WhatsApp dispatcher." />
                 </Label>
                 <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="beta">
-                  <SelectTrigger className="h-16 bg-secondary border border-border rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6">
-                    <SelectValue />
+                  <SelectTrigger className="h-16 bg-secondary border border-border rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6 flex justify-center">
+                    <SelectValue className="text-center" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border text-foreground rounded-2xl">
-                    <SelectItem value="beta">Free Beta Access (Full Suite)</SelectItem>
+                    <SelectItem value="beta" className="justify-center">Free Beta Access (Full Suite)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -213,7 +213,7 @@ const CreateEvent = () => {
             viewport={{ once: true }}
             className="bg-card border border-border p-8 md:p-16 rounded-[3rem] shadow-2xl relative"
           >
-            <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
+            <div className="flex flex-col items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">02</span>
               </div>
@@ -221,41 +221,41 @@ const CreateEvent = () => {
             </div>
             
             <div className="grid md:grid-cols-2 gap-12 mb-12">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+              <div className="space-y-3 flex flex-col items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                   Date & Time <InfoButton text="Specify the start time. A live countdown will appear on your page, building anticipation for your guests until the moment you begin." />
                 </Label>
                 <input 
                   type="datetime-local" 
                   required 
-                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground" 
+                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground text-center" 
                   value={formData.eventDate} 
                   onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} 
                 />
               </div>
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+              <div className="space-y-3 flex flex-col items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                   Venue Name <InfoButton text="Where is the magic happening? This address will be clearly displayed for all guests to see on their invitations." />
                 </Label>
                 <input 
                   required 
                   placeholder="Eko Hotel & Suites..." 
-                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40" 
+                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40 text-center placeholder:text-center" 
                   value={formData.venue} 
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })} 
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+            <div className="space-y-3 flex flex-col items-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                 Location GPS <InfoButton text="Copy the 'Share' link from Google Maps and paste it here. Guests will see a 'Navigate' button for one-tap directions to the gate." />
               </Label>
-              <div className="relative">
+              <div className="relative w-full max-w-lg">
                 <Navigation className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4 opacity-50" />
                 <input 
                   placeholder="Paste Google Maps 'Share' link here..." 
-                  className="h-16 w-full pl-16 px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-sm font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40" 
+                  className="h-16 w-full pl-16 pr-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-sm font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40 text-center placeholder:text-center" 
                   value={formData.venue_map_url} 
                   onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} 
                 />
@@ -270,15 +270,15 @@ const CreateEvent = () => {
             viewport={{ once: true }}
             className="bg-card border border-border p-8 md:p-16 rounded-[3.5rem] shadow-2xl relative"
           >
-            <div className="flex items-center gap-4 border-b border-border pb-8 mb-12">
+            <div className="flex flex-col items-center gap-4 border-b border-border pb-8 mb-12">
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">03</span>
               </div>
               <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Presentation</span>
             </div>
             
-            <div className="space-y-8">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+            <div className="space-y-8 flex flex-col items-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                 Cover Portrait <InfoButton text="Choose a stunning image or a 15-second video. This cinematic backdrop is the first thing guests see when they open your link." />
               </Label>
               {formData.photo_url ? (
@@ -293,7 +293,7 @@ const CreateEvent = () => {
                   </button>
                 </div>
               ) : (
-                <Label htmlFor="photo-upload" className="cursor-pointer">
+                <Label htmlFor="photo-upload" className="cursor-pointer w-full">
                   <div className="h-72 border-2 border-dashed border-border flex flex-col items-center justify-center gap-6 hover:bg-secondary transition-all bg-secondary/50 group rounded-[2.5rem]">
                     {uploading ? (
                       <div className="flex flex-col items-center gap-4">
@@ -314,13 +314,13 @@ const CreateEvent = () => {
               <input id="photo-upload" type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
             </div>
 
-            <div className="mt-12 space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+            <div className="mt-12 space-y-3 flex flex-col items-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
                 Guest Directive <InfoButton text="Share a personal welcome or dress code instructions. This appears in the 'Particulars' section of your page." />
               </Label>
               <Textarea 
                 placeholder="Share dress code, parking info, or a warm welcome..." 
-                className="min-h-[180px] bg-secondary border border-border rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 leading-relaxed outline-none transition-all text-foreground placeholder:text-muted-foreground/30" 
+                className="min-h-[180px] bg-secondary border border-border rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 leading-relaxed outline-none transition-all text-foreground placeholder:text-muted-foreground/30 text-center placeholder:text-center" 
                 value={formData.message} 
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
               />
@@ -334,14 +334,14 @@ const CreateEvent = () => {
             viewport={{ once: true }}
             className="bg-card border border-border p-8 md:p-16 rounded-[3.5rem] shadow-2xl relative overflow-hidden"
           >
-            <div className="flex items-center justify-between border-b border-border pb-8 mb-12">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center border-b border-border pb-8 mb-12">
+              <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                   <span className="text-[#D4AF37] font-black text-xs">04</span>
                 </div>
                 <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Aesthetic</span>
               </div>
-              <div className="flex items-center text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+              <div className="flex items-center text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">
                 Swipe to explore <InfoButton text="Select a visual DNA. Each theme changes the typography, color palette, and atmosphere of your entire event page to match your prestige level." />
               </div>
             </div>
@@ -353,14 +353,14 @@ const CreateEvent = () => {
                     key={t.id} 
                     type="button" 
                     onClick={() => setFormData({ ...formData, theme: t.id })} 
-                    className={`relative w-64 h-48 shrink-0 border-2 transition-all text-left overflow-hidden group rounded-[2.5rem] ${
+                    className={`relative w-64 h-48 shrink-0 border-2 transition-all text-center overflow-hidden group rounded-[2.5rem] ${
                       formData.theme === t.id ? 'border-[#D4AF37] scale-[1.05] shadow-[0_0_50px_rgba(212,175,55,0.3)]' : 'border-border opacity-60 hover:opacity-100 hover:border-[#D4AF37]/30'
                     }`}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${t.color}`} />
-                    <div className="relative z-10 p-8 flex flex-col justify-between h-full">
+                    <div className="relative z-10 p-8 flex flex-col justify-between items-center h-full">
                       <t.icon className={`w-10 h-10 transition-transform duration-500 group-hover:scale-125 ${t.light ? 'text-black' : 'text-white'}`} />
-                      <div>
+                      <div className="flex flex-col items-center">
                         <span className={`text-[11px] font-black uppercase tracking-[0.2em] block mb-1 ${t.light ? 'text-black' : 'text-white'}`}>{t.label}</span>
                         {formData.theme === t.id && (
                           <motion.span 
@@ -379,10 +379,11 @@ const CreateEvent = () => {
             </ScrollArea>
           </motion.div>
 
-          <div className="pt-20 text-center">
+          <div className="pt-20 text-center flex flex-col items-center">
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
+              className="w-full"
             >
               <Button 
                 type="submit" 
