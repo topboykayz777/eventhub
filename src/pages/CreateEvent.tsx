@@ -4,40 +4,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import InfoButton from '../components/InfoButton';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
 import { 
-  Info, Sparkles, Calendar, Type, Image as ImageIcon, 
+  Sparkles, Calendar, Type, Image as ImageIcon, 
   Upload, X, Crown, Gem, Sun, Moon, Flower2, Waves, Heart, 
   Landmark, Star, PenTool, Navigation, Camera, Ghost, Tent, 
   Trees as Palmtree, Cherry, ZapIcon, Palette, Loader2, ArrowRight, ArrowLeft
 } from 'lucide-react';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { motion } from 'framer-motion';
-
-const InfoButton = ({ text }: { text: string }) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button type="button" className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all hover:scale-110">
-          <Info size={14} className="opacity-60" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent className="bg-popover border-border text-foreground text-[11px] font-medium leading-relaxed p-4 max-w-[240px] shadow-2xl rounded-2xl z-[200]">
-        {text}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -154,10 +134,10 @@ const CreateEvent = () => {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
           </Button>
           <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase mb-4 block">The Studio</span>
-          <h1 className="text-4xl md:text-7xl font-serif italic leading-tight">
+          <h1 className="text-4xl md:text-7xl font-serif italic leading-tight text-center">
             Create Your <span className="text-[#D4AF37]">Event</span>
           </h1>
-          <p className="text-muted-foreground text-sm font-light mt-4 max-w-md leading-relaxed">
+          <p className="text-muted-foreground text-sm font-light mt-4 max-w-md leading-relaxed text-center">
             Fill in the particulars of your celebration to begin the digital orchestration.
           </p>
         </motion.div>
@@ -174,24 +154,24 @@ const CreateEvent = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">01</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Identity</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Identity</span>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                   Event Title <InfoButton text="Enter the name of your event. This title will be the headline on your public page and printed on every guest's digital pass." />
                 </Label>
                 <input 
                   required 
                   placeholder="The Balogun Gala..." 
-                  className="h-16 w-full px-0 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30 text-foreground text-center placeholder:text-center" 
+                  className="h-16 w-full px-4 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30 text-foreground text-center placeholder:text-center" 
                   value={formData.eventName} 
                   onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} 
                 />
               </div>
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                   Access Level <InfoButton text="Beta is our all-access pass. It unlocks everything from the live Vibe Screen for your ballroom to the industrial WhatsApp dispatcher." />
                 </Label>
                 <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="beta">
@@ -217,12 +197,12 @@ const CreateEvent = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">02</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Logistics</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Logistics</span>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12 mb-12">
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                   Date & Time <InfoButton text="Specify the start time. A live countdown will appear on your page, building anticipation for your guests until the moment you begin." />
                 </Label>
                 <input 
@@ -234,7 +214,7 @@ const CreateEvent = () => {
                 />
               </div>
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                   Venue Name <InfoButton text="Where is the magic happening? This address will be clearly displayed for all guests to see on their invitations." />
                 </Label>
                 <input 
@@ -248,7 +228,7 @@ const CreateEvent = () => {
             </div>
 
             <div className="space-y-3 flex flex-col items-center">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                 Location GPS <InfoButton text="Copy the 'Share' link from Google Maps and paste it here. Guests will see a 'Navigate' button for one-tap directions to the gate." />
               </Label>
               <div className="relative w-full max-w-lg">
@@ -274,11 +254,11 @@ const CreateEvent = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">03</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Presentation</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Presentation</span>
             </div>
             
             <div className="space-y-8 flex flex-col items-center">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                 Cover Portrait <InfoButton text="Choose a stunning image or a 15-second video. This cinematic backdrop is the first thing guests see when they open your link." />
               </Label>
               {formData.photo_url ? (
@@ -315,7 +295,7 @@ const CreateEvent = () => {
             </div>
 
             <div className="mt-12 space-y-3 flex flex-col items-center">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                 Guest Directive <InfoButton text="Share a personal welcome or dress code instructions. This appears in the 'Particulars' section of your page." />
               </Label>
               <Textarea 
@@ -339,7 +319,7 @@ const CreateEvent = () => {
                 <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                   <span className="text-[#D4AF37] font-black text-xs">04</span>
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground">The Aesthetic</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Aesthetic</span>
               </div>
               <div className="flex items-center text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">
                 Swipe to explore <InfoButton text="Select a visual DNA. Each theme changes the typography, color palette, and atmosphere of your entire event page to match your prestige level." />
@@ -388,15 +368,15 @@ const CreateEvent = () => {
               <Button 
                 type="submit" 
                 disabled={loading || uploading} 
-                className="w-full flex items-center justify-center bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[14px] font-black tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden"
+                className="w-full flex items-center justify-center bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[13px] md:text-[14px] font-black tracking-[0.4em] md:tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group relative overflow-hidden px-8"
               >
                 {loading ? (
                   <div className="flex items-center justify-center w-full">
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (
-                  <span className="flex items-center justify-center gap-4 relative z-10 w-full">
-                    Initialize Orchestration <ArrowRight className="w-6 h-6 group-hover:translate-x-4 transition-transform" />
+                  <span className="flex items-center justify-center gap-4 relative z-10 w-full text-center">
+                    Initialize Orchestration <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-4 transition-transform shrink-0" />
                   </span>
                 )}
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
