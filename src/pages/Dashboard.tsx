@@ -94,10 +94,26 @@ const Dashboard = () => {
     rsvpId = rsvpId.split('?')[0].split('#')[0];
 
     try {
-      const { data, error } = await supabase.from('rsvps').update(isPlusOne ? { plus_one_checked_in: true } : { checked_in: true }).eq('id', rsvpId).select('guest_name').maybeSingle();
-      if (error || !data) { showError("Pass invalid."); } 
-      else { showSuccess(`${data.guest_name} verified.`); queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] }); }
-    } catch (err) { showError("Invalid pass."); }
+      const { data, error } = await supabase
+        .from('rsvps')
+        .update(isPlusOne ? { plus_one_checked_in: true } : { checked_in: true })
+        .eq('id', rsvpId)
+        .select('guest_name, plus_one_name')
+        .maybeSingle();
+
+      if (error || !data) { 
+        showError("Pass invalid."); 
+      } else { 
+        const checkInName = isPlusOne 
+          ? (data.plus_one_name || `${data.guest_name}'s Plus-One`)
+          : data.guest_name;
+          
+        showSuccess(`${checkInName} verified.`); 
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] }); 
+      }
+    } catch (err) { 
+      showError("Invalid pass."); 
+    }
   };
 
   if (sessionLoading || (isLoading && events.length === 0)) {
@@ -172,7 +188,7 @@ const Dashboard = () => {
                                   <div className="flex items-center mb-4">
                                     <Sparkles className="text-[#D4AF37] w-5 h-5 mr-3" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Active Suite</span>
-                                    <InfoButton text="Your currently active orchestration tier. Upgrading to Pro unlocks the Industrial WhatsApp Dispatcher." />
+                                    <InfoButton text="Your currently active orchestration tier. Your early entry badge unlocks the Industrial WhatsApp Dispatcher." />
                                   </div>
                                   <div className="text-3xl font-serif italic uppercase tracking-widest text-[#D4AF37]">{event.plan} Plan</div>
                                 </div>
