@@ -40,7 +40,8 @@ const Login = () => {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
       
-      <div className="max-w-lg mx-auto mt-8 md:mt-20 px-4 md:px-6 pb-12">
+      {/* Increased top padding (pt-28) to clear the fixed 20-unit navbar on mobile */}
+      <div className="max-w-lg mx-auto pt-28 md:pt-40 px-4 md:px-6 pb-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
