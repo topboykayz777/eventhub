@@ -75,7 +75,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* THE HOOK (The Friction) */}
+        {/* THE HOOK (The Problem) */}
         <div className="w-full bg-background">
            <TheHook />
         </div>

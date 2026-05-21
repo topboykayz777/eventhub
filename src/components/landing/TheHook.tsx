@@ -15,7 +15,7 @@ const TheHook = () => {
           className="space-y-16"
         >
           <div className="text-center">
-            <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.5em] mb-6 block">The Friction</span>
+            <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.5em] mb-6 block">The Problem</span>
             <h2 className="text-4xl md:text-7xl font-serif italic text-foreground leading-tight">
               Traditional Planning is <span className="text-muted-foreground line-through decoration-[#D4AF37]">Broken.</span>
             </h2>
