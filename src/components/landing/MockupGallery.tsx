@@ -18,11 +18,46 @@ import vibe2 from '@/assets/mockups/vibe-2.png';
 import vibe3 from '@/assets/mockups/vibe-3.png';
 
 const categories = [
-  { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, count: 3, images: [dashboard1, dashboard2, dashboard3] },
-  { id: 'vibe', label: 'Vibe Screen', icon: Monitor, count: 3, images: [vibe1, vibe2, vibe3] },
-  { id: 'events', label: 'Architecture', icon: Sparkles, count: 2, images: [event1, event2] },
-  { id: 'passes', label: 'Red Carpet', icon: Ticket, count: 2, images: [pass1, pass2] },
-  { id: 'ledger', label: 'Financial Vault', icon: Wallet, count: 1, images: [ledger] },
+  { 
+    id: 'dashboard', 
+    label: 'Command Center', 
+    icon: LayoutDashboard, 
+    count: 3, 
+    images: [dashboard1, dashboard2, dashboard3],
+    description: "Your elite logistical hub. Monitor real-time RSVPs, manage guest seating, and orchestrate every detail of your gathering from a single, high-fidelity professional interface."
+  },
+  { 
+    id: 'vibe', 
+    label: 'Vibe Screen', 
+    icon: Monitor, 
+    count: 3, 
+    images: [vibe1, vibe2, vibe3],
+    description: "The heartbeat of the ballroom. A cinematic, live feed of guest arrivals and digital gift alerts, engineered for seamless projection on high-resolution event displays."
+  },
+  { 
+    id: 'events', 
+    label: 'Architecture', 
+    icon: Sparkles, 
+    count: 2, 
+    images: [event1, event2],
+    description: "Design digital monuments. Select from 20+ prestige themes to create a bespoke landing page that serves as the official digital home for your luxury celebration."
+  },
+  { 
+    id: 'passes', 
+    label: 'Red Carpet', 
+    icon: Ticket, 
+    count: 2, 
+    images: [pass1, pass2],
+    description: "Seamless entry protocols. Every guest receives a secure, high-fidelity digital pass with unique QR verification for instant, professional check-in at the venue gates."
+  },
+  { 
+    id: 'ledger', 
+    label: 'Financial Vault', 
+    icon: Wallet, 
+    count: 1, 
+    images: [ledger],
+    description: "Precision wealth tracking. A secure, real-time ledger that verifies peer-to-peer digital sprays, allowing you to manage event income without the chaos of individual bank alerts."
+  },
 ];
 
 const MockupGallery = () => {
@@ -150,7 +185,7 @@ const MockupGallery = () => {
            <div className="flex items-center gap-4 text-center md:text-left">
               <Plus className="text-[#D4AF37] shrink-0" size={24} />
               <p className="text-white/60 text-xs md:text-base font-light leading-relaxed max-w-md">
-                Every tool in the suite is meticulously designed for high-stakes environments, optimized for both mobile precision and ballroom projection.
+                {activeCategory?.description}
               </p>
            </div>
            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">
