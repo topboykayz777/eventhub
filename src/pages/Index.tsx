@@ -145,12 +145,6 @@ const Index = () => {
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Twitter</span>
                 </a>
               </li>
-              <li>
-                <a href="https://instagram.com/eventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors justify-center md:justify-start">
-                  <Instagram size={18} className="text-[#D4AF37]" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Instagram</span>
-                </a>
-              </li>
             </ul>
           </div>
         </div>
