@@ -54,7 +54,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
   return (
     <div 
       ref={ref}
-      className={`w-[380px] ${style.bg} relative overflow-hidden shadow-2xl flex flex-col items-center p-5`}
+      className={`w-[340px] sm:w-[380px] ${style.bg} relative overflow-hidden shadow-2xl flex flex-col items-center p-5 mx-auto`}
       style={{ height: '580px' }}
     >
       {/* Background Image with Blur */}
@@ -65,22 +65,22 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
 
       {/* Glass Card Container */}
       <div 
-        className="relative z-10 w-full h-full flex flex-col items-center text-center p-8 rounded-[2.5rem] border backdrop-blur-3xl"
+        className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center p-8 rounded-[2.5rem] border backdrop-blur-3xl mx-auto"
         style={{ 
           backgroundColor: style.glass,
           borderColor: style.border
         }}
       >
         {/* Header */}
-        <div className="mb-6">
-          <div className="w-12 h-12 border-2 rotate-45 flex items-center justify-center mx-auto mb-4" style={{ borderColor: style.accent }}>
+        <div className="mb-6 flex flex-col items-center">
+          <div className="w-12 h-12 border-2 rotate-45 flex items-center justify-center mb-4" style={{ borderColor: style.accent }}>
             <span className="font-serif italic text-lg -rotate-45" style={{ color: style.accent }}>E</span>
           </div>
           <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-60" style={{ color: style.accent }}>Official Invitation</p>
         </div>
 
         {/* Event Title */}
-        <h1 className={`text-3xl font-serif italic mb-8 leading-tight px-2 ${style.text}`}>
+        <h1 className={`text-2xl sm:text-3xl font-serif italic mb-8 leading-tight px-2 ${style.text}`}>
           {event.event_name}
         </h1>
 
@@ -110,7 +110,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
         <div className="mt-auto pt-6 border-t w-full flex flex-col items-center" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
           <div className="bg-white p-3 rounded-2xl mb-4 shadow-xl">
             {qrImage ? (
-              <img src={qrImage} alt="QR Code" className="w-28 h-28" />
+              <img src={qrImage} alt="QR Code" className="w-24 h-24 sm:w-28 sm:h-28" />
             ) : (
               <QRCodeCanvas 
                 id="invite-qr-canvas"
@@ -127,7 +127,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
         </div>
 
         {/* Footer */}
-        <div className="mt-6 flex items-center gap-2 opacity-30">
+        <div className="mt-6 flex items-center gap-2 opacity-30 justify-center">
           <ShieldCheck size={10} style={{ color: style.accent }} />
           <span className={`text-[6px] font-black uppercase tracking-[0.4em] ${style.text}`}>
             Verified by EventHub NG
