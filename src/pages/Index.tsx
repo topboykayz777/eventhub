@@ -81,7 +81,7 @@ const Index = () => {
            <TheHook />
         </div>
 
-        {/* THE GUIDE (How It Works) - Positioned precisely as requested */}
+        {/* THE GUIDE (How It Works) */}
         <div className="w-full">
            <HowItWorks />
         </div>
@@ -97,13 +97,27 @@ const Index = () => {
         </div>
 
         {/* FINAL CALL TO ACTION */}
-        <section className="w-full py-32 md:py-60 px-6 bg-background relative overflow-hidden flex flex-col items-center">
-          <div className="absolute inset-0 bg-[#D4AF37]/5 blur-[150px] rounded-full -translate-y-1/2" />
+        <section className="w-full py-40 md:py-72 px-6 relative overflow-hidden flex flex-col items-center">
+          {/* BACKGROUND IMAGE OVERLAY */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80" 
+              alt="Luxury Grand Ballroom" 
+              className="w-full h-full object-cover grayscale-[30%] brightness-[0.2]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+          </div>
+
           <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center w-full">
-            <h2 className="text-5xl md:text-8xl lg:text-9xl font-serif italic text-foreground mb-8 md:mb-16 leading-tight text-center w-full">
+            <motion.h2 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="text-5xl md:text-8xl lg:text-9xl font-serif italic text-white mb-8 md:mb-16 leading-tight text-center w-full"
+            >
               Master Your <br /> <span className="text-[#D4AF37]">Craft</span>
-            </h2>
-            <p className="text-sm md:text-xl text-muted-foreground mb-12 md:mb-24 font-light tracking-[0.3em] md:tracking-[0.5em] uppercase max-w-2xl text-center">
+            </motion.h2>
+            <p className="text-sm md:text-xl text-white/60 mb-12 md:mb-24 font-light tracking-[0.3em] md:tracking-[0.5em] uppercase max-w-2xl text-center">
               The definitive tool for the modern event professional.
             </p>
             <div className="flex justify-center w-full">
