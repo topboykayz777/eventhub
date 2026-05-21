@@ -32,7 +32,7 @@ const Hero = () => {
       className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24 cursor-crosshair"
     >
       {/* Immersive Background Layer */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-none">
         <img 
           src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
           className="w-full h-full object-cover opacity-25 md:opacity-45 animate-slow-zoom dark:grayscale"
@@ -100,7 +100,7 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto bg-white/5 backdrop-blur-md border-white/20 text-foreground hover:bg-white/10 text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-all"
+                className="w-full sm:w-auto bg-white/10 backdrop-blur-xl border-white/40 text-foreground hover:bg-white/20 text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-all shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]"
               >
                 The Orchestration Guide
               </Button>
