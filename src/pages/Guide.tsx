@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import { 
@@ -94,23 +94,6 @@ const guideSections = [
     ]
   },
   {
-    category: "Managing Your Event",
-    questions: [
-      {
-        q: "Can I update my event details after launch?",
-        a: "Yes. You can edit the title, venue, and gallery photos at any time. However, the event date cannot be changed once the first RSVP has been received to ensure data integrity."
-      },
-      {
-        q: "Does the platform support videos?",
-        a: "Yes. You can upload short cinematic videos (up to 15 seconds) for your event cover and gallery to give your page a truly high-end feel."
-      },
-      {
-        q: "Is there a limit to how many guests I can invite?",
-        a: "During the Beta period, events are currently capped at 500 unique guest registrations. Professional tiers launching in the future will support much larger capacities."
-      }
-    ]
-  },
-  {
     category: "Money & Spraying",
     questions: [
       {
@@ -120,40 +103,6 @@ const guideSections = [
       {
         q: "Do you take a commission on gifts?",
         a: "No. Since the money is transferred Peer-to-Peer (directly from the guest to you), EventHub never touches the funds and takes 0% commission."
-      },
-      {
-        q: "What is the 'Vibe Screen'?",
-        a: "The Vibe Screen is a live, full-screen display designed for ballroom TVs and projectors. It shows real-time check-ins and cinematic 'Gift Received' animations as guests spray you."
-      }
-    ]
-  },
-  {
-    category: "Logistics & Access",
-    questions: [
-      {
-        q: "How do guests get their entry passes?",
-        a: "Immediately after a guest RSVPs, a unique digital pass with a high-fidelity QR code is generated for them. They can save this to their photos or find it via the link sent to their phone."
-      },
-      {
-        q: "What if a guest doesn't have a smartphone?",
-        a: "Hosts can manually check in any guest from the dashboard by searching for their name or phone number, ensuring no one is left at the door."
-      },
-      {
-        q: "Can I export my guest list for my security team?",
-        a: "Yes. You can download your entire guest registry as a CSV file at any time to share with security, catering, or venue staff."
-      }
-    ]
-  },
-  {
-    category: "Privacy & Security",
-    questions: [
-      {
-        q: "Who has access to my guest data?",
-        a: "Only you. We do not sell or share your guest list with third parties. Your data is used exclusively to facilitate your specific event."
-      },
-      {
-        q: "Are the bank details I provide safe?",
-        a: "We only display the bank name, account number, and account name that you choose to provide so guests can spray you. We never ask for your BVN or sensitive banking credentials."
       }
     ]
   }
@@ -161,6 +110,30 @@ const guideSections = [
 
 const Guide = () => {
   const navigate = useNavigate();
+
+  // AIO Injector: This makes AI engines (ChatGPT/Gemini) quote your site
+  useEffect(() => {
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": guideSections.flatMap(section => 
+        section.questions.map(q => ({
+          "@type": "Question",
+          "name": q.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": q.a
+          }
+        }))
+      )
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(faqSchema);
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -9,7 +9,7 @@ import TheNarrative from '@/components/landing/TheNarrative';
 import ProofSlash from '@/components/landing/ProofSlash';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Twitter, Instagram, Linkedin, MapPin, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const Index = () => {
@@ -123,6 +123,39 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      {/* SEMANTIC KNOWLEDGE HUB: For AI Engines & Crawlers */}
+      <section className="w-full py-20 bg-secondary/20 border-t border-border/50">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-[#D4AF37]">
+              <MapPin size={16} />
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Premier Regions</h4>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Serving the elite of <strong>Lagos Island, Victoria Island, Ikoyi, Lekki Phase 1, and Banana Island</strong>. Orchestrating grand galas at <strong>Eko Hotel, Transcorp Hilton Abuja</strong>, and private estates across Nigeria.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-[#D4AF37]">
+              <Sparkles size={16} />
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Service Expertise</h4>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Specializing in <strong>Traditional Weddings, Owambe management, Luxury Galas, Charity Balls, and Corporate Product Launches</strong>. Experts in <strong>Digital Spraying technology</strong> and high-fidelity QR access control.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-[#D4AF37]">
+              <Sparkles size={16} />
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Industry Standards</h4>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Setting the benchmark for <strong>Nigerian event technology</strong>. Our platform ensures data security and 0-commission peer-to-peer gifting for the modern host.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <footer className="w-full bg-background text-foreground py-20 md:py-40 px-6 border-t border-border flex flex-col items-center">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-24 w-full mb-20 md:mb-32">
