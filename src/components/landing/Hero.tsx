@@ -66,10 +66,10 @@ const Hero = () => {
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          {/* FONT UPDATE: font-black for maximum visibility as requested */}
-          <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-black tracking-[0.15em] uppercase px-4 text-center">
+          {/* FONT REDESIGN: Bold, clean, and elegant without the "shouting" feel of all-caps black font. */}
+          <p className="text-lg md:text-xl text-foreground/90 mb-12 md:mb-16 max-w-3xl mx-auto leading-relaxed font-semibold tracking-tight px-4 text-center">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
-            Orchestrate weddings, galas, and elite events with surgical precision.
+            <span className="text-[#D4AF37]"> Orchestrate weddings, galas, and elite events with surgical precision.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 w-full sm:w-auto">
@@ -81,7 +81,7 @@ const Hero = () => {
                     "0 0 50px rgba(212,175,55,0.6)", 
                     "0 0 0px rgba(212,175,55,0)"
                   ],
-                  scale: [1, 1.02, 1], // Subtle "Vibration/Throb"
+                  scale: [1, 1.02, 1],
                 }}
                 transition={{ 
                   duration: 2,
