@@ -198,15 +198,7 @@ const Dashboard = () => {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                                <div className="relative group w-full">
-                                  <button onClick={() => navigate(`/guests/${event.id}`)} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] px-6">
-                                    <Users className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Rsvp'd Guests</span>
-                                  </button>
-                                  <div className="absolute top-4 right-4"><InfoButton text="Open the full guest archive. Manage seating charts, search names, and export your vibe lists." /></div>
-                                </div>
-
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
                                 <div className="relative group w-full">
                                   <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] px-6">
                                     <ScanLine className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
