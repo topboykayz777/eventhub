@@ -31,7 +31,7 @@ const Hero = () => {
       onClick={handleBackgroundClick}
       className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24 cursor-crosshair"
     >
-      {/* Immersive Background Layer - Increased visibility */}
+      {/* Immersive Background Layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
           src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
@@ -66,7 +66,8 @@ const Hero = () => {
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-light tracking-[0.15em] uppercase px-4 text-center">
+          {/* FONT UPDATE: font-black for maximum visibility as requested */}
+          <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-black tracking-[0.15em] uppercase px-4 text-center">
             Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
             Orchestrate weddings, galas, and elite events with surgical precision.
           </p>
@@ -75,10 +76,17 @@ const Hero = () => {
             <Link to="/create-event" className="w-full sm:w-auto group">
               <motion.div
                 animate={{ 
-                  boxShadow: ["0 0 0px rgba(212,175,55,0)", "0 0 40px rgba(212,175,55,0.4)", "0 0 0px rgba(212,175,55,0)"],
+                  boxShadow: [
+                    "0 0 0px rgba(212,175,55,0)", 
+                    "0 0 50px rgba(212,175,55,0.6)", 
+                    "0 0 0px rgba(212,175,55,0)"
+                  ],
+                  scale: [1, 1.02, 1], // Subtle "Vibration/Throb"
                 }}
                 transition={{ 
-                  boxShadow: { repeat: Infinity, duration: 2 },
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
                 }}
               >
                 <Button 
