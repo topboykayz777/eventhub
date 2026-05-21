@@ -175,14 +175,19 @@ const Dashboard = () => {
                             </TabsContent>
                             <TabsContent value="guests" className="outline-none space-y-12 w-full">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                                <div className="bg-card border border-border p-8 md:p-10 rounded-[2rem] shadow-sm flex flex-col justify-center items-center md:items-start text-center md:text-left">
+                                <button 
+                                  onClick={() => navigate(`/guests/${event.id}`)}
+                                  className="bg-card border border-border p-8 md:p-10 rounded-[2rem] shadow-sm flex flex-col justify-center items-center md:items-start text-center md:text-left hover:bg-muted/50 transition-all group"
+                                >
                                   <div className="flex items-center mb-4">
-                                    <Users className="text-[#D4AF37] w-5 h-5 mr-3" />
+                                    <Users className="text-[#D4AF37] w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Confirmed Guests</span>
-                                    <InfoButton text="The total number of unique guests who have successfully registered for your celebration." />
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                      <InfoButton text="The total number of unique guests who have successfully registered. Click to view full archive." />
+                                    </div>
                                   </div>
                                   <div className="text-2xl md:text-3xl font-serif italic text-foreground">{event.rsvps.length} Unique Entries</div>
-                                </div>
+                                </button>
                                 <div className="bg-card border border-border p-8 md:p-10 rounded-[2rem] shadow-sm flex flex-col justify-center items-center md:items-start text-center md:text-left">
                                   <div className="flex items-center mb-4">
                                     <Sparkles className="text-[#D4AF37] w-5 h-5 mr-3" />
