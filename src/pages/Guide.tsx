@@ -77,32 +77,91 @@ const steps = [
 
 const guideSections = [
   {
-    category: "The Basics",
+    category: "The Foundation",
     questions: [
       {
-        q: "What exactly is EventHub?",
-        a: "EventHub is a professional orchestration suite designed for high-society events. It streamlines guest list management, digital 'spraying', and secure access control through QR-code passes."
+        q: "What is EventHub Nigeria?",
+        a: "EventHub is an elite digital orchestration suite designed for high-society weddings, galas, and professional corporate events. We provide the technical backbone for guest management, digital traditions, and secure access control."
       },
       {
-        q: "Is it really free for now?",
-        a: "Yes! During our current Beta phase, we are offering the full premium suite for free to early adopters to gather feedback and refine the experience."
+        q: "Is it really free during the Beta phase?",
+        a: "Yes. Early adopters get access to the full 'Pro' suite—including the WhatsApp Dispatcher and Vibe Screen—entirely for free. This allows us to gather feedback from Nigeria's top planners while you build your legacy."
       },
       {
-        q: "Can I use this for corporate events?",
-        a: "Absolutely. While we are optimized for weddings and galas, our tool is powerful enough for product launches, corporate retreats, and conferences."
+        q: "Can I use EventHub for corporate product launches?",
+        a: "Absolutely. While our aesthetic themes are curated for luxury, the underlying engine is powerful enough to handle high-stakes corporate retreats, concerts, and conferences with thousands of attendees."
       }
     ]
   },
   {
-    category: "Money & Spraying",
+    category: "Orchestration & Design",
     questions: [
       {
-        q: "How does the 'Digital Spraying' work?",
-        a: "Guests transfer money directly to your bank account using their own banking apps. They then notify the host through the portal. Once you see the alert on your phone, you 'verify' it in your dashboard to trigger the live screen animation."
+        q: "How do visual themes work?",
+        a: "We offer 20+ bespoke visual 'DNAs' like Midnight Noir and Royal Heritage. Selecting a theme instantly transforms the typography, colors, and atmosphere of your event page, your digital invitations, and your guests' entry passes."
       },
       {
-        q: "Do you take a commission on gifts?",
-        a: "No. Since the money is transferred Peer-to-Peer (directly from the guest to you), EventHub never touches the funds and takes 0% commission."
+        q: "Can I use video backdrops instead of photos?",
+        a: "Yes. You can upload high-quality cinematic portraits or 15-second loop videos (MP4/MOV) as your cover media to create an immersive first impression for your guests."
+      },
+      {
+        q: "What is the 'Location GPS' feature?",
+        a: "By pasting a Google Maps 'Share' link into your event settings, you provide guests with a one-tap 'Navigate' button. This ensures they arrive exactly at your venue's gate without getting lost."
+      }
+    ]
+  },
+  {
+    category: "Guest Management",
+    questions: [
+      {
+        q: "How do guests get their digital passes?",
+        a: "Once a guest RSVPs, they are instantly issued a high-fidelity Digital Pass with a unique QR code. They are encouraged to bookmark the page or save the pass to their gallery for entry."
+      },
+      {
+        q: "How does the WhatsApp Blast tool work?",
+        a: "The Industrial Dispatcher allows you to send official invites and passes to your entire guest list one by one at high speed. It automates the message formatting so you don't have to type individual texts."
+      },
+      {
+        q: "Can I assign table numbers to my guests?",
+        a: "Yes. In your Guest Registry, you can select guests individually or in bulk to assign them to specific tables. These table numbers then appear automatically on their digital entry passes."
+      },
+      {
+        q: "What happens if a guest loses their link?",
+        a: "Guests can return to your event link and use the 'Retrieve Pass' search feature. By entering their registered phone number, they can instantly regain access to their personal dashboard and QR pass."
+      }
+    ]
+  },
+  {
+    category: "The Vibe & Traditions",
+    questions: [
+      {
+        q: "How does 'Digital Spraying' work?",
+        a: "We digitized the Nigerian tradition. Guests transfer money directly to your bank account using their own apps. They then notify you through the portal. Once you see the alert on your phone, you 'Verify' it in your dashboard, which triggers a cinematic celebration animation on the ballroom screens."
+      },
+      {
+        q: "Do you take a commission on sprayed gifts?",
+        a: "No. EventHub takes 0% commission on guest-to-host gifts. Because the money is transferred Peer-to-Peer (P2P), we never touch the funds. We only act as the verification and animation layer."
+      },
+      {
+        q: "What is the Vibe Screen?",
+        a: "The Vibe Screen is a live, full-screen feed designed to be projected onto ballroom TVs or LED walls. It shows real-time stats, guest arrival alerts, and high-energy 'Digital Spray' animations to keep the party energy high."
+      }
+    ]
+  },
+  {
+    category: "Security & Logistics",
+    questions: [
+      {
+        q: "How do I check in guests at the door?",
+        a: "You or your security team can open the 'Scan QR Pass' tool in your dashboard on any smartphone. Simply point the camera at the guest's digital pass for instant verification and check-in."
+      },
+      {
+        q: "Is my data secure?",
+        a: "Yes. We are fully compliant with the Nigeria Data Protection Act (NDPA) 2023. We use high-level encryption for all guest lists and never share your financial data with third parties."
+      },
+      {
+        q: "Can I export my guest list for my caterers?",
+        a: "Yes. You can export your entire registry as a CSV file at any time. This includes names, phone numbers, table assignments, and special song requests for your DJ."
       }
     ]
   }
@@ -111,7 +170,7 @@ const guideSections = [
 const Guide = () => {
   const navigate = useNavigate();
 
-  // AIO Injector: This makes AI engines (ChatGPT/Gemini) quote your site
+  // AIO Injector: Updated to include the expanded Q&A for AI crawlers
   useEffect(() => {
     const faqSchema = {
       "@context": "https://schema.org",
