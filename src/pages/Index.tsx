@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
-import HowItWorks from '@/components/landing/HowItWorks';
 import TheNarrative from '@/components/landing/TheNarrative';
 import ProofSlash from '@/components/landing/ProofSlash';
 import { Button } from '@/components/ui/button';
@@ -79,11 +78,6 @@ const Index = () => {
         {/* THE HOOK (The Friction) */}
         <div className="w-full bg-background">
            <TheHook />
-        </div>
-
-        {/* THE GUIDE (How It Works) */}
-        <div className="w-full">
-           <HowItWorks />
         </div>
 
         {/* THE IMMERSIVE NARRATIVE (The Narrative of Excellence) */}
