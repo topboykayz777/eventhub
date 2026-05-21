@@ -43,7 +43,7 @@ const WhatsAppBlast = ({ isOpen, onClose, event, rsvps }: WhatsAppBlastProps) =>
       `Hi ${currentGuest.guest_name}, your Digital Pass for ${event.event_name} is ready! 🎫`,
       currentGuest.table_number ? `📍 Your Table: ${currentGuest.table_number}` : null,
       currentGuest.has_plus_one ? `👥 Plus-one: Confirmed` : null,
-      `Access your pass here: https://eventhub.ng/event/${event.slug}`,
+      `Access your pass here: https://theeventhub.com.ng/event/${event.slug}`,
       `See you there!`
     ].filter(Boolean).join('\n');
 

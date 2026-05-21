@@ -143,7 +143,6 @@ const CreateEvent = () => {
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-12 md:space-y-20">
-          {/* Card 01: Identity */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -186,7 +185,6 @@ const CreateEvent = () => {
             </div>
           </motion.div>
 
-          {/* Card 02: Logistics */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -208,7 +206,7 @@ const CreateEvent = () => {
                 <input 
                   type="datetime-local" 
                   required 
-                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground text-center" 
+                  className="h-16 w-full px-6 bg-secondary border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground text-center" 
                   value={formData.eventDate} 
                   onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} 
                 />
@@ -220,7 +218,7 @@ const CreateEvent = () => {
                 <input 
                   required 
                   placeholder="Eko Hotel & Suites..." 
-                  className="h-16 w-full px-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40 text-center placeholder:text-center" 
+                  className="h-16 w-full px-6 bg-secondary border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40 text-center placeholder:text-center" 
                   value={formData.venue} 
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })} 
                 />
@@ -235,7 +233,7 @@ const CreateEvent = () => {
                 <Navigation className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] w-4 h-4 opacity-50" />
                 <input 
                   placeholder="Paste Google Maps 'Share' link here..." 
-                  className="h-16 w-full pl-16 pr-6 bg-secondary border border-border rounded-2xl focus:border-[#D4AF37] text-sm font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40 text-center placeholder:text-center" 
+                  className="h-16 w-full pl-16 pr-6 bg-secondary border-border rounded-2xl focus:border-[#D4AF37] text-sm font-light outline-none transition-all text-foreground placeholder:text-muted-foreground/40 text-center placeholder:text-center" 
                   value={formData.venue_map_url} 
                   onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} 
                 />
@@ -243,7 +241,6 @@ const CreateEvent = () => {
             </div>
           </motion.div>
 
-          {/* Card 03: Presentation */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -307,7 +304,6 @@ const CreateEvent = () => {
             </div>
           </motion.div>
 
-          {/* Card 04: The Aesthetic */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -382,9 +378,6 @@ const CreateEvent = () => {
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </Button>
             </motion.div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-12 text-center">
-              Secure Entry Protocol • Part 01
-            </p>
           </div>
         </form>
       </div>

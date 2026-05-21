@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, MapPin, Star, ArrowRight, Briefcase, ShieldCheck, Award, CheckCircle2, Loader2, Sparkles, X, Mail, Clock } from 'lucide-react';
+import { Search, MapPin, Star, ArrowRight, Briefcase, ShieldCheck, Award, CheckCircle2, Loader2, Sparkles, X, Mail, Clock, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { showSuccess, showError } from '@/utils/toast';
 
@@ -15,6 +16,7 @@ const categories = ["Catering", "Decor", "Photography", "Music", "Venues", "Plan
 const SUPPORT_EMAIL = "kaelfelix0120@gmail.com";
 
 const VendorDirectory = () => {
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -81,40 +83,51 @@ const VendorDirectory = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 grayscale" />
         <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
 
-        <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+        <div className="max-w-7xl mx-auto relative z-10">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)} 
+            className="mb-8 text-muted-foreground hover:text-[#D4AF37] p-0 flex items-center gap-2 group"
           >
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-8">
-              <Clock className="text-[#D4AF37] w-4 h-4" />
-              <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.3em] uppercase">Launching Q3 2026</span>
-            </div>
-            <h1 className="text-5xl md:text-8xl font-serif italic mb-10 leading-tight">
-              The Vendor <span className="text-[#D4AF37]">Atelier</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-16">
-              We are curating Nigeria's most prestigious directory of vetted event professionals. 
-              Apply now to secure your place in the elite network before our public launch.
-            </p>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
+          </Button>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-              <Button 
-                onClick={() => setIsRegistering(true)}
-                className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500"
-              >
-                Apply for Membership
-              </Button>
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <ShieldCheck className="text-[#D4AF37] w-5 h-5" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Vetted Professionals Only</span>
+          <div className="text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full mb-8">
+                <Clock className="text-[#D4AF37] w-4 h-4" />
+                <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.3em] uppercase">Launching Q3 2026</span>
               </div>
-            </div>
-          </motion.div>
+              <h1 className="text-5xl md:text-8xl font-serif italic mb-10 leading-tight">
+                The Vendor <span className="text-[#D4AF37]">Atelier</span>
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light tracking-wide mb-16">
+                We are curating Nigeria's most prestigious directory of vetted event professionals. 
+                Apply now to secure your place in the elite network before our public launch.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+                <Button 
+                  onClick={() => setIsRegistering(true)}
+                  className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-12 py-8 rounded-none text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-500"
+                >
+                  Apply for Membership
+                </Button>
+                <div className="flex items-center gap-4 text-muted-foreground">
+                  <ShieldCheck className="text-[#D4AF37] w-5 h-5" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Vetted Professionals Only</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
+      {/* Rest of component */}
       <section className="py-32 px-6 bg-secondary/30">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-16">
