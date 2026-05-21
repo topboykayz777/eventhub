@@ -8,7 +8,6 @@ import TheHook from '@/components/landing/TheHook';
 import HowItWorks from '@/components/landing/HowItWorks';
 import TheNarrative from '@/components/landing/TheNarrative';
 import MockupGallery from '@/components/landing/MockupGallery';
-import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Twitter } from 'lucide-react';
@@ -82,24 +81,19 @@ const Index = () => {
            <TheHook />
         </div>
 
-        {/* THE GUIDE (How It Works) */}
+        {/* THE GUIDE (How It Works) - Positioned precisely as requested */}
         <div className="w-full">
            <HowItWorks />
         </div>
 
-        {/* THE IMMERSIVE NARRATIVE */}
+        {/* THE IMMERSIVE NARRATIVE (The Narrative of Excellence) */}
         <div className="w-full bg-background">
            <TheNarrative />
         </div>
 
-        {/* THE ATELIER GALLERY */}
+        {/* THE ATELIER GALLERY (Visual Evidence) */}
         <div className="w-full">
            <MockupGallery />
-        </div>
-        
-        {/* FAQ */}
-        <div className="w-full bg-background py-20 md:py-40">
-           <FAQ />
         </div>
 
         {/* FINAL CALL TO ACTION */}
