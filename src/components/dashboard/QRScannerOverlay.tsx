@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, ScanLine } from 'lucide-react';
+import { X, ArrowLeft, ScanLine, AlertCircle, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import QRScanner from '@/components/QRScanner';
@@ -49,8 +49,8 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 md:p-12 flex flex-col items-center justify-center">
-            <div className="max-w-md w-full space-y-12">
+          <div className="flex-1 overflow-y-auto p-6 md:p-12 flex flex-col items-center">
+            <div className="max-w-md w-full space-y-10 py-10">
               <div className="text-center">
                 <h3 className="text-3xl md:text-4xl font-serif italic text-white mb-2">Guest Check-in</h3>
                 <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em]">Align the guest QR pass within the scanning frame</p>
@@ -62,6 +62,28 @@ const QRScannerOverlay = ({ isOpen, onClose, onScan }: QRScannerOverlayProps) =>
                   onClose();
                 }} 
               />
+
+              {/* Optimal Scanning Instructions */}
+              <div className="bg-white/5 border border-[#D4AF37]/20 p-6 rounded-3xl space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Sparkles className="text-[#D4AF37] w-4 h-4" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Scanning Protocols</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] mt-1.5 shrink-0" />
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      Ask guests to <span className="text-white font-bold">zoom out</span> of their QR codes. Codes that are too large or cropped are harder for the lens to read.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] mt-1.5 shrink-0" />
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      If scanning fails, ensure the guest <span className="text-white font-bold">disables Device Dark Mode</span> (especially on Opera Mini or system-wide settings) to restore high-contrast visibility.
+                    </p>
+                  </div>
+                </div>
+              </div>
               
               <div className="pt-8 border-t border-white/5 text-center">
                 <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-600 mb-6">Manual Registry Entry</p>
