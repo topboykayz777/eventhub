@@ -31,18 +31,18 @@ const Hero = () => {
       onClick={handleBackgroundClick}
       className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24 cursor-crosshair"
     >
-      {/* Immersive Background Layer */}
+      {/* Immersive Background Layer - Increased visibility */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
           src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
-          className="w-full h-full object-cover opacity-10 md:opacity-20 animate-slow-zoom dark:grayscale"
+          className="w-full h-full object-cover opacity-25 md:opacity-45 animate-slow-zoom dark:grayscale"
           alt="Luxury Event Background"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-        <div className="absolute inset-0 bg-black/5 dark:bg-black/40" />
+        <div className="absolute inset-0 bg-black/5 dark:bg-black/30" />
       </div>
 
-      {/* The Silk Reveal Mask - A decorative element that slides away */}
+      {/* The Silk Reveal Mask */}
       <motion.div 
         initial={{ y: "0%" }}
         animate={{ y: "-100%" }}
@@ -51,7 +51,6 @@ const Hero = () => {
       />
 
       <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full">
-        {/* Content Container with Silk Slide Up */}
         <motion.div
           initial={{ opacity: 0, y: 100, filter: 'blur(10px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -90,9 +89,9 @@ const Hero = () => {
                 </Button>
               </motion.div>
             </Link>
-            <Link to="/vendors" className="w-full sm:w-auto">
+            <Link to="/guide" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-border text-foreground hover:bg-secondary text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
-                Curated Directory
+                The Simple Guide
               </Button>
             </Link>
           </div>
