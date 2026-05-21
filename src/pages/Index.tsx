@@ -7,7 +7,6 @@ import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
 import HowItWorks from '@/components/landing/HowItWorks';
 import TheNarrative from '@/components/landing/TheNarrative';
-import MockupGallery from '@/components/landing/MockupGallery';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Twitter, Instagram, Linkedin } from 'lucide-react';
@@ -89,11 +88,6 @@ const Index = () => {
         {/* THE IMMERSIVE NARRATIVE (The Narrative of Excellence) */}
         <div className="w-full bg-background">
            <TheNarrative />
-        </div>
-
-        {/* THE ATELIER GALLERY (Visual Evidence) */}
-        <div className="w-full">
-           <MockupGallery />
         </div>
 
         {/* FINAL CALL TO ACTION */}
