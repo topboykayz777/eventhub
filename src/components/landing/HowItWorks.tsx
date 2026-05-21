@@ -2,68 +2,103 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Users, Sparkles } from 'lucide-react';
+import { 
+  UserPlus, 
+  Layout, 
+  CreditCard, 
+  Share2, 
+  Wallet, 
+  Send, 
+  Monitor, 
+  Heart 
+} from 'lucide-react';
 
 const steps = [
   {
-    title: "Design Your Page",
-    desc: "Choose a theme, upload photos, and add your event details in minutes.",
-    icon: Sparkles,
-    color: "bg-purple-500",
-    shadow: "shadow-purple-500/20"
+    title: "1. Create",
+    desc: "Create your free account to unlock your event tools.",
+    icon: UserPlus
   },
   {
-    title: "Share on WhatsApp",
-    desc: "Get a unique link and beautiful digital invite to blast to your guest list.",
-    icon: Share2,
-    color: "bg-[#25D366]",
-    shadow: "shadow-green-500/20"
+    title: "2. Design",
+    desc: "Set your theme and photos to build your event website.",
+    icon: Layout
   },
   {
-    title: "Track RSVPs",
-    desc: "See who's coming in real-time and export your guest list for vendors.",
-    icon: Users,
-    color: "bg-[#e94560]",
-    shadow: "shadow-red-500/20"
+    title: "3. Activate",
+    desc: "Make your page live with a quick one-time activation.",
+    icon: CreditCard
+  },
+  {
+    title: "4. Invite",
+    desc: "Share your unique link with guests to gather RSVPs.",
+    icon: Share2
+  },
+  {
+    title: "5. Gifts",
+    desc: "Verify digital gifts and transfers directly in your ledger.",
+    icon: Wallet
+  },
+  {
+    title: "6. Dispatch",
+    desc: "Send mass WhatsApp updates to your entire guest list.",
+    icon: Send
+  },
+  {
+    title: "7. Entry",
+    desc: "Scan QR passes at the door for instant check-in.",
+    icon: Monitor
+  },
+  {
+    title: "8. Forever",
+    desc: "Your event lives on as a digital memory wall.",
+    icon: Heart
   }
 ];
 
 const HowItWorks = () => {
   return (
-    <section className="py-32 px-6 bg-white">
+    <section className="py-32 px-6 bg-background">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-20">
+        <div className="text-center mb-24">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block"
+          >
+            The Simple Protocol
+          </motion.span>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-6xl font-black text-[#1a1a2e] mb-6 tracking-tight"
+            className="text-4xl md:text-7xl font-serif italic text-foreground mb-8"
           >
-            HOW IT <span className="text-[#e94560]">WORKS</span>
+            How it <span className="text-[#D4AF37]">Works</span>
           </motion.h2>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            Three simple steps to take your event from traditional to digital.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light tracking-wide">
+            Eight simple acts to take your celebration from vision to digital reality.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
           {steps.map((step, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
-              className="relative group"
+              transition={{ delay: index * 0.1 }}
+              className="text-center group"
             >
-              <div className={`w-20 h-20 ${step.color} rounded-3xl flex items-center justify-center mb-8 transform transition-transform group-hover:scale-110 group-hover:rotate-3 shadow-2xl ${step.shadow}`}>
-                <step.icon className="text-white w-10 h-10" />
+              <div className="w-16 h-16 rounded-full bg-secondary border border-border flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500">
+                <step.icon className="text-[#D4AF37] w-8 h-8" />
               </div>
-              <div className="absolute -top-4 -left-4 text-8xl font-black text-gray-50 opacity-50 pointer-events-none">
-                0{index + 1}
-              </div>
-              <h3 className="text-2xl font-bold text-[#1a1a2e] mb-4 relative z-10">{step.title}</h3>
-              <p className="text-gray-500 text-lg leading-relaxed relative z-10">{step.desc}</p>
+              <h3 className="text-xl font-serif italic text-foreground mb-4">{step.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed font-light px-4">
+                {step.desc}
+              </p>
             </motion.div>
           ))}
         </div>
