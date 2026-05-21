@@ -81,11 +81,15 @@ const guideSections = [
     questions: [
       {
         q: "What exactly is EventHub?",
-        a: "EventHub is a simple tool that helps you manage your events in Nigeria. It handles guest lists, digital 'spraying', and scanning invites at the door."
+        a: "EventHub is a professional orchestration suite designed for high-society events. It streamlines guest list management, digital 'spraying', and secure access control through QR-code passes."
       },
       {
         q: "Is it really free for now?",
-        a: "Yes! Our current Beta plan gives you access to every feature for free while we are testing the platform."
+        a: "Yes! During our current Beta phase, we are offering the full premium suite for free to early adopters to gather feedback and refine the experience."
+      },
+      {
+        q: "Can I use this for corporate events?",
+        a: "Absolutely. While we are optimized for weddings and galas, our tool is powerful enough for product launches, corporate retreats, and conferences."
       }
     ]
   },
@@ -93,12 +97,16 @@ const guideSections = [
     category: "Managing Your Event",
     questions: [
       {
-        q: "Can I change my event info later?",
-        a: "Yes. You can update the name, location, and photos anytime from your dashboard. However, you cannot change the event date once it is live."
+        q: "Can I update my event details after launch?",
+        a: "Yes. You can edit the title, venue, and gallery photos at any time. However, the event date cannot be changed once the first RSVP has been received to ensure data integrity."
       },
       {
-        q: "Does it support videos?",
-        a: "Yes, you can upload videos for your main event photo to make the page look more cinematic."
+        q: "Does the platform support videos?",
+        a: "Yes. You can upload short cinematic videos (up to 15 seconds) for your event cover and gallery to give your page a truly high-end feel."
+      },
+      {
+        q: "Is there a limit to how many guests I can invite?",
+        a: "During the Beta period, events are currently capped at 500 unique guest registrations. Professional tiers launching in the future will support much larger capacities."
       }
     ]
   },
@@ -106,12 +114,46 @@ const guideSections = [
     category: "Money & Spraying",
     questions: [
       {
-        q: "How do I receive money from guests?",
-        a: "Guests send money directly to your bank account via transfer. EventHub just shows the notification and handles the celebration on screen."
+        q: "How does the 'Digital Spraying' work?",
+        a: "Guests transfer money directly to your bank account using their own banking apps. They then notify the host through the portal. Once you see the alert on your phone, you 'verify' it in your dashboard to trigger the live screen animation."
       },
       {
-        q: "Do you take a commission?",
-        a: "No. Since guests transfer directly to you, we don't touch the money or take any percentage."
+        q: "Do you take a commission on gifts?",
+        a: "No. Since the money is transferred Peer-to-Peer (directly from the guest to you), EventHub never touches the funds and takes 0% commission."
+      },
+      {
+        q: "What is the 'Vibe Screen'?",
+        a: "The Vibe Screen is a live, full-screen display designed for ballroom TVs and projectors. It shows real-time check-ins and cinematic 'Gift Received' animations as guests spray you."
+      }
+    ]
+  },
+  {
+    category: "Logistics & Access",
+    questions: [
+      {
+        q: "How do guests get their entry passes?",
+        a: "Immediately after a guest RSVPs, a unique digital pass with a high-fidelity QR code is generated for them. They can save this to their photos or find it via the link sent to their phone."
+      },
+      {
+        q: "What if a guest doesn't have a smartphone?",
+        a: "Hosts can manually check in any guest from the dashboard by searching for their name or phone number, ensuring no one is left at the door."
+      },
+      {
+        q: "Can I export my guest list for my security team?",
+        a: "Yes. You can download your entire guest registry as a CSV file at any time to share with security, catering, or venue staff."
+      }
+    ]
+  },
+  {
+    category: "Privacy & Security",
+    questions: [
+      {
+        q: "Who has access to my guest data?",
+        a: "Only you. We do not sell or share your guest list with third parties. Your data is used exclusively to facilitate your specific event."
+      },
+      {
+        q: "Are the bank details I provide safe?",
+        a: "We only display the bank name, account number, and account name that you choose to provide so guests can spray you. We never ask for your BVN or sensitive banking credentials."
       }
     ]
   }
@@ -138,7 +180,7 @@ const Guide = () => {
             animate={{ opacity: 1 }}
             className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block"
           >
-            The Simple Guide
+            The Simple Protocol
           </motion.span>
           <motion.h1             
             initial={{ opacity: 0, y: 20 }}
@@ -147,8 +189,8 @@ const Guide = () => {
           >
             How it <span className="text-[#D4AF37]">Works</span>
           </motion.h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto font-light tracking-wide">
-            Follow these simple steps to set up and manage your event.
+          <p className="text-muted-foreground max-w-2xl mx-auto font-light tracking-wide text-lg">
+            Everything you need to know about orchestrating your celebration on EventHub.
           </p>
         </div>
 

@@ -91,7 +91,7 @@ const Hero = () => {
             </Link>
             <Link to="/guide" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-border text-foreground hover:bg-secondary text-[12px] px-12 md:px-14 py-7 md:py-9 rounded-none font-bold tracking-[0.4em] uppercase transition-colors">
-                The Simple Guide
+                The Orchestration Guide
               </Button>
             </Link>
           </div>
