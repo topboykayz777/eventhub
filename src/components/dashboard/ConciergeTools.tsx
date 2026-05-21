@@ -81,10 +81,10 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
           <DialogContent className="bg-popover border-border text-foreground max-w-lg w-[95vw] p-0 overflow-hidden rounded-[3rem] shadow-2xl">
             <div className="relative h-full max-h-[90vh] flex flex-col">
               <DialogHeader className="p-8 border-b border-border shrink-0">
-                <DialogTitle className="text-2xl font-serif italic">Your Digital Invitation</DialogTitle>
+                <DialogTitle className="text-2xl font-serif italic text-center">Your Digital Invitation</DialogTitle>
               </DialogHeader>
-              <ScrollArea className="flex-1 p-8">
-                <div className="flex flex-col items-center justify-center min-h-full pb-12">
+              <ScrollArea className="flex-1 w-full">
+                <div className="flex flex-col items-center justify-center min-h-[600px] p-8 md:p-12">
                    <DigitalInvite ref={inviteRef} event={event} />
                 </div>
               </ScrollArea>
