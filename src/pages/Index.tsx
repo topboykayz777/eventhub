@@ -10,7 +10,7 @@ import TheNarrative from '@/components/landing/TheNarrative';
 import MockupGallery from '@/components/landing/MockupGallery';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Twitter } from 'lucide-react';
+import { Twitter, Instagram, Linkedin } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const Index = () => {
@@ -98,7 +98,6 @@ const Index = () => {
 
         {/* FINAL CALL TO ACTION */}
         <section className="w-full py-40 md:py-72 px-6 relative overflow-hidden flex flex-col items-center">
-          {/* BACKGROUND IMAGE OVERLAY */}
           <div className="absolute inset-0 z-0">
             <img 
               src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80" 
@@ -157,6 +156,18 @@ const Index = () => {
                 <a href="https://twitter.com/theeventhubng" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors justify-center md:justify-start">
                   <Twitter size={18} className="text-[#D4AF37]" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Twitter</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors justify-center md:justify-start">
+                  <Instagram size={18} className="text-[#D4AF37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Instagram</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" className="flex items-center gap-3 text-muted-foreground hover:text-[#D4AF37] transition-colors justify-center md:justify-start">
+                  <Linkedin size={18} className="text-[#D4AF37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.4em]">LinkedIn</span>
                 </a>
               </li>
             </ul>
