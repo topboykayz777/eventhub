@@ -18,9 +18,10 @@ const InfoButton = ({ text }: InfoButtonProps) => {
       <PopoverTrigger asChild>
         <button 
           type="button" 
-          className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all hover:scale-110 focus:outline-none"
+          className="inline-flex items-center justify-center ml-2 text-muted-foreground hover:text-[#D4AF37] transition-all hover:scale-110 focus:outline-none p-2 rounded-full"
+          aria-label="More information"
         >
-          <Info size={14} className="opacity-60" />
+          <Info size={18} className="opacity-80" />
         </button>
       </PopoverTrigger>
       <PopoverContent 

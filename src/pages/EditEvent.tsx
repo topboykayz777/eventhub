@@ -81,6 +81,7 @@ const EditEvent = () => {
     setLoading(true);
 
     try {
+      // FIX: Changed .eq(id, 'id') to .eq('id', id) to fix the "column does not exist" error
       const { error } = await supabase.from('events').update({
         event_name: formData.eventName,
         venue: formData.venue,
@@ -88,7 +89,7 @@ const EditEvent = () => {
         message: formData.message,
         theme: formData.theme,
         photo_url: formData.photo_url
-      }).eq(id as string, 'id'); // Using standard property order
+      }).eq('id', id);
 
       if (error) throw error;
       showSuccess('Event orchestrated successfully.');
