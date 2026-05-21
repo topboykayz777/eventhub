@@ -6,6 +6,7 @@ import { Bookmark, Users, CheckCircle2, Coins, PartyPopper, Share2, Camera } fro
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/ui/GlassCard';
 import DigitalPass from '@/components/DigitalPass';
+import { showSuccess, showError } from '@/utils/toast';
 
 interface GuestPortalProps {
   event: any;
@@ -28,6 +29,28 @@ const GuestPortal = ({
 }: GuestPortalProps) => {
   const [passIndex, setPassIndex] = useState(0);
 
+  const handleShare = async () => {
+    const shareData = {
+      title: event.event_name,
+      text: `Join the celebration memories for ${event.event_name} on EventHub NG.`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        showSuccess("Link copied to clipboard.");
+      }
+    } catch (err) {
+      // Ignore abort errors from user canceling share
+      if ((err as Error).name !== 'AbortError') {
+        showError("Could not share link.");
+      }
+    }
+  };
+
   if (isFinished) {
     return (
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="sticky top-32 space-y-10">
@@ -42,7 +65,11 @@ const GuestPortal = ({
           <div className="pt-8 border-t border-white/5">
             <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-gray-600 mb-4">Share the Memories</p>
             <div className="flex justify-center gap-4">
-              <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
+              <Button 
+                variant="outline" 
+                onClick={handleShare}
+                className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all"
+              >
                 <Share2 size={16} />
               </Button>
               <Button variant="outline" className="rounded-full w-12 h-12 p-0 border-white/10 hover:bg-[#D4AF37] hover:text-black transition-all">
