@@ -5,12 +5,13 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
+import HowItWorks from '@/components/landing/HowItWorks';
 import TheNarrative from '@/components/landing/TheNarrative';
 import MockupGallery from '@/components/landing/MockupGallery';
 import FAQ from '@/components/landing/FAQ';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Instagram, Twitter } from 'lucide-react';
+import { Twitter } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const Index = () => {
@@ -76,9 +77,14 @@ const Index = () => {
           </div>
         </section>
 
-        {/* THE HOOK */}
+        {/* THE HOOK (The Friction) */}
         <div className="w-full bg-background">
            <TheHook />
+        </div>
+
+        {/* THE GUIDE (How It Works) */}
+        <div className="w-full">
+           <HowItWorks />
         </div>
 
         {/* THE IMMERSIVE NARRATIVE */}
