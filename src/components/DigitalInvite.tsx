@@ -65,7 +65,7 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
 
       {/* Glass Card Container */}
       <div 
-        className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center p-8 rounded-[2.5rem] border backdrop-blur-3xl mx-auto"
+        className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center p-8 rounded-[2.5rem] border backdrop-blur-3xl"
         style={{ 
           backgroundColor: style.glass,
           borderColor: style.border

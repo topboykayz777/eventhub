@@ -79,17 +79,20 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
             </button>
           </DialogTrigger>
           <DialogContent className="bg-popover border-border text-foreground max-w-lg w-[95vw] p-0 overflow-hidden rounded-[3rem] shadow-2xl">
-            <div className="relative h-full max-h-[90vh] flex flex-col">
-              <DialogHeader className="p-8 border-b border-border shrink-0 text-center">
-                <DialogTitle className="text-2xl font-serif italic w-full">Your Digital Invitation</DialogTitle>
+            <div className="relative h-[90vh] flex flex-col overflow-hidden">
+              <DialogHeader className="p-8 border-b border-border shrink-0 text-center flex flex-col items-center">
+                <DialogTitle className="text-2xl font-serif italic">Your Digital Invitation</DialogTitle>
+                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.3em] mt-1">Official Guest Pass</p>
               </DialogHeader>
-              <ScrollArea className="flex-1">
-                <div className="flex flex-col items-center justify-center min-h-full py-12 px-6">
+              
+              <div className="flex-1 overflow-y-auto w-full">
+                <div className="min-h-full w-full flex items-center justify-center py-12 px-4">
                    <div className="w-full flex justify-center">
                      <DigitalInvite ref={inviteRef} event={event} />
                    </div>
                 </div>
-              </ScrollArea>
+              </div>
+
               <div className="p-8 border-t border-border bg-secondary/50 shrink-0 flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <button onClick={handleDownloadInvite} disabled={isDownloading} className="w-full sm:flex-1 py-5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-[#B8860B] transition-colors">
                   {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={14} />} {isDownloading ? 'Processing...' : 'Save to Gallery'}
