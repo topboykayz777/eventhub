@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
-Allow: /event/*
-Allow: /vibe/*
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /payment
+
 Sitemap: https://eventhub.ng/sitemap.xml
