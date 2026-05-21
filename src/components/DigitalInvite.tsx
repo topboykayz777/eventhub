@@ -54,12 +54,12 @@ const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event },
   return (
     <div 
       ref={ref}
-      className={`w-[380px] ${style.bg} relative overflow-hidden shadow-2xl flex flex-col items-center p-5 rounded-[3rem] mx-auto`}
+      className={`w-[380px] ${style.bg} relative overflow-hidden shadow-2xl flex flex-col items-center p-5`}
       style={{ height: '580px' }}
     >
       {/* Background Image with Blur */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center">
-        <img src={event.photo_url} className="w-full h-full object-cover opacity-40 blur-[3px] object-center" alt="" />
+      <div className="absolute inset-0 z-0">
+        <img src={event.photo_url} className="w-full h-full object-cover opacity-40 blur-[3px]" alt="" />
         <div className={`absolute inset-0 ${isDark ? 'bg-black/60' : 'bg-white/40'}`} />
       </div>
 
