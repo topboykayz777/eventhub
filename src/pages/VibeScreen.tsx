@@ -146,21 +146,36 @@ const VibeScreen = () => {
             setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + anyNew.amount }));
           }
         })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps' }, async (payload) => {
           const anyNew = payload.new as any;
-          if (!anyNew) return;
+          if (!anyNew || anyNew.event_id !== eventData.id) return;
 
           // Main Guest Check-in Trigger
           if (anyNew.checked_in && !processedCheckins.current.has(`${anyNew.id}-main`)) {
             processedCheckins.current.add(`${anyNew.id}-main`);
-            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: anyNew.guest_name });
+            
+            // If guest name is missing from realtime payload, fetch it
+            let guestName = anyNew.guest_name;
+            if (!guestName) {
+              const { data } = await supabase.from('rsvps').select('guest_name').eq('id', anyNew.id).single();
+              guestName = data?.guest_name;
+            }
+
+            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: guestName || 'Verified Guest' });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
           
           // Plus-One Check-in Trigger
           if (anyNew.plus_one_checked_in && !processedCheckins.current.has(`${anyNew.id}-plusone`)) {
             processedCheckins.current.add(`${anyNew.id}-plusone`);
-            const displayName = anyNew.plus_one_name || `${anyNew.guest_name}'s Guest`;
+            
+            let guestData = { guest_name: anyNew.guest_name, plus_one_name: anyNew.plus_one_name };
+            if (!guestData.guest_name) {
+              const { data } = await supabase.from('rsvps').select('guest_name, plus_one_name').eq('id', anyNew.id).single();
+              guestData = data || guestData;
+            }
+
+            const displayName = guestData.plus_one_name || `${guestData.guest_name}'s Guest`;
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: displayName });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
