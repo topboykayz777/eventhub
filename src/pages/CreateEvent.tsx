@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -34,8 +34,32 @@ const CreateEvent = () => {
     photo_url: ''
   });
 
+  // Restore draft on mount if it exists
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('eventhub_pending_draft');
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setFormData(prev => ({ ...prev, ...draft }));
+        showSuccess("We've restored your progress.");
+      } catch (e) {
+        console.error("Failed to restore draft", e);
+      }
+    }
+  }, []);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
+    
+    // Check auth before allowing upload
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      localStorage.setItem('eventhub_pending_draft', JSON.stringify(formData));
+      showError("Please sign up first to upload portraits and save your event.");
+      navigate('/signup');
+      return;
+    }
+
     const file = e.target.files[0];
     setUploading(true);
 
@@ -56,16 +80,25 @@ const CreateEvent = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // If not logged in, save and redirect
+    if (!user) {
+      localStorage.setItem('eventhub_pending_draft', JSON.stringify(formData));
+      showSuccess("Draft saved. Join the elite to finalize your celebration.");
+      navigate('/signup');
+      return;
+    }
+
     if (!formData.photo_url) {
       showError('Please upload a cover portrait.');
       return;
     }
+    
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate('/login'); return; }
-
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
       const lastName = profile?.full_name?.split(' ').pop()?.toLowerCase() || 'event';
       const slug = `${formData.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}-${Math.floor(Math.random() * 1000)}`;
@@ -84,6 +117,8 @@ const CreateEvent = () => {
       }).select().single();
 
       if (error) throw error;
+      
+      localStorage.removeItem('eventhub_pending_draft');
       showSuccess('Event created! Proceeding to activation.');
       navigate(`/payment/${event.id}`);
     } catch (error: any) {
@@ -173,7 +208,7 @@ const CreateEvent = () => {
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
                   Access Level <InfoButton text="Beta is our all-access pass. It unlocks everything from the live Vibe Screen for your ballroom to the industrial WhatsApp dispatcher." />
                 </Label>
-                <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue="beta">
+                <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue={formData.plan}>
                   <SelectTrigger className="h-16 bg-secondary border border-border rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6 flex justify-center">
                     <SelectValue className="text-center" />
                   </SelectTrigger>
@@ -372,7 +407,8 @@ const CreateEvent = () => {
                   </div>
                 ) : (
                   <span className="flex items-center justify-center gap-4 relative z-10">
-                    Initialize Orchestration <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-4 transition-transform shrink-0" />
+                    {supabase.auth.getUser() ? 'Initialize Orchestration' : 'Save Progress & Sign Up'}
+                    <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-4 transition-transform shrink-0" />
                   </span>
                 )}
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />

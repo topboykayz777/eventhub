@@ -30,10 +30,66 @@ const Dashboard = () => {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isProcessingDraft, setIsProcessingDraft] = useState(false);
 
   useEffect(() => {
     if (!sessionLoading && !user) { navigate('/login'); }
   }, [user, sessionLoading, navigate]);
+
+  // DRAFT AUTO-PROVISIONING LOGIC
+  useEffect(() => {
+    const processDraft = async () => {
+      if (!user || isProcessingDraft) return;
+      
+      const savedDraft = localStorage.getItem('eventhub_pending_draft');
+      if (savedDraft) {
+        setIsProcessingDraft(true);
+        try {
+          const draft = JSON.parse(savedDraft);
+          
+          // Fallback check: If they didn't upload an image, we redirect back to finish
+          if (!draft.photo_url) {
+            showSuccess("Auth verified. Welcome back to your draft.");
+            navigate('/create-event');
+            return;
+          }
+
+          const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+          const lastName = profile?.full_name?.split(' ').pop()?.toLowerCase() || user.email?.split('@')[0] || 'host';
+          const slug = `${draft.eventName.toLowerCase().replace(/\s+/g, '-')}-${lastName}-${Math.floor(Math.random() * 1000)}`;
+
+          const { data: event, error } = await supabase.from('events').insert({
+            host_id: user.id,
+            event_name: draft.eventName,
+            event_date: new Date(draft.eventDate).toISOString(),
+            venue: draft.venue,
+            venue_map_url: draft.venue_map_url,
+            message: draft.message,
+            plan: draft.plan,
+            theme: draft.theme,
+            slug,
+            photo_url: draft.photo_url
+          }).select().single();
+
+          if (!error && event) {
+            localStorage.removeItem('eventhub_pending_draft');
+            showSuccess("Your draft event is now live! Sending you to activation.");
+            navigate(`/payment/${event.id}`);
+          } else {
+            throw error;
+          }
+        } catch (err: any) {
+          console.error("Draft commit error:", err);
+          showError("We found your draft but couldn't create it. Sending you back to retry.");
+          navigate('/create-event');
+        } finally {
+          setIsProcessingDraft(false);
+        }
+      }
+    };
+
+    if (user) processDraft();
+  }, [user, navigate]);
   
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-dashboard-data', user?.id],
@@ -102,7 +158,7 @@ const Dashboard = () => {
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
-  if (sessionLoading || (isLoading && events.length === 0)) {
+  if (sessionLoading || (isLoading && events.length === 0) || isProcessingDraft) {
     return <div className="flex items-center justify-center min-h-screen bg-background"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
   }
 
@@ -123,6 +179,12 @@ const Dashboard = () => {
         </div>
 
         <div className="space-y-12">
+          {events.length === 0 && !isLoading && (
+            <div className="text-center py-40 border border-dashed border-border rounded-[3rem]">
+              <Sparkles className="w-12 h-12 text-muted-foreground/20 mx-auto mb-6" />
+              <p className="text-muted-foreground font-light italic">No orchestrations found. Begin your first celebration above.</p>
+            </div>
+          )}
           {events.map((event: any, index: number) => (
             <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className={`border ${event.isCompleted ? 'border-border/50 bg-muted/20' : 'border-border bg-card'} rounded-[3rem] overflow-hidden shadow-sm`}>
               <div onClick={() => { const s = new Set(expandedEvents); s.has(event.id) ? s.delete(event.id) : s.add(event.id); setExpandedEvents(s); }} className="p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-muted/30 transition-colors">
