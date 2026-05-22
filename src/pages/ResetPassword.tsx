@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError, showSuccess } from '@/utils/toast';
 import { motion } from 'framer-motion';
-import { Lock, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Lock, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -19,64 +19,30 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Verification step: Ensure we actually have a session (temporary recovery session)
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // If they navigate here without a recovery link, they shouldn't be here
-        // However, we give them a chance if the session is still loading
-      }
-    };
-    checkSession();
-  }, []);
-
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (password.length < 6) {
-      showError("Password must be at least 6 characters.");
-      return;
-    }
-
     if (password !== confirmPassword) {
       showError("Passwords do not match.");
       return;
     }
 
     setLoading(true);
-    
-    try {
-      // This updates the user's password using the current active recovery session
-      const { error } = await supabase.auth.updateUser({ 
-        password: password 
-      });
+    const { error } = await supabase.auth.updateUser({ password: password });
 
-      if (error) {
-        throw error;
-      }
-
-      showSuccess("Security credentials updated successfully.");
-      
-      // Clear any session data to force a fresh login with new password
-      await supabase.auth.signOut();
-      
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
-      
-    } catch (err: any) {
-      showError(err.message || "Failed to update password. Please try again.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      showError(error.message);
+    } else {
+      showSuccess("Password updated successfully.");
+      navigate('/login');
     }
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
       
-      <div className="max-w-lg mx-auto pt-32 px-6">
+      <div className="max-w-lg mx-auto mt-20 px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -84,8 +50,8 @@ const ResetPassword = () => {
         >
           <div className="text-center mb-12">
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Secure Update</span>
-            <h1 className="text-4xl font-serif italic mb-4">Set New Password</h1>
-            <p className="text-muted-foreground text-sm font-light tracking-wide">Secure your account with a new master key.</p>
+            <h1 className="text-4xl font-serif italic mb-4">New Password</h1>
+            <p className="text-muted-foreground text-sm font-light tracking-wide">Set a new secure password for your account.</p>
           </div>
 
           <form onSubmit={handleReset} className="space-y-8">
@@ -138,17 +104,7 @@ const ResetPassword = () => {
               disabled={loading}
               className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-lg"
             >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="animate-spin w-4 h-4" />
-                  <span>Committing Changes...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Finalize New Password</span>
-                </div>
-              )}
+              {loading ? 'Updating...' : 'Update Password'} <CheckCircle2 className="ml-2 w-4 h-4" />
             </Button>
           </form>
         </motion.div>
