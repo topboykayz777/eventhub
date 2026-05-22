@@ -49,19 +49,19 @@ const AuthHandler = () => {
   useEffect(() => {
     // 1. Listen for the specific PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth Event:", event);
       if (event === 'PASSWORD_RECOVERY') {
-        navigate('/reset-password', { replace: true });
+        navigate('/reset-password');
       }
     });
 
-    // 2. Aggressive check for recovery tokens in URL (Hash or Query)
+    // 2. Proactive check for recovery hash on landing
+    // This catches cases where the user lands on the site from an email link 
+    // before the auth state listener has fully initialized.
     const handleInitialRecovery = () => {
-      const url = window.location.href;
-      // We check for typical Supabase recovery patterns
-      if (url.includes('type=recovery') || url.includes('access_token=') || url.includes('recovery_token=')) {
-        console.log("Recovery token detected, redirecting...");
-        navigate('/reset-password', { replace: true });
+      const hash = window.location.hash;
+      if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
+        // Force immediate redirection if a recovery token is detected in the URL
+        navigate('/reset-password');
       }
     };
 

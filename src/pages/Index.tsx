@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
@@ -13,16 +13,7 @@ import { Twitter, Instagram, Linkedin, MapPin, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const Index = () => {
-  const navigate = useNavigate();
-
   useEffect(() => {
-    // FAIL-SAFE: If the user lands here with a recovery link, pivot immediately
-    const url = window.location.href;
-    if (url.includes('type=recovery') || url.includes('access_token=')) {
-      navigate('/reset-password', { replace: true });
-      return;
-    }
-
     const end = Date.now() + 2 * 1000;
     const colors = ['#D4AF37', '#ffffff', '#F9E4B7'];
 
@@ -46,7 +37,7 @@ const Index = () => {
         requestAnimationFrame(frame);
       }
     }());
-  }, [navigate]);
+  }, []);
 
   const seoTerms = ['Weddings', 'Galas', 'Product Launches', 'Charity Balls', 'Concerts', 'Anniversaries', 'Funerals', 'Beach Parties', 'Corporate Retreats', 'Lagos VI', 'Abuja Maitama', 'Lekki Phase 1', 'Banana Island', 'Eko Hotel', 'Transcorp Hilton'];
 
