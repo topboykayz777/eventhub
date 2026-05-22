@@ -48,40 +48,33 @@ const AuthHandler = () => {
   
   useEffect(() => {
     // 1. Listen for the specific PASSWORD_RECOVERY event
-    // This fires ONLY after Supabase has successfully exchanged the URL tokens for a session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery'))) {
-        console.log("[AuthHandler] Secure session verified. Transitioning to Reset page.");
+    // This is the most reliable way once the Supabase client initializes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log("[AuthHandler] Recovery event detected, navigating...");
         navigate('/reset-password', { replace: true });
       }
     });
 
-    // 2. Emergency Interceptor for URL fragments
-    // If the user lands and we see tokens, we hold them on the landing page for a moment
-    // to allow the Auth engine (subscription above) to finish its background handshake.
-    const checkUrlForRecovery = () => {
+    // 2. Proactive check for recovery indicators in the URL (Hash or Query)
+    // This catches the user before the auth state listener even fires
+    const handleInitialRecovery = () => {
       const hash = window.location.hash;
       const search = window.location.search;
       
-      const hasRecoveryToken = 
+      const isRecovery = 
         hash.includes('type=recovery') || 
         hash.includes('access_token=') || 
         search.includes('type=recovery') ||
-        search.includes('code=');
+        (search.includes('code=') && (hash.includes('type=recovery') || !sessionStorage.getItem('pkce_verified')));
 
-      if (hasRecoveryToken) {
-        console.log("[AuthHandler] Recovery markers detected. Holding for session exchange...");
-        // If we're already on /reset-password, don't do anything
-        if (window.location.pathname === '/reset-password') return;
-        
-        // Give the background listener 800ms to fire before forcing a move
-        setTimeout(() => {
-          navigate('/reset-password', { replace: true });
-        }, 800);
+      if (isRecovery) {
+        console.log("[AuthHandler] Recovery URL detected, forcing redirect...");
+        navigate('/reset-password', { replace: true });
       }
     };
 
-    checkUrlForRecovery();
+    handleInitialRecovery();
 
     return () => subscription.unsubscribe();
   }, [navigate]);
