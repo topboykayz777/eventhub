@@ -72,20 +72,6 @@ const VibeScreen = () => {
           zIndex: 200,
           scalar: 2
         });
-        confetti({
-          particleCount: 200,
-          angle: 60,
-          spread: 80,
-          origin: { x: 0, y: 0.8 },
-          colors
-        });
-        confetti({
-          particleCount: 200,
-          angle: 120,
-          spread: 80,
-          origin: { x: 1, y: 0.8 },
-          colors
-        });
       }, 4000);
     }
 
@@ -126,6 +112,7 @@ const VibeScreen = () => {
 
       const initialRsvps = rsvpsRes.data || [];
       const initialCheckedInCount = initialRsvps.reduce((acc, r) => {
+        // Populate the processed checkins to avoid announcing guests who arrived BEFORE the screen was opened
         if (r.checked_in) processedCheckins.current.add(`${r.id}-main`);
         if (r.plus_one_checked_in) processedCheckins.current.add(`${r.id}-plusone`);
         return acc + (r.checked_in ? 1 : 0) + (r.plus_one_checked_in ? 1 : 0);
@@ -136,10 +123,12 @@ const VibeScreen = () => {
         totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0 
       });
 
+      // Unified Realtime Channel
       channel = supabase.channel(`vibe-realtime-${eventData.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
           const anyNew = payload.new as any;
           const anyOld = payload.old as any;
+          // Exact logic used for sprays
           if (anyNew && anyNew.status === 'approved' && (payload.eventType === 'INSERT' || anyOld?.status !== 'approved')) {
             const guestName = anyNew.description.replace('Digital Spray from ', '');
             addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: guestName, amount: anyNew.amount });
@@ -148,28 +137,28 @@ const VibeScreen = () => {
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
           const anyNew = payload.new as any;
+          const anyOld = payload.old as any;
+          
           if (!anyNew) return;
 
-          // Main Guest Check-in Trigger
-          if (anyNew.checked_in && !processedCheckins.current.has(`${anyNew.id}-main`)) {
-            processedCheckins.current.add(`${anyNew.id}-main`);
-            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: anyNew.guest_name });
-            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+          // Check for Main Guest transition
+          if (anyNew.checked_in && (payload.eventType === 'INSERT' || !anyOld?.checked_in)) {
+             if (!processedCheckins.current.has(`${anyNew.id}-main`)) {
+                processedCheckins.current.add(`${anyNew.id}-main`);
+                addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: anyNew.guest_name });
+                setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+             }
           }
           
-          // Plus-One Check-in Trigger
-          if (anyNew.plus_one_checked_in && !processedCheckins.current.has(`${anyNew.id}-plusone`)) {
-            processedCheckins.current.add(`${anyNew.id}-plusone`);
-            const displayName = anyNew.plus_one_name || `${anyNew.guest_name}'s Guest`;
-            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: displayName });
-            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+          // Check for Plus-One transition
+          if (anyNew.plus_one_checked_in && (payload.eventType === 'INSERT' || !anyOld?.plus_one_checked_in)) {
+             if (!processedCheckins.current.has(`${anyNew.id}-plusone`)) {
+                processedCheckins.current.add(`${anyNew.id}-plusone`);
+                const displayName = anyNew.plus_one_name || `${anyNew.guest_name}'s Guest`;
+                addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: displayName });
+                setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+             }
           }
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventData.id}` }, (payload) => {
-          const anyNew = payload.new as any;
-          setEvent(anyNew);
-          eventRef.current = anyNew;
-          if (anyNew.is_finished) setIsLive(false);
         })
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') setConnectionStatus('online');
