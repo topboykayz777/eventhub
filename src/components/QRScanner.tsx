@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Loader2, Camera, CameraOff, Image as ImageIcon, Upload } from 'lucide-react';
+import { Loader2, Camera, Image as ImageIcon, Zap, Sparkles, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { showError } from '@/utils/toast';
 
@@ -12,126 +12,118 @@ interface QRScannerProps {
 }
 
 const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
-  const [isCameraReady, setIsCameraReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
-  const qrCodeInstance = useRef<Html5Qrcode | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const startScanner = async () => {
-      try {
-        if (qrCodeInstance.current) {
-          await qrCodeInstance.current.stop().catch(() => {});
-        }
-
-        const html5QrCode = new Html5Qrcode("qr-reader-container");
-        qrCodeInstance.current = html5QrCode;
-
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText) => {
-            html5QrCode.stop().then(() => {
-              onScanSuccess(decodedText);
-            }).catch(err => console.error("Stop error", err));
-          },
-          () => {}
-        );
-        
-        setIsCameraReady(true);
-      } catch (err: any) {
-        console.error("Scanner Start Error:", err);
-        setError(err.message || "Could not access camera.");
-        if (onScanError) onScanError(err.message);
-      }
-    };
-
-    const timer = setTimeout(startScanner, 500);
-
-    return () => {
-      clearTimeout(timer);
-      if (qrCodeInstance.current && qrCodeInstance.current.isScanning) {
-        qrCodeInstance.current.stop().catch(err => console.error("Cleanup error", err));
-      }
-    };
-  }, [onScanSuccess, onScanError]);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCapture = async (e: React.ChangeEvent<HTMLInputElement>, isGallery = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsProcessingImage(true);
+    setIsProcessing(true);
     try {
-      const html5QrCode = new Html5Qrcode("qr-reader-container");
+      // We create a temporary container-less instance for file-based decoding
+      const html5QrCode = new Html5Qrcode("qr-file-decoder-dummy");
+      
       const result = await html5QrCode.scanFileV2(file, false);
+      
       if (result && result.decodedText) {
         onScanSuccess(result.decodedText);
       } else {
-        showError("No QR code found in this image.");
+        showError("The lens couldn't find a legitimate pass. Try zooming in more.");
       }
-    } catch (err) {
-      showError("Could not read QR code from image.");
+    } catch (err: any) {
+      console.error("Decoding Error:", err);
+      showError("Optical Error: Ensure the QR code is clear and not obstructed.");
+      if (onScanError) onScanError(err.toString());
     } finally {
-      setIsProcessingImage(false);
+      setIsProcessing(false);
+      // Reset inputs so the same file can be captured again if needed
       if (fileInputRef.current) fileInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="w-full max-w-md mx-auto overflow-hidden rounded-[2.5rem] border-4 border-[#D4AF37]/20 bg-black relative aspect-square">
-        <div id="qr-reader-container" className="w-full h-full" />
+    <div className="space-y-8">
+      {/* Hidden dummy element required by the library for initialization */}
+      <div id="qr-file-decoder-dummy" className="hidden" />
+
+      <div className="w-full max-w-md mx-auto relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent rounded-[3rem] blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
         
-        {!isCameraReady && !error && !isProcessingImage && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-10">
-            <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37] mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Initializing Lens...</p>
-          </div>
-        )}
-
-        {isProcessingImage && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20">
-            <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37] mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Analyzing Image...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-10 p-8 text-center">
-            <CameraOff className="w-12 h-12 text-red-500 mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white mb-2">Camera Access Denied</p>
-            <p className="text-[8px] text-gray-500 uppercase tracking-widest">{error}</p>
-          </div>
-        )}
-
-        {isCameraReady && (
-          <div className="absolute bottom-6 left-0 right-0 text-center z-10">
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Lens Active</span>
+        <div className="relative aspect-square rounded-[3rem] border-2 border-white/10 bg-white/[0.02] backdrop-blur-3xl overflow-hidden flex flex-col items-center justify-center p-12 text-center shadow-2xl">
+          {isProcessing ? (
+            <div className="space-y-6">
+              <Loader2 className="w-16 h-16 animate-spin text-[#D4AF37] mx-auto" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Analyzing Optics</p>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest mt-2">Extracting High-Res Data...</p>
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-8">
+              <div className="w-24 h-24 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto border border-[#D4AF37]/20 group-hover:scale-110 transition-transform duration-500">
+                <Camera className="text-[#D4AF37] w-10 h-10" />
+              </div>
+              <div>
+                <h3 className="text-xl font-serif italic text-white mb-3">Hardware Capture</h3>
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto">
+                  Uses native autofocus & zoom for small or distant registry passes.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {/* Animated corner accents */}
+          <div className="absolute top-8 left-8 w-6 h-6 border-t-2 border-l-2 border-[#D4AF37]/30 rounded-tl-xl" />
+          <div className="absolute top-8 right-8 w-6 h-6 border-t-2 border-r-2 border-[#D4AF37]/30 rounded-tr-xl" />
+          <div className="absolute bottom-8 left-8 w-6 h-6 border-b-2 border-l-2 border-[#D4AF37]/30 rounded-bl-xl" />
+          <div className="absolute bottom-8 right-8 w-6 h-6 border-b-2 border-r-2 border-[#D4AF37]/30 rounded-br-xl" />
+        </div>
       </div>
 
-      <div className="text-center">
+      <div className="grid grid-cols-1 gap-4">
+        {/* The Native Camera Trigger */}
         <input 
           type="file" 
           accept="image/*" 
+          capture="environment" // This attribute triggers the native camera app on mobile
           className="hidden" 
           ref={fileInputRef}
-          onChange={handleImageUpload}
+          onChange={(e) => handleCapture(e)}
         />
         <Button 
-          variant="outline" 
           onClick={() => fileInputRef.current?.click()}
-          className="w-full border-white/10 bg-white/5 text-white rounded-none h-14 text-[10px] font-bold uppercase tracking-[0.2em]"
+          disabled={isProcessing}
+          className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-20 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-xl group transition-all"
         >
-          <ImageIcon className="w-4 h-4 mr-2" /> Scan from Gallery
+          <Zap className="w-4 h-4 mr-3 group-hover:scale-125 transition-transform" /> 
+          Launch Native Scanner
         </Button>
+
+        <div className="flex gap-4">
+          <input 
+            type="file" 
+            accept="image/*" 
+            className="hidden" 
+            ref={galleryInputRef}
+            onChange={(e) => handleCapture(e, true)}
+          />
+          <Button 
+            variant="outline" 
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={isProcessing}
+            className="flex-1 border-white/10 bg-white/5 text-white h-14 rounded-2xl text-[9px] font-bold uppercase tracking-[0.2em]"
+          >
+            <ImageIcon className="w-3 h-3 mr-2" /> Gallery
+          </Button>
+          
+          <div className="flex-1 flex items-center justify-center gap-2 px-4 rounded-2xl bg-white/[0.02] border border-white/5">
+            <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-gray-500">Verified AI</span>
+          </div>
+        </div>
       </div>
     </div>
   );
