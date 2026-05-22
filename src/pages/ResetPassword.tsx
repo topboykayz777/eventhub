@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError, showSuccess } from '@/utils/toast';
 import { motion } from 'framer-motion';
-import { Lock, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { Lock, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -27,22 +27,25 @@ const ResetPassword = () => {
     }
 
     setLoading(true);
+    
+    // Immediately trigger the update through Supabase
     const { error } = await supabase.auth.updateUser({ password: password });
 
     if (error) {
       showError(error.message);
+      setLoading(false);
     } else {
-      showSuccess("Password updated successfully.");
-      navigate('/login');
+      showSuccess("Credential updated successfully.");
+      // Redirect to the signup page as specified
+      navigate('/signup');
     }
-    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
       
-      <div className="max-w-lg mx-auto mt-20 px-6">
+      <div className="max-w-lg mx-auto pt-28 md:pt-40 px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,7 +107,8 @@ const ResetPassword = () => {
               disabled={loading}
               className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black py-10 rounded-none text-[10px] font-bold tracking-[0.4em] uppercase transition-all duration-500 shadow-lg"
             >
-              {loading ? 'Updating...' : 'Update Password'} <CheckCircle2 className="ml-2 w-4 h-4" />
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : 'Update Password'}
+              {!loading && <CheckCircle2 className="ml-2 w-4 h-4" />}
             </Button>
           </form>
         </motion.div>
