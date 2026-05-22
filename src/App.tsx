@@ -48,21 +48,35 @@ const AuthHandler = () => {
   
   useEffect(() => {
     // 1. Listen for the specific PASSWORD_RECOVERY event from Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // This is the primary way Supabase tells the app "this user clicked a reset link"
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
+        console.log("Recovery mode detected via AuthStateChange");
         navigate('/reset-password');
       }
     });
 
-    // 2. Fallback: Check the URL immediately for recovery parameters 
-    // This handles cases where the event fires before the component mounts or Supabase redirects to root
-    const hash = window.location.hash;
-    if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
-      // If we're on the root or login and have a recovery hash, force move to reset page
-      if (window.location.pathname === '/' || window.location.pathname === '/login') {
-        navigate('/reset-password');
+    // 2. Direct URL Inspection (Fallback)
+    // Sometimes the event doesn't fire fast enough, so we check the URL parameters directly
+    const handleUrlRecovery = () => {
+      const hash = window.location.hash;
+      const search = window.location.search;
+      
+      const isRecovery = hash.includes('type=recovery') || 
+                         hash.includes('access_token=') || 
+                         search.includes('type=recovery');
+
+      if (isRecovery) {
+        // If we are on a landing page and have a recovery token, force a jump to the reset page
+        const currentPath = window.location.pathname;
+        if (currentPath === '/' || currentPath === '/login' || currentPath === '/forgot-password') {
+          console.log("Recovery mode detected via URL patterns");
+          navigate('/reset-password');
+        }
       }
-    }
+    };
+
+    handleUrlRecovery();
 
     return () => subscription.unsubscribe();
   }, [navigate]);
