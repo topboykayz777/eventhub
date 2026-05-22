@@ -30,17 +30,18 @@ const GuestPortal = ({
   const [passIndex, setPassIndex] = useState(0);
 
   const handleShare = async () => {
+    const eventUrl = `https://theeventhub.com.ng/event/${event.slug}`;
     const shareData = {
       title: event.event_name,
       text: `Join the celebration memories for ${event.event_name} on EventHub NG.`,
-      url: window.location.href,
+      url: eventUrl,
     };
 
     try {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(eventUrl);
         showSuccess("Link copied to clipboard.");
       }
     } catch (err) {

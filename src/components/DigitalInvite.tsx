@@ -10,7 +10,7 @@ interface DigitalInviteProps {
 }
 
 const DigitalInvite = forwardRef<HTMLDivElement, DigitalInviteProps>(({ event }, ref) => {
-  const eventUrl = `${window.location.origin}/event/${event.slug}`;
+  const eventUrl = `https://theeventhub.com.ng/event/${event.slug}`;
   const eventDate = new Date(event.event_date);
   const theme = event.theme || 'modern';
   const [qrImage, setQrImage] = useState<string>("");

@@ -29,7 +29,7 @@ const ConciergeTools = ({ event, onSendWhatsAppBlast }: ConciergeToolsProps) => 
   const handleCopyLink = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setIsCopying(true);
-    const url = `${window.location.origin}/event/${event.slug}`;
+    const url = `https://theeventhub.com.ng/event/${event.slug}`;
     navigator.clipboard.writeText(url);
     showSuccess("Event Link Copied.");
     setTimeout(() => setIsCopying(false), 2000);
