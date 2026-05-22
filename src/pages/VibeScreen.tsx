@@ -26,6 +26,9 @@ const VibeScreen = () => {
   const notificationQueue = useRef<VibeEvent[]>([]);
   const isProcessingQueue = useRef(false);
   const eventRef = useRef<any>(null);
+  
+  // Memory to prevent duplicate animations for the same check-in during this session
+  const processedCheckins = useRef(new Set<string>());
 
   const themeConfigs: Record<string, any> = {
     modern: { bg: "bg-[#050505]", accent: "text-[#D4AF37]", glass: "bg-white/5", border: "border-white/10", dark: true },
@@ -117,16 +120,19 @@ const VibeScreen = () => {
       setIsLive(new Date() >= new Date(eventData.event_date) && !eventData.is_finished);
 
       const [rsvpsRes, budgetRes] = await Promise.all([
-        supabase.from('rsvps').select('checked_in, plus_one_checked_in').eq('event_id', eventData.id),
+        supabase.from('rsvps').select('id, checked_in, plus_one_checked_in').eq('event_id', eventData.id),
         supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income')
       ]);
 
-      const initialCheckedIn = (rsvpsRes.data || []).reduce((acc, r) => {
+      const initialRsvps = rsvpsRes.data || [];
+      const initialCheckedInCount = initialRsvps.reduce((acc, r) => {
+        if (r.checked_in) processedCheckins.current.add(`${r.id}-main`);
+        if (r.plus_one_checked_in) processedCheckins.current.add(`${r.id}-plusone`);
         return acc + (r.checked_in ? 1 : 0) + (r.plus_one_checked_in ? 1 : 0);
       }, 0);
 
       setStats({ 
-        checkedIn: initialCheckedIn, 
+        checkedIn: initialCheckedInCount, 
         totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0 
       });
 
@@ -134,24 +140,26 @@ const VibeScreen = () => {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
           const anyNew = payload.new as any;
           const anyOld = payload.old as any;
-          if (anyNew.status === 'approved' && (payload.eventType === 'INSERT' || anyOld?.status !== 'approved')) {
+          if (anyNew && anyNew.status === 'approved' && (payload.eventType === 'INSERT' || anyOld?.status !== 'approved')) {
             const guestName = anyNew.description.replace('Digital Spray from ', '');
             addToQueue({ type: 'spray', title: 'Digital Spray Received', detail: guestName, amount: anyNew.amount });
             setStats(prev => ({ ...prev, totalSprayed: prev.totalSprayed + anyNew.amount }));
           }
         })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
           const anyNew = payload.new as any;
-          const anyOld = payload.old as any;
-          
-          // Trigger for main guest check-in
-          if (anyNew.checked_in && !anyOld?.checked_in) {
+          if (!anyNew) return;
+
+          // Main Guest Check-in Trigger
+          if (anyNew.checked_in && !processedCheckins.current.has(`${anyNew.id}-main`)) {
+            processedCheckins.current.add(`${anyNew.id}-main`);
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: anyNew.guest_name });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
           
-          // Trigger for plus-one check-in
-          if (anyNew.plus_one_checked_in && !anyOld?.plus_one_checked_in) {
+          // Plus-One Check-in Trigger
+          if (anyNew.plus_one_checked_in && !processedCheckins.current.has(`${anyNew.id}-plusone`)) {
+            processedCheckins.current.add(`${anyNew.id}-plusone`);
             const displayName = anyNew.plus_one_name || `${anyNew.guest_name}'s Guest`;
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: displayName });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
