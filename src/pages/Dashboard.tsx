@@ -172,9 +172,9 @@ const Dashboard = () => {
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Command Center</span>
             <h1 className="text-4xl md:text-8xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
           </motion.div>
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 w-full md:w-auto">
-            <Button variant="outline" onClick={handleManualRefresh} className="shrink-0 border-border bg-card rounded-2xl px-8 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-muted"><RefreshCw className={`w-4 h-4 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync</Button>
-            <Link to="/create-event" className="shrink-0"><Button className="bg-[#D4AF37] text-black rounded-2xl px-12 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-[#B8860B] shadow-lg"><Plus className="w-4 h-4 mr-3" /> New Event</Button></Link>
+          <div className="flex gap-4 w-full md:w-auto">
+            <Button variant="outline" onClick={handleManualRefresh} className="flex-1 md:flex-none border-border bg-card rounded-2xl px-8 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-muted"><RefreshCw className={`w-4 h-4 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync</Button>
+            <Link to="/create-event" className="flex-1 md:flex-none"><Button className="w-full bg-[#D4AF37] text-black rounded-2xl px-12 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-[#B8860B] shadow-lg"><Plus className="w-4 h-4 mr-3" /> New Event</Button></Link>
           </div>
         </div>
 
