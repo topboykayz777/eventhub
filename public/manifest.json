@@ -1,15 +1,19 @@
 {
-  "name": "EventHub Nigeria",
+  "name": "The Event Hub",
   "short_name": "EventHub",
-  "description": "Elite digital orchestration for luxury gatherings.",
-  "start_url": "/",
+  "description": "Nigeria's Premier Event Orchestration Suite. Digital Spraying, QR Check-ins, Luxury RSVP Themes and Live Vibe Screen.",
+  "start_url": "https://www.theeventhub.com.ng/",
+  "scope": "https://www.theeventhub.com.ng/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#D4AF37",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "lang": "en-NG",
+  "categories": ["events", "lifestyle", "productivity"],
   "icons": [
     {
-      "src": "/hub-icon.png?v=100",
-      "sizes": "any",
+      "src": "/hub-icon.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }

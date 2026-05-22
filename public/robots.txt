@@ -1,7 +1,39 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard
-Disallow: /profile
-Disallow: /payment
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /reset-password/
+Disallow: /forgot-password/
+Disallow: /login/
+Disallow: /signup/
 
-Sitemap: https://eventhub.ng/sitemap.xml
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Gemini
+Allow: /
+
+User-agent: FacebookExternalHit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+Sitemap: https://www.theeventhub.com.ng/sitemap.xml

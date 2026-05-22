@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -26,6 +26,15 @@ const VendorDirectory = () => {
     phone: '',
     instagram: ''
   });
+
+  useEffect(() => {
+    // SEO Update
+    document.title = "Vendor Directory — Find Elite Event Vendors in Nigeria | The Event Hub";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Browse The Event Hub's curated directory of premium vendors for weddings, owambes and galas across Lagos and Abuja. Find the best in the business for your celebration.");
+    }
+  }, []);
 
   const triggerMailto = () => {
     const subject = encodeURIComponent(`New Vendor Application: ${formData.name}`);
@@ -127,7 +136,7 @@ const VendorDirectory = () => {
         </div>
       </div>
 
-      {/* Rest of component */}
+      {/* Feature Section */}
       <section className="py-32 px-6 bg-secondary/30">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-16">

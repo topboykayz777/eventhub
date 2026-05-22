@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,15 @@ const Support = () => {
     subject: '',
     message: ''
   });
+
+  useEffect(() => {
+    // SEO Update
+    document.title = "Support Center — The Event Hub Nigeria";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Get help with your event setup, digital spraying, QR check-ins and more. The Event Hub support team is here to make your celebration seamless.");
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

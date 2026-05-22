@@ -170,8 +170,14 @@ const guideSections = [
 const Guide = () => {
   const navigate = useNavigate();
 
-  // AIO Injector: Updated to include the expanded Q&A for AI crawlers
   useEffect(() => {
+    // SEO Update
+    document.title = "How It Works — The Event Hub Nigeria";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Learn how to host a flawless event with The Event Hub. From creating your event to dispatching WhatsApp invites and receiving digital sprays — every step of the art of celebration, simplified.");
+    }
+
     const faqSchema = {
       "@context": "https://schema.org",
       "@type": "FAQPage",

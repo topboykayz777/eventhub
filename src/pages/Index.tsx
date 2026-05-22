@@ -14,6 +14,13 @@ import confetti from 'canvas-confetti';
 
 const Index = () => {
   useEffect(() => {
+    // SEO Update
+    document.title = "The Event Hub — Nigeria's Premier Event Orchestration Suite";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "The Event Hub is Nigeria's most sophisticated event management platform. QR check-ins, Digital Spraying with zero commission, 20+ luxury RSVP themes, Guest Registry and live Vibe Screen for weddings, owambes and galas in Lagos and Abuja.");
+    }
+
     const end = Date.now() + 2 * 1000;
     const colors = ['#D4AF37', '#ffffff', '#F9E4B7'];
 
