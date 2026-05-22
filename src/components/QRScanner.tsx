@@ -22,35 +22,18 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
     const startScanner = async () => {
       try {
         if (qrCodeInstance.current) {
-          try {
-            await qrCodeInstance.current.stop();
-          } catch (e) {}
+          await qrCodeInstance.current.stop().catch(() => {});
         }
 
         const html5QrCode = new Html5Qrcode("qr-reader-container");
         qrCodeInstance.current = html5QrCode;
 
-        const config = { 
-          fps: 30, // Maximum frame processing
-          // By NOT defining qrbox, the engine scans the ENTIRE viewable area
-          // This allows tiny codes anywhere in the frame to be picked up instantly.
-          aspectRatio: 1.0,
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true // Uses native OS hardware acceleration
-          },
-          videoConstraints: {
-            facingMode: "environment",
-            // We request high detail so the AI can see modules of distant codes
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
-        };
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
         await html5QrCode.start(
           { facingMode: "environment" },
           config,
           (decodedText) => {
-            // Instant capture and stop
             html5QrCode.stop().then(() => {
               onScanSuccess(decodedText);
             }).catch(err => console.error("Stop error", err));
@@ -100,27 +83,19 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
   return (
     <div className="space-y-6">
       <div className="w-full max-w-md mx-auto overflow-hidden rounded-[2.5rem] border-4 border-[#D4AF37]/20 bg-black relative aspect-square">
-        {/* Full-frame container for maximum sensitivity */}
-        <div id="qr-reader-container" className="w-full h-full [&_video]:object-cover" />
+        <div id="qr-reader-container" className="w-full h-full" />
         
-        {/* Modern scanning line animation to show it's active */}
-        {isCameraReady && (
-          <div className="absolute inset-0 pointer-none overflow-hidden rounded-[2.2rem]">
-            <div className="w-full h-[2px] bg-[#D4AF37] absolute top-0 animate-[scan_3s_linear_infinite] opacity-50 shadow-[0_0_15px_#D4AF37]" />
-          </div>
-        )}
-
         {!isCameraReady && !error && !isProcessingImage && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-10">
             <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37] mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Opening Gate...</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Initializing Lens...</p>
           </div>
         )}
 
         {isProcessingImage && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20">
             <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37] mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Verifying Pass...</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Analyzing Image...</p>
           </div>
         )}
 
@@ -131,9 +106,18 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
             <p className="text-[8px] text-gray-500 uppercase tracking-widest">{error}</p>
           </div>
         )}
+
+        {isCameraReady && (
+          <div className="absolute bottom-6 left-0 right-0 text-center z-10">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Lens Active</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="text-center px-4">
+      <div className="text-center">
         <input 
           type="file" 
           accept="image/*" 
@@ -146,17 +130,9 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
           onClick={() => fileInputRef.current?.click()}
           className="w-full border-white/10 bg-white/5 text-white rounded-none h-14 text-[10px] font-bold uppercase tracking-[0.2em]"
         >
-          <ImageIcon className="w-4 h-4 mr-2" /> Select from Gallery
+          <ImageIcon className="w-4 h-4 mr-2" /> Scan from Gallery
         </Button>
       </div>
-      
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes scan {
-          0% { top: 0%; }
-          50% { top: 100%; }
-          100% { top: 0%; }
-        }
-      `}} />
     </div>
   );
 };
