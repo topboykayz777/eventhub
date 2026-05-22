@@ -59,12 +59,8 @@ const VibeScreen = () => {
     setActivities(prev => [next, ...prev].slice(0, 3));
     
     if (next.type === 'spray') {
-      // Trigger multiple bursts for "Jaw-dropping" effect
-      // Burst 1: After shake ends (at 4s)
       setTimeout(() => {
         const colors = ['#D4AF37', '#ffffff', '#F9E4B7'];
-        
-        // Massive Center Burst
         confetti({
           particleCount: 600,
           spread: 120,
@@ -73,8 +69,6 @@ const VibeScreen = () => {
           zIndex: 200,
           scalar: 2
         });
-
-        // Left Burst
         confetti({
           particleCount: 200,
           angle: 60,
@@ -82,8 +76,6 @@ const VibeScreen = () => {
           origin: { x: 0, y: 0.8 },
           colors
         });
-
-        // Right Burst
         confetti({
           particleCount: 200,
           angle: 120,
@@ -94,11 +86,9 @@ const VibeScreen = () => {
       }, 4000);
     }
 
-    // Extended display time (10 seconds total)
     await new Promise(resolve => setTimeout(resolve, 10000));
     setActiveNotification(null);
     
-    // Short gap before next notification
     await new Promise(resolve => setTimeout(resolve, 800));
     isProcessingQueue.current = false;
     processQueue();
@@ -127,10 +117,18 @@ const VibeScreen = () => {
       setIsLive(new Date() >= new Date(eventData.event_date) && !eventData.is_finished);
 
       const [rsvpsRes, budgetRes] = await Promise.all([
-        supabase.from('rsvps').select('checked_in').eq('event_id', eventData.id),
+        supabase.from('rsvps').select('checked_in, plus_one_checked_in').eq('event_id', eventData.id),
         supabase.from('budget_items').select('amount').eq('event_id', eventData.id).eq('status', 'approved').eq('type', 'income')
       ]);
-      setStats({ checkedIn: rsvpsRes.data?.filter(r => r.checked_in).length || 0, totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0 });
+
+      const initialCheckedIn = (rsvpsRes.data || []).reduce((acc, r) => {
+        return acc + (r.checked_in ? 1 : 0) + (r.plus_one_checked_in ? 1 : 0);
+      }, 0);
+
+      setStats({ 
+        checkedIn: initialCheckedIn, 
+        totalSprayed: budgetRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0 
+      });
 
       channel = supabase.channel(`vibe-realtime-${eventData.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items', filter: `event_id=eq.${eventData.id}` }, (payload) => {
@@ -145,8 +143,17 @@ const VibeScreen = () => {
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventData.id}` }, (payload) => {
           const anyNew = payload.new as any;
           const anyOld = payload.old as any;
+          
+          // Trigger for main guest check-in
           if (anyNew.checked_in && !anyOld?.checked_in) {
             addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: anyNew.guest_name });
+            setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
+          }
+          
+          // Trigger for plus-one check-in
+          if (anyNew.plus_one_checked_in && !anyOld?.plus_one_checked_in) {
+            const displayName = anyNew.plus_one_name || `${anyNew.guest_name}'s Guest`;
+            addToQueue({ type: 'checkin', title: 'Guest Arrival', detail: displayName });
             setStats(prev => ({ ...prev, checkedIn: prev.checkedIn + 1 }));
           }
         })
