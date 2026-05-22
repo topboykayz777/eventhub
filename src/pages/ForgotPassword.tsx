@@ -20,6 +20,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     // We explicitly set the redirect to the reset-password page.
+    // Note: This URL must also be added to your Supabase project's 'Redirect URLs' list for best results.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
