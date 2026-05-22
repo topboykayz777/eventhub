@@ -23,8 +23,8 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      // Small buffer to ensure the Auth client has processed tokens from the URL
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Give Supabase a moment to process hash tokens if they just landed
+      await new Promise(resolve => setTimeout(resolve, 500));
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
@@ -51,13 +51,6 @@ const ResetPassword = () => {
     setLoading(true);
     
     try {
-      // Crucial: Re-verify session immediately before update to catch any "session missing" drift
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
-      if (!currentSession) {
-        throw new Error("Auth session missing. Your link may have expired or been used already.");
-      }
-
       const { error } = await supabase.auth.updateUser({ 
         password: password 
       });
@@ -66,7 +59,7 @@ const ResetPassword = () => {
 
       showSuccess("Account secured. Please sign in with your new password.");
       
-      // Clean up the recovery session
+      // Sign out to clear the recovery session
       await supabase.auth.signOut();
       
       setTimeout(() => {
@@ -93,8 +86,8 @@ const ResetPassword = () => {
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
         <div className="max-w-md w-full bg-card p-12 rounded-[3rem] border border-border text-center">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-serif italic mb-4">Session Not Found</h1>
-          <p className="text-muted-foreground text-sm mb-10">We couldn't verify your security keys. Please request a new recovery link from the login page.</p>
+          <h1 className="text-3xl font-serif italic mb-4">Invalid Link</h1>
+          <p className="text-muted-foreground text-sm mb-10">This recovery link is either expired or invalid. Please request a new one.</p>
           <Button onClick={() => navigate('/forgot-password')} className="w-full bg-[#D4AF37] text-black rounded-none py-6 uppercase tracking-widest font-bold">Request New Link</Button>
         </div>
       </div>
