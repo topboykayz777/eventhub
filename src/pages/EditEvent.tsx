@@ -13,10 +13,10 @@ import { showSuccess, showError } from '@/utils/toast';
 import { 
   Sparkles, Image as ImageIcon, Upload, X, Crown, Gem, Sun, Moon, 
   Flower2, Waves, Heart, Landmark, Star, PenTool, Navigation, Camera, 
-  Ghost, Tent, Trees as Palmtree, Cherry, ZapIcon, Palette, Loader2, ArrowLeft, Save
+  Ghost, Tent, Trees as Palmtree, Cherry, ZapIcon, Palette, Loader2, ArrowLeft, Save, Plus, Trash2
 } from 'lucide-react';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const EditEvent = () => {
   const { id } = useParams();
@@ -24,13 +24,16 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  
   const [formData, setFormData] = useState({
     eventName: '',
     venue: '',
     venue_map_url: '',
     message: '',
     theme: 'modern',
-    photo_url: ''
+    photo_url: '',
+    gallery_urls: [] as string[]
   });
 
   useEffect(() => {
@@ -44,7 +47,8 @@ const EditEvent = () => {
           venue_map_url: data.venue_map_url || '',
           message: data.message || '',
           theme: data.theme || 'modern',
-          photo_url: data.photo_url || ''
+          photo_url: data.photo_url || '',
+          gallery_urls: data.gallery_urls || []
         });
       } catch (err: any) {
         showError(err.message);
@@ -76,23 +80,53 @@ const EditEvent = () => {
     }
   };
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setGalleryUploading(true);
+
+    const newUrls: string[] = [];
+    try {
+      for (const file of Array.from(e.target.files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('event-photos').upload(fileName, file);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
+        newUrls.push(publicUrl);
+      }
+      setFormData(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, ...newUrls] }));
+      showSuccess(`${newUrls.length} file(s) added to gallery.`);
+    } catch (error: any) {
+      showError('Gallery upload failed: ' + error.message);
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
+  const removeGalleryItem = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      gallery_urls: prev.gallery_urls.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // FIX: Changed .eq(id, 'id') to .eq('id', id) to fix the "column does not exist" error
       const { error } = await supabase.from('events').update({
         event_name: formData.eventName,
         venue: formData.venue,
         venue_map_url: formData.venue_map_url,
         message: formData.message,
         theme: formData.theme,
-        photo_url: formData.photo_url
+        photo_url: formData.photo_url,
+        gallery_urls: formData.gallery_urls
       }).eq('id', id);
 
       if (error) throw error;
-      showSuccess('Event orchestrated successfully.');
+      showSuccess('Event orchestration updated.');
       navigate('/dashboard');
     } catch (error: any) {
       showError(error.message);
@@ -218,6 +252,47 @@ const EditEvent = () => {
               <input id="photo-upload" type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
             </div>
 
+            {/* Gallery Section */}
+            <div className="space-y-8 pt-8 border-t border-border">
+              <div className="flex justify-between items-end">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+                  Memory Wall Gallery <InfoButton text="Upload multiple photos or videos to showcase moments from the event. These will appear in a grid on your live page." />
+                </Label>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase">{formData.gallery_urls.length} Files</span>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <AnimatePresence>
+                  {formData.gallery_urls.map((url, i) => (
+                    <motion.div 
+                      key={url} 
+                      initial={{ opacity: 0, scale: 0.9 }} 
+                      animate={{ opacity: 1, scale: 1 }} 
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="relative aspect-square rounded-2xl overflow-hidden border border-border group"
+                    >
+                      <img src={url} className="w-full h-full object-cover" alt="" />
+                      <button 
+                        type="button" 
+                        onClick={() => removeGalleryItem(i)}
+                        className="absolute top-2 right-2 bg-black/60 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                
+                <Label htmlFor="gallery-upload" className="cursor-pointer">
+                  <div className="aspect-square border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 hover:bg-secondary transition-all bg-secondary/50 rounded-2xl">
+                    {galleryUploading ? <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]" /> : <Plus className="text-muted-foreground w-6 h-6" />}
+                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Add to Wall</span>
+                  </div>
+                </Label>
+              </div>
+              <input id="gallery-upload" type="file" multiple accept="image/*,video/*" className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
+            </div>
+
             <div className="space-y-3">
               <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                 Guest Directive <InfoButton text="Update the personalized message for your attendees." />
@@ -265,7 +340,7 @@ const EditEvent = () => {
           <div className="pt-12">
             <Button 
               type="submit" 
-              disabled={loading || uploading} 
+              disabled={loading || uploading || galleryUploading} 
               className="w-full bg-[#D4AF37] hover:bg-[#B8860B] text-black h-24 rounded-[2.5rem] text-[14px] font-black tracking-[0.5em] uppercase transition-all duration-500 shadow-2xl group"
             >
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <span className="flex items-center gap-4">Save Orchestration <Save size={20} /></span>}
