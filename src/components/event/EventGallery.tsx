@@ -20,9 +20,6 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
   };
 
   const video = isVideo(url);
-  
-  // TECH FIX: Append seek time to force the browser to render the first frame as a poster instantly
-  const optimizedUrl = video ? `${url}#t=0.1` : url;
 
   return (
     <motion.div 
@@ -34,11 +31,7 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       onClick={onClick}
       className="aspect-[4/5] overflow-hidden border border-white/10 cursor-pointer group relative bg-white/[0.02] will-change-transform rounded-2xl"
     >
-      {/* 
-        TECH FIX: We removed the hard 'spinner-only' state for videos. 
-        Metadata preloading handles the 'instant' feel now.
-      */}
-      {!isLoaded && !hasError && !video && (
+      {!isLoaded && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]/20" />
         </div>
@@ -54,11 +47,13 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
       {video ? (
         <div className="w-full h-full relative">
           <video 
-            src={optimizedUrl} 
+            src={url} 
             className="w-full h-full object-cover"
             muted 
             playsInline
-            preload="metadata"
+            autoPlay
+            loop
+            preload="auto"
             onLoadedData={() => setIsLoaded(true)}
             onError={() => setHasError(true)}
           />
@@ -71,7 +66,6 @@ const GalleryItem = ({ url, index, onClick }: GalleryItemProps) => {
           src={url} 
           loading="lazy"
           decoding="async"
-          fetchPriority="low"
           className={`w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           alt="" 
           onLoad={() => setIsLoaded(true)}
@@ -90,6 +84,9 @@ interface EventGalleryProps {
 const EventGallery = ({ galleryUrls, onOpenLightbox }: EventGalleryProps) => {
   if (!galleryUrls || galleryUrls.length === 0) return null;
 
+  // Limit the displayed gallery items to a maximum of 30
+  const displayedUrls = galleryUrls.slice(0, 30);
+
   return (
     <div className="space-y-12">
       <div className="flex justify-between items-end">
@@ -98,13 +95,13 @@ const EventGallery = ({ galleryUrls, onOpenLightbox }: EventGalleryProps) => {
           <h2 className="text-3xl md:text-5xl font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h2>
         </div>
         <div className="flex items-center gap-3 text-gray-600">
-          <span className="text-[10px] font-bold uppercase tracking-widest">{galleryUrls.length} Files</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest">{displayedUrls.length} Files</span>
           <ImageIcon className="w-6 h-6" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        {galleryUrls.map((url: string, i: number) => (
+        {displayedUrls.map((url: string, i: number) => (
           <GalleryItem key={`${url}-${i}`} url={url} index={i} onClick={() => onOpenLightbox(i)} />
         ))}
       </div>
