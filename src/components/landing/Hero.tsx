@@ -32,11 +32,12 @@ const Hero = () => {
       className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-background pt-20 md:pt-24 cursor-crosshair"
     >
       {/* Immersive Background Layer */}
-      <div className="absolute inset-0 z-0 pointer-none">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
           src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
-          className="w-full h-full object-cover opacity-25 md:opacity-45 animate-slow-zoom dark:grayscale"
+          className="w-full h-full object-cover opacity-25 md:opacity-45 animate-slow-zoom dark:grayscale gpu-accelerated"
           alt="Luxury Event Background"
+          style={{ transform: 'translate3d(0,0,0)' }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
         <div className="absolute inset-0 bg-black/5 dark:bg-black/30" />
@@ -47,7 +48,7 @@ const Hero = () => {
         initial={{ y: "0%" }}
         animate={{ y: "-100%" }}
         transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1], delay: 0.2 }}
-        className="absolute inset-0 z-40 bg-gradient-to-b from-black via-zinc-900 to-black pointer-events-none"
+        className="absolute inset-0 z-40 bg-gradient-to-b from-black via-zinc-900 to-black pointer-events-none gpu-accelerated"
       />
 
       <div className="max-w-7xl mx-auto relative z-10 px-6 text-center w-full">

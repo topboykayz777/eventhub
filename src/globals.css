@@ -50,8 +50,20 @@
 }
 
 @layer utilities {
+  /* GPU Hardware Acceleration Helper */
+  .gpu-accelerated {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity;
+  }
+
+  /* Optimized Glassmorphism for Mobile/Android */
   .glass-premium {
-    @apply bg-white/70 dark:bg-white/[0.03] backdrop-blur-2xl border border-black/5 dark:border-white/10 shadow-xl dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
+    @apply bg-white/80 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-xl dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    will-change: backdrop-filter, transform;
   }
   
   .gold-gradient {
@@ -81,14 +93,15 @@
   }
 }
 
+/* GPU-Accelerated Keyframes */
 @keyframes silk-reveal {
-  0% { transform: translateY(40px); opacity: 0; filter: blur(10px); }
-  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+  0% { transform: translate3d(0, 40px, 0); opacity: 0; filter: blur(10px); }
+  100% { transform: translate3d(0, 0, 0); opacity: 1; filter: blur(0); }
 }
 
 @keyframes slow-zoom {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.05); }
+  0% { transform: scale3d(1, 1, 1); }
+  100% { transform: scale3d(1.05, 1.05, 1.05); }
 }
 
 html, body {

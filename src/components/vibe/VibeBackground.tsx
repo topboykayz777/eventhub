@@ -34,7 +34,7 @@ const VibeBackground = ({ mediaUrls, fallbackUrl }: VibeBackgroundProps) => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 2, ease: "easeInOut" }}
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full gpu-accelerated"
         >
           {isVideo(items[index]) ? (
             <video 
@@ -43,12 +43,14 @@ const VibeBackground = ({ mediaUrls, fallbackUrl }: VibeBackgroundProps) => {
               muted 
               loop 
               playsInline 
-              className="w-full h-full object-cover"
+              preload="auto"
+              className="w-full h-full object-cover gpu-accelerated"
+              style={{ transform: 'translate3d(0,0,0)' }}
             />
           ) : (
             <motion.img 
               src={items[index]} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover gpu-accelerated"
               animate={{ 
                 scale: [1, 1.05],
               }}
@@ -58,12 +60,13 @@ const VibeBackground = ({ mediaUrls, fallbackUrl }: VibeBackgroundProps) => {
                 repeat: Infinity,
                 repeatType: "reverse"
               }}
+              style={{ transform: 'translate3d(0,0,0)' }}
             />
           )}
         </motion.div>
       </AnimatePresence>
       {/* Cinematic Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
     </div>
   );
 };

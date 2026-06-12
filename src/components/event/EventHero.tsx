@@ -25,15 +25,29 @@ const EventHero = ({ event, isFinished, config }: EventHeroProps) => {
         initial={{ scale: 1.1, opacity: 0 }} 
         animate={{ scale: 1, opacity: 1 }} 
         transition={{ duration: 1.5 }} 
-        className="w-full h-full"
+        className="w-full h-full gpu-accelerated"
       >
         {isVideo(event.photo_url) ? (
-          <video src={event.photo_url} className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} autoPlay muted loop playsInline />
+          <video 
+            src={event.photo_url} 
+            className={`w-full h-full object-cover gpu-accelerated ${isFinished ? 'grayscale' : 'brightness-75'}`} 
+            autoPlay 
+            muted 
+            loop 
+            playsInline 
+            preload="auto"
+            style={{ transform: 'translate3d(0,0,0)' }}
+          />
         ) : (
-          <img src={event.photo_url} className={`w-full h-full object-cover ${isFinished ? 'grayscale' : 'brightness-75'}`} alt="" />
+          <img 
+            src={event.photo_url} 
+            className={`w-full h-full object-cover gpu-accelerated ${isFinished ? 'grayscale' : 'brightness-75'}`} 
+            alt="" 
+            style={{ transform: 'translate3d(0,0,0)' }}
+          />
         )}
       </motion.div>
-      <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-${config.bg.replace('bg-', '')} via-transparent to-transparent pointer-events-none`} />
       
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 lg:p-16 max-w-6xl mx-auto">
         {isFinished ? (
