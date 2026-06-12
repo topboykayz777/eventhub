@@ -1,22 +1,23 @@
--- Create the storage bucket for event and profile photos
+-- 1. Create the 'event-photos' storage bucket if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('event-photos', 'event-photos', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Policy: Allow authenticated users to upload files to the 'event-photos' bucket
-CREATE POLICY "Allow authenticated uploads"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'event-photos');
+-- 2. Drop existing policies to prevent "already exists" errors
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated Upload" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated Update" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated Delete" ON storage.objects;
 
--- Policy: Allow public read access to all files in the 'event-photos' bucket
-CREATE POLICY "Allow public read access"
-ON storage.objects FOR SELECT
-TO public
-USING (bucket_id = 'event-photos');
+-- 3. Create secure public policies for the bucket
+CREATE POLICY "Public Access" ON storage.objects 
+  FOR SELECT USING (bucket_id = 'event-photos');
 
--- Policy: Allow authenticated users to update or delete files in the 'event-photos' bucket
-CREATE POLICY "Allow authenticated management"
-ON storage.objects FOR ALL
-TO authenticated
-USING (bucket_id = 'event-photos');
+CREATE POLICY "Authenticated Upload" ON storage.objects 
+  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'event-photos');
+
+CREATE POLICY "Authenticated Update" ON storage.objects 
+  FOR UPDATE TO authenticated USING (bucket_id = 'event-photos');
+
+CREATE POLICY "Authenticated Delete" ON storage.objects 
+  FOR DELETE TO authenticated USING (bucket_id = 'event-photos');
