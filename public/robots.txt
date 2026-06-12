@@ -1,39 +1,23 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard/
-Disallow: /profile/
-Disallow: /reset-password/
-Disallow: /forgot-password/
-Disallow: /login/
-Disallow: /signup/
 
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 2
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 2
-
+# Explicitly invite AI Crawlers
 User-agent: GPTBot
 Allow: /
 
-User-agent: Claude-Web
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
 Allow: /
 
 User-agent: PerplexityBot
 Allow: /
 
-User-agent: Gemini
+User-agent: Google-Extended
 Allow: /
 
-User-agent: FacebookExternalHit
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: LinkedInBot
+User-agent: Applebot-Extended
 Allow: /
 
 Sitemap: https://www.theeventhub.com.ng/sitemap.xml
