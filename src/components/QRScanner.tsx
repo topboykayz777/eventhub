@@ -28,7 +28,14 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
         const html5QrCode = new Html5Qrcode("qr-reader-container");
         qrCodeInstance.current = html5QrCode;
 
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        // Set a perfectly square scanning box
+        const config = { 
+          fps: 15, 
+          qrbox: (width: number, height: number) => {
+            const size = Math.min(width, height) * 0.75;
+            return { width: size, height: size };
+          }
+        };
 
         await html5QrCode.start(
           { facingMode: "environment" },
@@ -82,7 +89,24 @@ const QRScanner = ({ onScanSuccess, onScanError }: QRScannerProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="w-full max-w-md mx-auto overflow-hidden rounded-[2.5rem] border-4 border-[#D4AF37]/20 bg-black relative aspect-square">
+      {/* Injecting styles to force the video element inside html5-qrcode to be a perfect square */}
+      <style>{`
+        #qr-reader-container {
+          width: 100% !important;
+          height: 100% !important;
+        }
+        #qr-reader-container video {
+          object-fit: cover !important;
+          width: 100% !important;
+          height: 100% !important;
+          border-radius: 2.2rem;
+        }
+        #qr-reader-container__scan_region {
+          border: none !important;
+        }
+      `}</style>
+
+      <div className="w-full max-w-xs sm:max-w-sm mx-auto overflow-hidden rounded-[2.5rem] border-4 border-[#D4AF37]/20 bg-black relative aspect-square shadow-2xl">
         <div id="qr-reader-container" className="w-full h-full" />
         
         {!isCameraReady && !error && !isProcessingImage && (
