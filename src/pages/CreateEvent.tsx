@@ -219,7 +219,9 @@ const CreateEvent = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">01</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Identity</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center flex items-center justify-center gap-2">
+                The Identity <InfoButton text="Define the core details of your celebration, including its public title and access tier." />
+              </span>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12">
@@ -230,7 +232,9 @@ const CreateEvent = () => {
                 <input required className="h-16 w-full px-4 bg-transparent border-b border-border rounded-none focus:border-[#D4AF37] text-2xl md:text-3xl font-serif italic outline-none transition-all placeholder:text-muted-foreground/30 text-foreground text-center" value={formData.eventName} onChange={(e) => setFormData({ ...formData, eventName: e.target.value })} />
               </div>
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">Access Level</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
+                  Access Level <InfoButton text="Select your orchestration tier. The Free Beta tier unlocks all premium features." />
+                </Label>
                 <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue={formData.plan}>
                   <SelectTrigger className="h-16 bg-secondary border border-border rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6">
                     <SelectValue />
@@ -248,17 +252,29 @@ const CreateEvent = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">02</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Logistics</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center flex items-center justify-center gap-2">
+                The Logistics <InfoButton text="Specify when and where your guests should gather. You can also link a Google Maps URL for seamless navigation." />
+              </span>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-12 mb-12">
+            <div className="grid md:grid-cols-3 gap-12 mb-12">
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Date & Time</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
+                  Date & Time <InfoButton text="Set the official date and start time for your celebration." />
+                </Label>
                 <input type="datetime-local" required className="h-16 w-full px-6 bg-secondary border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light text-foreground text-center" value={formData.eventDate} onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} />
               </div>
               <div className="space-y-3 flex flex-col items-center">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Venue Name</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
+                  Venue Name <InfoButton text="Enter the name of the hall, garden, or estate hosting your event." />
+                </Label>
                 <input required className="h-16 w-full px-6 bg-secondary border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light text-foreground text-center" value={formData.venue} onChange={(e) => setFormData({ ...formData, venue: e.target.value })} />
+              </div>
+              <div className="space-y-3 flex flex-col items-center">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
+                  Location GPS <InfoButton text="Paste a Google Maps share link to give guests one-tap navigation." />
+                </Label>
+                <input className="h-16 w-full px-6 bg-secondary border-border rounded-2xl focus:border-[#D4AF37] text-lg font-light text-foreground text-center" placeholder="Google Maps Link" value={formData.venue_map_url} onChange={(e) => setFormData({ ...formData, venue_map_url: e.target.value })} />
               </div>
             </div>
           </motion.div>
@@ -268,11 +284,15 @@ const CreateEvent = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <span className="text-[#D4AF37] font-black text-xs">03</span>
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Presentation</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center flex items-center justify-center gap-2">
+                The Presentation <InfoButton text="Upload a cinematic cover portrait or video loop, and curate a memory wall gallery of captured moments." />
+              </span>
             </div>
             
             <div className="space-y-8 flex flex-col items-center">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Cover Portrait</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
+                Cover Portrait <InfoButton text="Upload the primary visual backdrop of your event page." />
+              </Label>
               {formData.photo_url ? (
                 <div className="relative aspect-video w-full overflow-hidden border border-border group rounded-[2.5rem]">
                   <img src={formData.photo_url} className="w-full h-full object-cover" alt="" />
@@ -294,7 +314,9 @@ const CreateEvent = () => {
             {/* Gallery Section */}
             <div className="space-y-8 pt-12 mt-12 border-t border-border w-full">
               <div className="flex justify-between items-end">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Memory Wall Gallery</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+                  Memory Wall Gallery <InfoButton text="Upload multiple photos or videos to showcase moments from the event. These will appear in a grid on your live page." />
+                </Label>
                 <span className="text-[9px] font-bold text-muted-foreground uppercase">{formData.gallery_urls.length} Files</span>
               </div>
               
@@ -319,6 +341,19 @@ const CreateEvent = () => {
               </div>
               <input id="gallery-upload" type="file" multiple accept="image/*,video/*" className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
             </div>
+
+            {/* Guest Directive Section */}
+            <div className="space-y-3 pt-12 mt-12 border-t border-border w-full">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
+                Guest Directive <InfoButton text="Write a personalized invitation message or special instructions for your attendees." />
+              </Label>
+              <Textarea 
+                className="min-h-[180px] bg-secondary border-border rounded-[2rem] focus:border-[#D4AF37] text-lg font-light resize-none px-8 py-8 text-foreground" 
+                placeholder="Write your invitation message here..."
+                value={formData.message} 
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
+              />
+            </div>
           </motion.div>
 
           <motion.div className="bg-card border border-border p-8 md:p-16 rounded-[3.5rem] shadow-2xl relative overflow-hidden">
@@ -327,7 +362,9 @@ const CreateEvent = () => {
                 <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                   <span className="text-[#D4AF37] font-black text-xs">04</span>
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center">The Aesthetic</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground text-center flex items-center justify-center gap-2">
+                  The Aesthetic <InfoButton text="Select a visual DNA theme that perfectly matches the atmosphere and prestige of your celebration." />
+                </span>
               </div>
             </div>
             
