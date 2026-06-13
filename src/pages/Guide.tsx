@@ -34,44 +34,19 @@ import { Button } from '@/components/ui/button';
 
 const steps = [
   {
-    title: "1. Create Account",
-    desc: "Sign up to start planning. This gives you access to all your event tools in one dashboard.",
-    icon: UserPlus
-  },
-  {
-    title: "2. Build Your Page",
-    desc: "Design your event website. Choose a theme and upload your photo to make it look amazing.",
+    title: "1. Design Your Shrine",
+    desc: "Pick a luxury visual theme, upload your stunning cover portrait, and make your event page live in minutes. It's your event's digital monument.",
     icon: Layout
   },
   {
-    title: "3. Make it Live",
-    desc: "Activate your page by paying the service fee. Once done, your unique link is ready for guests.",
-    icon: CreditCard
-  },
-  {
-    title: "4. Share the Link",
-    desc: "Send your event link to your friends and family on WhatsApp so they can start signing up.",
-    icon: Share2
-  },
-  {
-    title: "5. Verify Gifts",
-    desc: "When guests send you money (Spraying), check your bank alert and approve it in the app to show a celebration on screen.",
-    icon: Wallet
-  },
-  {
-    title: "6. Send Reminders",
-    desc: "Easily send messages to all your signed-up guests at once using our WhatsApp tool.",
+    title: "2. Dispatch the Invites",
+    desc: "Gather RSVPs automatically. With one click, send personalized digital passes with secure QR codes to your entire guest list via high-speed WhatsApp blasts.",
     icon: Send
   },
   {
-    title: "7. Event Day",
-    desc: "Scan guest QR codes at the entrance to check them in. Connect a laptop to a TV to show the live party screen.",
-    icon: Monitor
-  },
-  {
-    title: "8. Keep the Memory",
-    desc: "Your event page stays online forever. You can always come back to see the photos and messages.",
-    icon: Heart
+    title: "3. Ignite the Vibe",
+    desc: "Scan QR passes at the door for seamless entry. On the big day, verify digital sprays instantly to trigger cinematic celebration animations on the ballroom screens.",
+    icon: Zap
   }
 ];
 
@@ -228,18 +203,18 @@ const Guide = () => {
             How it <span className="text-[#D4AF37]">Works</span>
           </motion.h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-light tracking-wide text-lg">
-            Everything you need to know about orchestrating your celebration on EventHub.
+            Three simple acts to take your celebration from vision to digital reality.
           </p>
         </div>
 
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-border" />
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 8 Simple Steps</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 3 Simple Steps</h2>
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-16">
             {steps.map((step, i) => (
               <motion.div
                 key={i}
@@ -249,11 +224,11 @@ const Guide = () => {
                 transition={{ delay: i * 0.1 }}
                 className="text-center group"
               >
-                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500 border border-border/50">
-                  <step.icon className="text-[#D4AF37] w-8 h-8" />
+                <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-8 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500 border border-border/50">
+                  <step.icon className="text-[#D4AF37] w-10 h-10" />
                 </div>
-                <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed font-light px-4">
+                <h3 className="text-2xl font-serif italic mb-4">{step.title}</h3>
+                <p className="text-muted-foreground text-base leading-relaxed font-light px-4">
                   {step.desc}
                 </p>
               </motion.div>
@@ -304,13 +279,13 @@ const Guide = () => {
           className="mt-40 text-center p-20 rounded-[4rem] bg-gradient-to-b from-secondary/30 to-transparent border border-border"
         >
           <Zap className="text-[#D4AF37] w-12 h-12 mx-auto mb-8 animate-pulse" />
-          <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Need more help?</h2>
+          <h2 className="text-3xl md:text-4xl lg:text-8xl font-serif italic mb-6">Ready to lead?</h2>
           <p className="text-muted-foreground mb-10 uppercase tracking-widest text-[10px] font-bold">Our team is here 24/7</p>
           <button 
-            onClick={() => window.location.href = '/support'}
+            onClick={() => window.location.href = '/create-event'}
             className="bg-[#D4AF37] text-black px-12 py-8 rounded-none text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#B8860B] transition-all duration-500 shadow-lg"
           >
-            Message Support
+            Begin Now
           </button>
         </motion.div>
       </div>

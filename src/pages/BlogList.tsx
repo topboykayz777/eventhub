@@ -27,7 +27,7 @@ export const blogPosts: BlogPost[] = [
     category: "Traditions",
     date: "June 15, 2026",
     author: "Kael Felix",
-    readTime: "5 min read",
+    readTime: "8 min read",
     image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80",
     tags: ["Digital Spraying", "Owambe", "Nigerian Weddings", "Cashless Economy"]
   },
@@ -38,7 +38,7 @@ export const blogPosts: BlogPost[] = [
     category: "Logistics",
     date: "June 10, 2026",
     author: "EventHub Editorial",
-    readTime: "4 min read",
+    readTime: "7 min read",
     image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80",
     tags: ["Access Control", "QR Code Pass", "Event Security", "Lagos Events"]
   },
@@ -49,7 +49,7 @@ export const blogPosts: BlogPost[] = [
     category: "Design",
     date: "June 05, 2026",
     author: "Aisha Bello",
-    readTime: "6 min read",
+    readTime: "8 min read",
     image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80",
     tags: ["RSVP Themes", "Luxury Design", "Event Aesthetics", "Bespoke Invitations"]
   },
@@ -60,7 +60,7 @@ export const blogPosts: BlogPost[] = [
     category: "Finance",
     date: "May 28, 2026",
     author: "Chidi Benson",
-    readTime: "5 min read",
+    readTime: "8 min read",
     image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80",
     tags: ["Event Budgeting", "Financial Ledger", "Cash Gifts", "Secure Transfers"]
   },
@@ -71,7 +71,7 @@ export const blogPosts: BlogPost[] = [
     category: "Technology",
     date: "May 20, 2026",
     author: "Tunde Alabi",
-    readTime: "4 min read",
+    readTime: "7 min read",
     image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80",
     tags: ["Vibe Screen", "Interactive Events", "Live Feed", "Ballroom Tech"]
   },
@@ -82,9 +82,53 @@ export const blogPosts: BlogPost[] = [
     category: "Communication",
     date: "May 12, 2026",
     author: "Kael Felix",
-    readTime: "5 min read",
+    readTime: "8 min read",
     image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80",
     tags: ["WhatsApp Blast", "Guest Communication", "Automated Dispatch", "Event Planning"]
+  },
+  {
+    slug: "complete-nigerian-wedding-planning-checklist-timeline",
+    title: "The Complete Nigerian Wedding Planning Checklist & Timeline",
+    excerpt: "A comprehensive, step-by-step guide to planning a flawless Nigerian wedding. From the introduction ceremony to the grand reception, master your timeline and vendor coordination.",
+    category: "Planning",
+    date: "May 05, 2026",
+    author: "Aisha Bello",
+    readTime: "10 min read",
+    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80",
+    tags: ["Wedding Checklist", "Planning Timeline", "Vendor Management", "Owambe Planning"]
+  },
+  {
+    slug: "how-to-monetize-and-secure-owambe-gifts-p2p",
+    title: "How to Monetize and Secure Owambe Gifts via Peer-to-Peer Transfers",
+    excerpt: "A deep dive into peer-to-peer transfers, bank codes, resolving alerts, and avoiding fraud. Learn how to maximize your cash gifts safely and transparently.",
+    category: "Finance",
+    date: "April 28, 2026",
+    author: "Chidi Benson",
+    readTime: "9 min read",
+    image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80",
+    tags: ["P2P Transfers", "Gift Monetization", "Secure Banking", "Owambe Gifts"]
+  },
+  {
+    slug: "curating-elite-guest-experience-seating-concierge",
+    title: "Curating the Elite Guest Experience: Seating Concierge & VIP Protocols",
+    excerpt: "Master the art of seating charts, table assignments, VIP protocols, and usher coordination. Ensure your high-society guests experience flawless hospitality from arrival to departure.",
+    category: "Hospitality",
+    date: "April 15, 2026",
+    author: "EventHub Editorial",
+    readTime: "9 min read",
+    image: "https://images.unsplash.com/photo-1505232458627-a8729489b9f5?auto=format&fit=crop&q=80",
+    tags: ["Guest Experience", "Seating Charts", "VIP Protocols", "Usher Coordination"]
+  },
+  {
+    slug: "post-event-legacy-archiving-memories-forever",
+    title: "The Post-Event Legacy: Archiving Memories and Digital Walls Forever",
+    excerpt: "Your event shouldn't end when the lights go out. Learn how to preserve your celebration's legacy with digital memory walls, interactive galleries, and post-event guest engagement.",
+    category: "Legacy",
+    date: "April 02, 2026",
+    author: "Tunde Alabi",
+    readTime: "8 min read",
+    image: "https://images.unsplash.com/photo-1472653431158-6364773b2a56?auto=format&fit=crop&q=80",
+    tags: ["Digital Memory Wall", "Event Legacy", "Photo Galleries", "Guest Engagement"]
   }
 ];
 
