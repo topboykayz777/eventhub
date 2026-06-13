@@ -30,6 +30,7 @@ import SprayPage from "./pages/SprayPage";
 import Support from "./pages/Support";
 import Guide from "./pages/Guide";
 import Privacy from "./pages/Privacy";
+import CelebrationWall from "./pages/CelebrationWall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -93,6 +94,7 @@ const AppRoutes = () => {
       <Route path="/support" element={<Support />} />
       <Route path="/guide" element={<Guide />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/celebrations" element={<CelebrationWall />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

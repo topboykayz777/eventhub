@@ -38,6 +38,7 @@ const Navbar = () => {
   };
 
   const navLinks = [
+    { name: 'Celebrations', path: '/celebrations' },
     { name: 'Directory', path: '/vendors' },
     { name: 'Guide', path: '/guide' },
     ...(session ? [{ name: 'Dashboard', path: '/dashboard' }] : []),
