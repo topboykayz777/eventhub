@@ -25,53 +25,28 @@ const MediaLightbox = ({ isOpen, onClose, mediaUrls, currentIndex, onNavigate }:
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-10"
+          onClick={onClose}
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
         >
-          {/* Controls */}
-          <div className="absolute top-6 right-6 flex items-center gap-4 z-[210]">
-            <button 
-              onClick={onClose}
-              className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          {mediaUrls.length > 1 && (
-            <>
-              <button 
-                onClick={() => onNavigate((currentIndex - 1 + mediaUrls.length) % mediaUrls.length)}
-                className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all z-[210]"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <button 
-                onClick={() => onNavigate((currentIndex + 1) % mediaUrls.length)}
-                className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all z-[210]"
-              >
-                <ChevronRight size={24} />
-              </button>
-            </>
-          )}
-
           {/* Media Content */}
           <motion.div 
             key={currentIndex}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative max-w-5xl w-full max-h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-5xl w-full max-h-full flex items-center justify-center cursor-default"
           >
             {isVideo(mediaUrls[currentIndex]) ? (
               <video 
                 src={mediaUrls[currentIndex]} 
                 controls 
                 autoPlay 
-                className="max-w-full max-h-[80vh] shadow-2xl"
+                className="max-w-full max-h-[80vh] shadow-2xl rounded-lg"
               />
             ) : (
               <img 
                 src={mediaUrls[currentIndex]} 
-                className="max-w-full max-h-[80vh] object-contain shadow-2xl"
+                className="max-w-full max-h-[80vh] object-contain shadow-2xl rounded-lg"
                 alt="Event Media"
               />
             )}
@@ -80,6 +55,34 @@ const MediaLightbox = ({ isOpen, onClose, mediaUrls, currentIndex, onNavigate }:
               {currentIndex + 1} / {mediaUrls.length}
             </div>
           </motion.div>
+
+          {/* Navigation Controls */}
+          {mediaUrls.length > 1 && (
+            <>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onNavigate((currentIndex - 1 + mediaUrls.length) % mediaUrls.length); }}
+                className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all z-[210]"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onNavigate((currentIndex + 1) % mediaUrls.length); }}
+                className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all z-[210]"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          )}
+
+          {/* Close Button - Placed at the end with high z-index to ensure it is always on top */}
+          <div className="absolute top-6 right-6 z-[250]">
+            <button 
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all shadow-lg border border-white/10"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
