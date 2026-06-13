@@ -127,7 +127,7 @@ const BlogList = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground selection:bg-[#D4AF37] selection:text-black overflow-x-hidden transition-colors duration-500">
       <Navbar />
 
       {/* Editorial Header */}
@@ -146,7 +146,7 @@ const BlogList = () => {
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-serif italic leading-tight">
             Thoughts on <span className="text-[#D4AF37]">Excellence</span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-400 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+          <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
             A curated collection of insights, design philosophies, and technical guides for orchestrating Nigeria's most prestigious celebrations.
           </p>
         </motion.div>
@@ -155,7 +155,7 @@ const BlogList = () => {
       {/* Featured Post */}
       <section className="max-w-7xl mx-auto px-6 mb-32">
         <Link to={`/blog/${blogPosts[0].slug}`} className="group block">
-          <div className="grid lg:grid-cols-12 gap-12 items-center bg-white/[0.01] border border-white/5 rounded-[3rem] overflow-hidden p-8 md:p-12 hover:border-[#D4AF37]/30 transition-all duration-500">
+          <div className="grid lg:grid-cols-12 gap-12 items-center bg-card border border-border rounded-[3rem] overflow-hidden p-8 md:p-12 hover:border-[#D4AF37]/30 transition-all duration-500">
             <div className="lg:col-span-7 aspect-[16/10] overflow-hidden rounded-2xl bg-black">
               <img 
                 src={blogPosts[0].image} 
@@ -168,25 +168,25 @@ const BlogList = () => {
                 <span className="text-[#D4AF37] text-[9px] font-black uppercase tracking-widest bg-[#D4AF37]/10 px-3 py-1 rounded-full">
                   {blogPosts[0].category}
                 </span>
-                <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
                   {blogPosts[0].readTime}
                 </span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-serif italic leading-tight text-white group-hover:text-[#D4AF37] transition-colors">
+              <h2 className="text-3xl md:text-4xl font-serif italic leading-tight text-foreground group-hover:text-[#D4AF37] transition-colors">
                 {blogPosts[0].title}
               </h2>
-              <p className="text-gray-400 text-sm font-light leading-relaxed">
+              <p className="text-muted-foreground text-sm font-light leading-relaxed">
                 {blogPosts[0].excerpt}
               </p>
               <div className="flex flex-wrap gap-2 pt-2">
                 {blogPosts[0].tags.map(tag => (
-                  <span key={tag} className="text-[8px] font-bold uppercase tracking-widest text-gray-500 border border-white/5 px-2.5 py-1 rounded-full">
+                  <span key={tag} className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground border border-border px-2.5 py-1 rounded-full">
                     #{tag}
                   </span>
                 ))}
               </div>
-              <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 text-gray-500 text-xs">
+              <div className="flex items-center justify-between pt-6 border-t border-border">
+                <div className="flex items-center gap-3 text-muted-foreground text-xs">
                   <User size={14} className="text-[#D4AF37]" />
                   <span>{blogPosts[0].author}</span>
                 </div>
@@ -204,7 +204,7 @@ const BlogList = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.slice(1).map((post, index) => (
             <Link key={post.slug} to={`/blog/${post.slug}`} className="group block h-full">
-              <div className="bg-white/[0.01] border border-white/5 rounded-[2.5rem] overflow-hidden p-6 flex flex-col h-full hover:border-[#D4AF37]/30 transition-all duration-500">
+              <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden p-6 flex flex-col h-full hover:border-[#D4AF37]/30 transition-all duration-500">
                 <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-black mb-6">
                   <img 
                     src={post.image} 
@@ -218,26 +218,26 @@ const BlogList = () => {
                       <span className="text-[#D4AF37] text-[8px] font-black uppercase tracking-widest bg-[#D4AF37]/10 px-2.5 py-0.5 rounded-full">
                         {post.category}
                       </span>
-                      <span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">
+                      <span className="text-muted-foreground text-[9px] font-bold uppercase tracking-widest">
                         {post.readTime}
                       </span>
                     </div>
-                    <h3 className="text-xl font-serif italic leading-snug text-white group-hover:text-[#D4AF37] transition-colors line-clamp-2">
+                    <h3 className="text-xl font-serif italic leading-snug text-foreground group-hover:text-[#D4AF37] transition-colors line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="text-gray-400 text-xs font-light leading-relaxed line-clamp-3">
+                    <p className="text-muted-foreground text-xs font-light leading-relaxed line-clamp-3">
                       {post.excerpt}
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-2">
                       {post.tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[7px] font-bold uppercase tracking-widest text-gray-600">
+                        <span key={tag} className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground">
                           #{tag}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-6 border-t border-white/5 mt-6">
-                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                  <div className="flex items-center justify-between pt-6 border-t border-border mt-6">
+                    <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
                       {post.date}
                     </span>
                     <span className="text-[#D4AF37] text-[9px] font-black uppercase tracking-widest flex items-center gap-2 group-hover:translate-x-1 transition-transform">

@@ -92,7 +92,7 @@ const CelebrationWall = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground selection:bg-[#D4AF37] selection:text-black overflow-x-hidden transition-colors duration-500">
       <Navbar />
 
       {/* Cinematic Hero Section */}
@@ -111,34 +111,34 @@ const CelebrationWall = () => {
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-serif italic leading-tight">
             Hall of <span className="text-[#D4AF37]">Celebrations</span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-400 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+          <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
             Step into Nigeria's most exclusive digital monument. Witness live guest arrivals, verified digital spray milestones, and timeless memories captured in real-time.
           </p>
         </motion.div>
       </section>
 
       {/* Live Platform Stats Strip */}
-      <section className="border-y border-white/5 bg-white/[0.01] py-12 px-6 mb-20">
+      <section className="border-y border-border bg-secondary/30 py-12 px-6 mb-20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
           <div className="space-y-2">
             <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-2">
               <Flame className="text-[#D4AF37] w-5 h-5" />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">Active Celebrations</p>
-            <p className="text-3xl md:text-4xl font-serif italic text-white">{totalEvents}</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Active Celebrations</p>
+            <p className="text-3xl md:text-4xl font-serif italic text-foreground">{totalEvents}</p>
           </div>
           <div className="space-y-2">
             <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-2">
               <Users className="text-[#D4AF37] w-5 h-5" />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">Guests Welcomed</p>
-            <p className="text-3xl md:text-4xl font-serif italic text-white">{totalGuests.toLocaleString()}</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Guests Welcomed</p>
+            <p className="text-3xl md:text-4xl font-serif italic text-foreground">{totalGuests.toLocaleString()}</p>
           </div>
           <div className="space-y-2">
             <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-2">
               <Coins className="text-[#D4AF37] w-5 h-5" />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">Total Sprayed</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Sprayed</p>
             <p className="text-3xl md:text-4xl font-serif italic text-[#D4AF37]">₦{totalSprayed.toLocaleString()}</p>
           </div>
         </div>
@@ -147,10 +147,10 @@ const CelebrationWall = () => {
       {/* Search & Filter Bar */}
       <div className="max-w-7xl mx-auto px-6 mb-16">
         <div className="relative max-w-xl mx-auto">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input 
             placeholder="Search celebrations by name or venue..." 
-            className="pl-16 bg-white/5 border-white/10 h-16 rounded-full text-lg font-light focus-visible:ring-[#D4AF37]/30 text-white placeholder:text-gray-600"
+            className="pl-16 bg-secondary border-border h-16 rounded-full text-lg font-light focus-visible:ring-[#D4AF37]/30 text-foreground placeholder:text-muted-foreground/50"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -164,9 +164,9 @@ const CelebrationWall = () => {
             <Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" />
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-white/5 rounded-[3rem]">
-            <Sparkles className="w-12 h-12 text-gray-700 mx-auto mb-6" />
-            <p className="text-gray-500 font-light italic">No public celebrations found matching your search.</p>
+          <div className="text-center py-20 border border-dashed border-border rounded-[3rem]">
+            <Sparkles className="w-12 h-12 text-muted-foreground/20 mx-auto mb-6" />
+            <p className="text-muted-foreground font-light italic">No public celebrations found matching your search.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -177,7 +177,7 @@ const CelebrationWall = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="group relative bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full hover:border-[#D4AF37]/10 transition-all duration-500"
+                className="group relative bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full hover:border-[#D4AF37]/20 transition-all duration-500"
               >
                 {/* Media Container */}
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-black">
@@ -234,18 +234,18 @@ const CelebrationWall = () => {
                 </div>
 
                 {/* Stats Footer - Purely Informational */}
-                <div className="p-8 bg-white/[0.01] border-t border-white/5 flex items-center justify-between mt-auto">
+                <div className="p-8 bg-secondary/10 border-t border-border flex items-center justify-between mt-auto">
                   <div className="flex gap-8">
                     <div>
-                      <p className="text-[7px] font-black uppercase tracking-widest text-gray-500 mb-1">Guests</p>
-                      <p className="text-lg font-serif italic text-white">{event.guestCount}</p>
+                      <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground mb-1">Guests</p>
+                      <p className="text-lg font-serif italic text-foreground">{event.guestCount}</p>
                     </div>
                     <div>
-                      <p className="text-[7px] font-black uppercase tracking-widest text-gray-500 mb-1">Sprayed</p>
+                      <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground mb-1">Sprayed</p>
                       <p className="text-lg font-serif italic text-[#D4AF37]">₦{event.sprayTotal.toLocaleString()}</p>
                     </div>
                   </div>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-gray-500 border border-white/5 px-3 py-1.5 rounded-full">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground border border-border px-3 py-1.5 rounded-full">
                     Archived
                   </span>
                 </div>
