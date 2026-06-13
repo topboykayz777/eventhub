@@ -5,13 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Sparkles, Users, Coins, Calendar, MapPin, ArrowRight, Search, Award, Flame, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Sparkles, Users, Coins, Calendar, MapPin, Search, Award, Flame, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
 
 const CelebrationWall = () => {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
   // SEO & AIO Semantic Injection
@@ -179,7 +177,7 @@ const CelebrationWall = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="group relative bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full hover:border-[#D4AF37]/30 transition-all duration-500"
+                className="group relative bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full hover:border-[#D4AF37]/10 transition-all duration-500"
               >
                 {/* Media Container */}
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-black">
@@ -235,7 +233,7 @@ const CelebrationWall = () => {
                   </div>
                 </div>
 
-                {/* Stats & Action Footer */}
+                {/* Stats Footer - Purely Informational */}
                 <div className="p-8 bg-white/[0.01] border-t border-white/5 flex items-center justify-between mt-auto">
                   <div className="flex gap-8">
                     <div>
@@ -247,13 +245,9 @@ const CelebrationWall = () => {
                       <p className="text-lg font-serif italic text-[#D4AF37]">₦{event.sprayTotal.toLocaleString()}</p>
                     </div>
                   </div>
-                  <Button 
-                    onClick={() => navigate(`/event/${event.slug}`)}
-                    variant="ghost" 
-                    className="text-[#D4AF37] hover:text-white hover:bg-[#D4AF37]/10 rounded-full p-3"
-                  >
-                    <ArrowRight size={18} />
-                  </Button>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-gray-500 border border-white/5 px-3 py-1.5 rounded-full">
+                    Archived
+                  </span>
                 </div>
               </motion.div>
             ))}
