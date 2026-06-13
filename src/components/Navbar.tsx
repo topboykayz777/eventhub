@@ -39,6 +39,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Celebrations', path: '/celebrations' },
+    { name: 'Journal', path: '/blog' },
     { name: 'Directory', path: '/vendors' },
     { name: 'Guide', path: '/guide' },
     ...(session ? [{ name: 'Dashboard', path: '/dashboard' }] : []),

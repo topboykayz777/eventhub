@@ -90,10 +90,18 @@ const CreateEvent = () => {
       return;
     }
 
+    if (formData.gallery_urls.length >= 30) {
+      showError('Maximum limit of 30 gallery items reached.');
+      return;
+    }
+
     setGalleryUploading(true);
     const newUrls: string[] = [];
     try {
-      for (const file of Array.from(e.target.files)) {
+      const remainingSlots = 30 - formData.gallery_urls.length;
+      const filesToUpload = Array.from(e.target.files).slice(0, remainingSlots);
+
+      for (const file of filesToUpload) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage.from('event-photos').upload(fileName, file);
@@ -101,7 +109,7 @@ const CreateEvent = () => {
         const { data: { publicUrl } } = supabase.storage.from('event-photos').getPublicUrl(fileName);
         newUrls.push(publicUrl);
       }
-      setFormData(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, ...newUrls] }));
+      setFormData(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, ...newUrls].slice(0, 30) }));
       showSuccess(`${newUrls.length} file(s) added to gallery.`);
     } catch (error: any) {
       showError('Gallery upload failed: ' + error.message);
@@ -152,7 +160,7 @@ const CreateEvent = () => {
         theme: formData.theme,
         slug,
         photo_url: formData.photo_url,
-        gallery_urls: formData.gallery_urls
+        gallery_urls: formData.gallery_urls.slice(0, 30)
       }).select().single();
 
       if (error) throw error;
@@ -317,12 +325,14 @@ const CreateEvent = () => {
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center">
                   Memory Wall Gallery <InfoButton text="Upload multiple photos or videos to showcase moments from the event. These will appear in a grid on your live page." />
                 </Label>
-                <span className="text-[9px] font-bold text-muted-foreground uppercase">{formData.gallery_urls.length} Files</span>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                  {formData.gallery_urls.length} / 30 Files Max
+                </span>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <AnimatePresence>
-                  {formData.gallery_urls.map((url, i) => (
+                  {formData.gallery_urls.slice(0, 30).map((url, i) => (
                     <motion.div key={url} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative aspect-square rounded-2xl overflow-hidden border border-border group">
                       <img src={url} className="w-full h-full object-cover" alt="" />
                       <button type="button" onClick={() => removeGalleryItem(i)} className="absolute top-2 right-2 bg-black/60 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -332,12 +342,14 @@ const CreateEvent = () => {
                   ))}
                 </AnimatePresence>
                 
-                <Label htmlFor="gallery-upload" className="cursor-pointer">
-                  <div className="aspect-square border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 hover:bg-secondary transition-all bg-secondary/50 rounded-2xl">
-                    {galleryUploading ? <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]" /> : <Plus className="text-muted-foreground w-6 h-6" />}
-                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground text-center px-2">Add Gallery Image</span>
-                  </div>
-                </Label>
+                {formData.gallery_urls.length < 30 && (
+                  <Label htmlFor="gallery-upload" className="cursor-pointer">
+                    <div className="aspect-square border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 hover:bg-secondary transition-all bg-secondary/50 rounded-2xl">
+                      {galleryUploading ? <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]" /> : <Plus className="text-muted-foreground w-6 h-6" />}
+                      <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground text-center px-2">Add Gallery Image</span>
+                    </div>
+                  </Label>
+                )}
               </div>
               <input id="gallery-upload" type="file" multiple accept="image/*,video/*" className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
             </div>
