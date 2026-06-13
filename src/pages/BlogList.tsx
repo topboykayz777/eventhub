@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowRight, Sparkles, BookOpen, Flame } from 'lucide-react';
+import { Calendar, User, ArrowRight, Sparkles, BookOpen, Flame, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface BlogPost {
@@ -16,38 +16,75 @@ export interface BlogPost {
   author: string;
   readTime: string;
   image: string;
+  tags: string[];
 }
 
 export const blogPosts: BlogPost[] = [
   {
     slug: "art-of-digital-spraying-nigerian-weddings",
     title: "The Art of Digital Spraying: Redefining Owambe Traditions in the Digital Age",
-    excerpt: "How high-society hosts are digitizing the legendary spraying tradition with zero-commission peer-to-peer transfers and live screen animations.",
+    excerpt: "How high-society hosts are digitizing the legendary spraying tradition with zero-commission peer-to-peer transfers and live screen animations, bypassing CBN cash restrictions and security risks.",
     category: "Traditions",
     date: "June 15, 2026",
     author: "Kael Felix",
     readTime: "5 min read",
-    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80",
+    tags: ["Digital Spraying", "Owambe", "Nigerian Weddings", "Cashless Economy"]
   },
   {
     slug: "ultimate-guide-to-qr-code-access-control-events",
     title: "The Ultimate Guide to QR Code Access Control for Elite Celebrations",
-    excerpt: "Eliminate gatecrashers and messy paper lists. Learn how professional planners use high-fidelity digital passes for seamless red carpet check-ins.",
+    excerpt: "Eliminate gatecrashers, fake invites, and messy paper lists. Learn how professional planners use high-fidelity digital passes for seamless red carpet check-ins in Lagos and Abuja.",
     category: "Logistics",
     date: "June 10, 2026",
     author: "EventHub Editorial",
     readTime: "4 min read",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80",
+    tags: ["Access Control", "QR Code Pass", "Event Security", "Lagos Events"]
   },
   {
     slug: "choosing-perfect-rsvp-theme-owambe",
     title: "Bespoke Aesthetics: Choosing the Perfect RSVP Theme for Your Owambe",
-    excerpt: "From Midnight Noir to Royal Heritage, discover how to align your digital invitation's visual DNA with the prestige of your physical venue.",
+    excerpt: "From Midnight Noir to Royal Heritage, discover how to align your digital invitation's visual DNA with the prestige of your physical venue to make an unforgettable first impression.",
     category: "Design",
     date: "June 05, 2026",
     author: "Aisha Bello",
     readTime: "6 min read",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80",
+    tags: ["RSVP Themes", "Luxury Design", "Event Aesthetics", "Bespoke Invitations"]
+  },
+  {
+    slug: "the-owambe-treasury-managing-event-budgets-safely",
+    title: "The Owambe Treasury: Managing Event Budgets and Cash Gifts Safely",
+    excerpt: "Solve the post-event accounting nightmare. How to track income, expenses, and digital sprays in a unified ledger, export clean CSVs for vendors, and secure your hard-earned gifts.",
+    category: "Finance",
+    date: "May 28, 2026",
+    author: "Chidi Benson",
+    readTime: "5 min read",
+    image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80",
+    tags: ["Event Budgeting", "Financial Ledger", "Cash Gifts", "Secure Transfers"]
+  },
+  {
+    slug: "the-vibe-screen-revolution-transforming-ballrooms",
+    title: "The Vibe Screen Revolution: Transforming Ballrooms into Live Interactive Arenas",
+    excerpt: "How to keep party energy high. Using live projection screens to display real-time guest arrivals, digital spray alerts, and interactive DJ playlists, turning passive attendees into active participants.",
+    category: "Technology",
+    date: "May 20, 2026",
+    author: "Tunde Alabi",
+    readTime: "4 min read",
+    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80",
+    tags: ["Vibe Screen", "Interactive Events", "Live Feed", "Ballroom Tech"]
+  },
+  {
+    slug: "modern-hosts-playbook-seamless-whatsapp-dispatch",
+    title: "The Modern Host's Playbook: Seamless WhatsApp Dispatch and Guest Communication",
+    excerpt: "Solving the communication bottleneck. How to use automated, staccato-speed WhatsApp blasts to distribute digital passes, send venue updates, and coordinate seating without manual typing.",
+    category: "Communication",
+    date: "May 12, 2026",
+    author: "Kael Felix",
+    readTime: "5 min read",
+    image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80",
+    tags: ["WhatsApp Blast", "Guest Communication", "Automated Dispatch", "Event Planning"]
   }
 ];
 
@@ -63,6 +100,7 @@ const BlogList = () => {
       "@type": "Blog",
       "name": "The Atelier Journal",
       "description": "Nigeria's premier publication for luxury event planning, digital spraying traditions, and high-society orchestration.",
+      "url": "https://www.theeventhub.com.ng/blog",
       "publisher": {
         "@type": "Organization",
         "name": "EventHub NG",
@@ -140,6 +178,13 @@ const BlogList = () => {
               <p className="text-gray-400 text-sm font-light leading-relaxed">
                 {blogPosts[0].excerpt}
               </p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {blogPosts[0].tags.map(tag => (
+                  <span key={tag} className="text-[8px] font-bold uppercase tracking-widest text-gray-500 border border-white/5 px-2.5 py-1 rounded-full">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
               <div className="flex items-center justify-between pt-6 border-t border-white/5">
                 <div className="flex items-center gap-3 text-gray-500 text-xs">
                   <User size={14} className="text-[#D4AF37]" />
@@ -183,6 +228,13 @@ const BlogList = () => {
                     <p className="text-gray-400 text-xs font-light leading-relaxed line-clamp-3">
                       {post.excerpt}
                     </p>
+                    <div className="flex flex-wrap gap-1.5 pt-2">
+                      {post.tags.slice(0, 2).map(tag => (
+                        <span key={tag} className="text-[7px] font-bold uppercase tracking-widest text-gray-600">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between pt-6 border-t border-white/5 mt-6">
                     <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">

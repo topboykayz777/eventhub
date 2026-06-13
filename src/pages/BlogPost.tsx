@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowLeft, Sparkles, BookOpen, Share2, Clock, ChevronRight } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Sparkles, BookOpen, Share2, Clock, ChevronRight, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { blogPosts } from './BlogList';
 import { showSuccess } from '@/utils/toast';
@@ -39,7 +39,8 @@ const BlogPost = () => {
           "name": "EventHub NG",
           "logo": "https://www.theeventhub.com.ng/hub-icon.png"
         },
-        "description": post.excerpt
+        "description": post.excerpt,
+        "keywords": post.tags.join(", ")
       });
       document.head.appendChild(script);
       return () => {
@@ -131,7 +132,7 @@ const BlogPost = () => {
       {/* Article Content */}
       <section className="max-w-3xl mx-auto px-6 pb-32">
         <article className="prose prose-invert max-w-none space-y-8 text-gray-300 font-light leading-relaxed text-lg">
-          {post.slug === "art-of-digital-spraying-nigerian-weddings" ? (
+          {post.slug === "art-of-digital-spraying-nigerian-weddings" && (
             <>
               <p>
                 Nigerian weddings, or <em>Owambes</em>, are legendary for their grandeur, fashion, and the iconic tradition of spraying money. For decades, spraying crisp Naira notes has been the ultimate gesture of honor, celebration, and joy. However, as the world transitions into a cashless, digital-first economy, this beloved tradition is undergoing a sophisticated evolution.
@@ -152,7 +153,9 @@ const BlogPost = () => {
                 Unlike basic payment platforms that take heavy cuts from your gifts, EventHub's Digital Spraying protocol operates on a <strong>0% commission</strong> model. Because the funds move directly from the guest's bank account to the host's treasury, every single Naira sprayed goes exactly where it belongs—to the celebrants.
               </p>
             </>
-          ) : post.slug === "ultimate-guide-to-qr-code-access-control-events" ? (
+          )}
+
+          {post.slug === "ultimate-guide-to-qr-code-access-control-events" && (
             <>
               <p>
                 The red carpet is the first impression of any elite celebration. Yet, all too often, this crucial touchpoint is marred by long queues, unverified guest lists, and the persistent challenge of gatecrashers. For high-society weddings and galas, professional planners are turning to a surgical solution: high-fidelity QR code access control.
@@ -173,7 +176,9 @@ const BlogPost = () => {
                 The benefits of QR access control extend far beyond the gate. Because the check-in data is synchronized in real-time, hosts and planners can monitor guest arrival velocity directly from their dashboards. If a guest is assigned to Table 5, the ushering team is notified instantly upon scan, ensuring they are guided to their seat without delay.
               </p>
             </>
-          ) : (
+          )}
+
+          {post.slug === "choosing-perfect-rsvp-theme-owambe" && (
             <>
               <p>
                 Your digital invitation is the opening act of your celebration. It is the first glimpse your guests will have into the atmosphere, prestige, and visual DNA of your event. For Nigeria's elite, a generic link or a basic PDF invite is no longer sufficient. Your digital presence must be as bespoke as your physical venue.
@@ -198,6 +203,75 @@ const BlogPost = () => {
               <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">Immersive Media Backdrops</h2>
               <p>
                 To truly elevate your digital invitation, consider using cinematic video loops instead of static photos. A 15-second, high-definition loop of your pre-wedding shoot or venue setup creates an immersive, living backdrop that instantly captivates your guests the moment they open the link.
+              </p>
+            </>
+          )}
+
+          {post.slug === "the-owambe-treasury-managing-event-budgets-safely" && (
+            <>
+              <p>
+                Behind every successful high-society event lies a complex web of financial transactions. From securing the venue to paying caterers, decorators, and entertainment, managing an event budget can quickly become an accounting nightmare. For hosts, keeping a clear, secure record of all income and expenses is vital to ensuring a stress-free celebration.
+              </p>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">The Post-Event Accounting Nightmare</h2>
+              <p>
+                Traditionally, hosts rely on scattered bank alerts, paper receipts, and mental notes to track their event finances. This lack of centralization often leads to double payments, missed vendor balances, and a general sense of financial anxiety during what should be a joyful occasion.
+              </p>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">The Unified Ledger Solution</h2>
+              <p>
+                EventHub's Financial Suite introduces a secure, real-time ledger designed specifically for event hosts. By centralizing all transactions—including approved digital sprays and manual vendor payments—hosts can monitor their cash flow with surgical precision.
+              </p>
+              <blockquote className="border-l-2 border-[#D4AF37] pl-6 italic text-white my-8">
+                "A clear financial picture is the ultimate peace of mind. By tracking every Naira in real-time, hosts can focus on celebrating rather than worrying about vendor balances."
+              </blockquote>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">Exportable Manifests for Seamless Coordination</h2>
+              <p>
+                When the event concludes, the ledger can be exported instantly as a clean CSV file. This allows hosts to share precise financial summaries with their planning teams, accountants, or co-hosts, ensuring complete transparency and seamless post-event reconciliation.
+              </p>
+            </>
+          )}
+
+          {post.slug === "the-vibe-screen-revolution-transforming-ballrooms" && (
+            <>
+              <p>
+                The energy of an Owambe is its heartbeat. From the moment the music starts to the final dance, keeping guests engaged and excited is the ultimate goal of any host. In the digital age, planners are leveraging interactive technology to transform traditional ballrooms into immersive, high-energy arenas.
+              </p>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">The Challenge of Passive Attendance</h2>
+              <p>
+                At large celebrations, guests seated far from the main stage can often feel disconnected from the action. This passive experience can lead to early departures and a drop in overall party energy. Planners need a way to bring every corner of the ballroom into the heart of the celebration.
+              </p>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">The Live Vibe Screen</h2>
+              <p>
+                The Vibe Screen is a live, full-screen feed designed to be projected onto ballroom TVs or LED walls. It acts as the digital pulse of the party, displaying real-time guest arrivals, verified digital spray alerts, and interactive DJ playlists.
+              </p>
+              <blockquote className="border-l-2 border-[#D4AF37] pl-6 italic text-white my-8">
+                "Technology should bring people together, not distract them. The Vibe Screen turns passive onlookers into active participants, amplifying the collective joy of the room."
+              </blockquote>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">Cinematic Spray Animations</h2>
+              <p>
+                When a guest sprays the host digitally, the Vibe Screen triggers a custom, high-energy animation. The guest's name and sprayed amount are displayed in elegant typography, accompanied by explosive digital confetti. This instant recognition encourages other guests to join in, creating a fun, gamified cycle of celebration.
+              </p>
+            </>
+          )}
+
+          {post.slug === "modern-hosts-playbook-seamless-whatsapp-dispatch" && (
+            <>
+              <p>
+                Communication is the glue that holds an event together. From distributing invitations to sending venue updates and seating assignments, keeping hundreds of guests informed is a massive logistical challenge. For the modern host, manual messaging is no longer a viable option.
+              </p>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">The Communication Bottleneck</h2>
+              <p>
+                Sending individual messages to a guest list of 500 people is incredibly time-consuming. Copying and pasting texts, attaching digital passes, and double-checking phone numbers often leads to mistakes, missed guests, and immense pre-event stress.
+              </p>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">The Industrial Dispatcher</h2>
+              <p>
+                EventHub's WhatsApp Blast tool introduces an automated, staccato-speed dispatch system. By linking directly to your guest registry, the tool formats personalized messages—complete with the guest's name, table number, and a direct link to their digital pass—and prepares them for instant sending.
+              </p>
+              <blockquote className="border-l-2 border-[#D4AF37] pl-6 italic text-white my-8">
+                "Efficiency is the ultimate luxury. By automating guest communication, hosts can save dozens of hours and ensure every attendee receives their official credentials flawlessly."
+              </blockquote>
+              <h2 className="text-2xl font-serif italic text-white mt-12 mb-4">Auto-Advance Protocol</h2>
+              <p>
+                To maximize speed, the dispatcher features an optional 'Auto-Advance' protocol. Once a message is sent and the host returns to the dashboard, the system automatically queues up the next guest in line, allowing for a continuous, high-speed flow of invitations.
               </p>
             </>
           )}

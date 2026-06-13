@@ -26,6 +26,7 @@ const CelebrationWall = () => {
       "@type": "CollectionPage",
       "name": "The Hall of Celebrations",
       "description": "A live, public showcase of Nigeria's most prestigious weddings, galas, and elite celebrations orchestrated on EventHub NG.",
+      "url": "https://www.theeventhub.com.ng/celebrations",
       "publisher": {
         "@type": "Organization",
         "name": "EventHub NG",
