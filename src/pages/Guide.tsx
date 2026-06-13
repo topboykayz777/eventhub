@@ -34,44 +34,24 @@ import { Button } from '@/components/ui/button';
 
 const steps = [
   {
-    title: "1. Create Account",
-    desc: "Sign up to start planning. This gives you access to all your event tools in one dashboard.",
-    icon: UserPlus
-  },
-  {
-    title: "2. Build Your Page",
-    desc: "Design your event website. Choose a theme and upload your photo to make it look amazing.",
+    title: "1. Design & Activate",
+    desc: "Create your account and build your bespoke event page in minutes. Select from 20+ luxury RSVP themes, upload cinematic cover portraits or video loops, and write your guest directive. Instantly activate your page with a secure, one-time payment to unlock your premium command center.",
     icon: Layout
   },
   {
-    title: "3. Make it Live",
-    desc: "Activate your page by paying the service fee. Once done, your unique link is ready for guests.",
-    icon: CreditCard
-  },
-  {
-    title: "4. Share the Link",
-    desc: "Send your event link to your friends and family on WhatsApp so they can start signing up.",
+    title: "2. Invite & Coordinate",
+    desc: "Share your unique event link with guests to gather RSVPs. From your dashboard, manage your guest registry with surgical precision—assign table seating, track plus-ones, and export DJ playlists. Use our high-speed WhatsApp Blast dispatcher to send personalized digital passes and QR codes to your entire guest list.",
     icon: Share2
   },
   {
-    title: "5. Verify Gifts",
-    desc: "When guests send you money (Spraying), check your bank alert and approve it in the app to show a celebration on screen.",
+    title: "3. Celebrate & Spray",
+    desc: "Digitize the legendary spraying tradition with our 0%-commission peer-to-peer Digital Spraying system. Guests transfer funds directly to your bank account and notify you through the portal. Verify transfers in your dashboard to instantly update your financial ledger and trigger explosive screen animations.",
     icon: Wallet
   },
   {
-    title: "6. Send Reminders",
-    desc: "Easily send messages to all your signed-up guests at once using our WhatsApp tool.",
-    icon: Send
-  },
-  {
-    title: "7. Event Day",
-    desc: "Scan guest QR codes at the entrance to check them in. Connect a laptop to a TV to show the live party screen.",
+    title: "4. Verify & Broadcast",
+    desc: "On the big day, scan guest QR passes at the door using any smartphone for instant check-in. Launch the live Vibe Screen on ballroom TVs or LED walls to display real-time guest arrivals and digital spray alerts. Post live announcements to keep your guests informed throughout the celebration.",
     icon: Monitor
-  },
-  {
-    title: "8. Keep the Memory",
-    desc: "Your event page stays online forever. You can always come back to see the photos and messages.",
-    icon: Heart
   }
 ];
 
@@ -228,18 +208,18 @@ const Guide = () => {
             How it <span className="text-[#D4AF37]">Works</span>
           </motion.h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-light tracking-wide text-lg">
-            Everything you need to know about orchestrating your celebration on EventHub.
+            Four simple acts to take your celebration from vision to digital reality.
           </p>
         </div>
 
         <section className="mb-40">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-px flex-1 bg-border" />
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 8 Simple Steps</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#D4AF37]">The 4 Simple Acts</h2>
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
             {steps.map((step, i) => (
               <motion.div
                 key={i}
@@ -247,15 +227,19 @@ const Guide = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="text-center group"
+                className="text-left group bg-card border border-border p-10 rounded-[2.5rem] shadow-sm hover:border-[#D4AF37]/30 transition-all duration-500"
               >
-                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500 border border-border/50">
-                  <step.icon className="text-[#D4AF37] w-8 h-8" />
+                <div className="flex items-start gap-6">
+                  <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-[#D4AF37]/20 transition-all duration-500 border border-border/50">
+                    <step.icon className="text-[#D4AF37] w-8 h-8" />
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="text-2xl font-serif italic">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed font-light">
+                      {step.desc}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-serif italic mb-4">{step.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed font-light px-4">
-                  {step.desc}
-                </p>
               </motion.div>
             ))}
           </div>
