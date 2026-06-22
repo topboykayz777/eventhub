@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Sparkles, Music, UserPlus, Image as ImageIcon, MousePointer, Heart } from 'lucide-react';
+import { Calendar, MapPin, Sparkles, ImageIcon, MousePointer, QrCode, X, ChevronLeft, ChevronRight, Award } from 'lucide-react';
 
 interface ThemeConfig {
   id: string;
@@ -104,20 +104,48 @@ const themes: ThemeConfig[] = [
   }
 ];
 
+// Curated premium Nigerian/African wedding imagery
+const galleryImages = [
+  "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80", // Traditional Yoruba/Nigerian couple
+  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80", // Luxury reception setup
+  "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80", // Elegant wedding details
+  "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80", // Joyful dancing/celebration
+  "https://images.unsplash.com/photo-1520854221256-17451cc35953?auto=format&fit=crop&q=80", // Beautiful bride portrait
+  "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80"  // Toasting/celebration moment
+];
+
 const ThemeSwapper = () => {
   const [activeTheme, setActiveTheme] = useState<ThemeConfig>(themes[0]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lightboxIndex !== null) {
+      setLightboxIndex((lightboxIndex - 1 + galleryImages.length) % galleryImages.length);
+    }
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lightboxIndex !== null) {
+      setLightboxIndex((lightboxIndex + 1) % galleryImages.length);
+    }
+  };
 
   return (
-    <section className="py-20 px-4 md:px-6 bg-background relative overflow-hidden w-full flex flex-col items-center border-b border-border">
-      <div className="max-w-6xl w-full space-y-12">
-        {/* Section Header */}
-        <div className="text-center space-y-3">
-          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">The Aesthetic Engine</span>
-          <h2 className="text-3xl md:text-5xl font-serif italic text-foreground">
-            Bespoke <span className="text-[#D4AF37]">Atmospheres</span>
+    <section className="py-24 md:py-32 px-4 md:px-6 bg-background relative overflow-hidden w-full flex flex-col items-center border-b border-border">
+      {/* Ambient Gold Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-6xl w-full space-y-12 relative z-10">
+        {/* Section Header - Simplistic, High-Impact English */}
+        <div className="text-center space-y-4">
+          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Instant Transformation</span>
+          <h2 className="text-4xl md:text-6xl font-serif italic text-foreground leading-tight">
+            One Click. <span className="text-[#D4AF37]">Infinite Elegance.</span>
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto font-light tracking-wide text-xs">
-            One click transforms your entire event presence. Watch how the typography, colors, and layout morph to match your celebration's prestige.
+          <p className="text-muted-foreground max-w-xl mx-auto font-light tracking-wide text-sm md:text-base">
+            Change your event's look instantly. Tap any theme below to see the magic happen in real-time.
           </p>
         </div>
 
@@ -139,12 +167,12 @@ const ThemeSwapper = () => {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className={`p-6 md:p-10 ${activeTheme.text} ${activeTheme.fontFamily} transition-colors duration-700 space-y-8`}
           >
-            {/* Mockup Hero - Compact */}
-            <div className="relative h-[180px] md:h-[240px] w-full overflow-hidden rounded-2xl border border-white/5">
+            {/* Mockup Hero - Real Nigerian Wedding Couple */}
+            <div className="relative h-[200px] md:h-[280px] w-full overflow-hidden rounded-2xl border border-white/5">
               <img 
-                src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80" 
+                src="https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80" 
                 className="w-full h-full object-cover brightness-75"
-                alt="Mockup Couple"
+                alt="Amina & Farouq"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-center md:text-left">
@@ -157,14 +185,14 @@ const ThemeSwapper = () => {
 
             {/* Mockup Grid - Compact */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-              {/* Left Column: Details & Gallery */}
-              <div className="md:col-span-3 space-y-6">
+              {/* Left Column: Details & QR Pass */}
+              <div className="md:col-span-2 space-y-6">
                 {/* Particulars Card */}
-                <div className={`p-6 rounded-xl border ${activeTheme.card} transition-all duration-500`}>
+                <div className={`p-5 rounded-xl border ${activeTheme.card} transition-all duration-500`}>
                   <h4 className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-4 flex items-center gap-2">
                     <Calendar className="w-3 h-3" /> The Particulars
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                         <Sparkles className="text-[#D4AF37] w-4 h-4" />
@@ -186,53 +214,50 @@ const ThemeSwapper = () => {
                   </div>
                 </div>
 
-                {/* Memory Wall Gallery */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <span className="text-[#D4AF37] text-[7px] font-bold tracking-[0.3em] uppercase block">The Memory Wall</span>
-                      <h4 className="text-sm font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h4>
+                {/* Digital QR Pass Mockup */}
+                <div className={`p-5 rounded-xl border ${activeTheme.card} transition-all duration-500 flex items-center justify-between gap-4`}>
+                  <div className="space-y-2">
+                    <span className="text-[#D4AF37] text-[6px] font-black uppercase tracking-[0.4em] block">Entry Pass</span>
+                    <p className="text-sm font-serif italic leading-tight">Amina & Farouq</p>
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-full">
+                      <span className="text-[6px] font-bold uppercase tracking-widest opacity-50">Table</span>
+                      <span className="text-[8px] font-bold text-[#D4AF37]">05</span>
                     </div>
-                    <ImageIcon className="w-4 h-4 opacity-40" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80"
-                    ].map((url, i) => (
-                      <div key={i} className="aspect-[4/5] overflow-hidden rounded-lg border border-white/10 bg-white/5">
-                        <img src={url} className="w-full h-full object-cover grayscale" alt="" />
-                      </div>
-                    ))}
+                  <div className="bg-white p-1.5 rounded-lg shrink-0 shadow-md">
+                    <QrCode size={48} className="text-black" />
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: RSVP Registry */}
-              <div className="md:col-span-2">
-                <div className={`p-6 rounded-xl border ${activeTheme.card} transition-all duration-500 space-y-4`}>
-                  <h4 className="text-lg font-serif italic tracking-tight">The Registry</h4>
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <label className="text-[6px] font-bold uppercase tracking-widest opacity-40">Full Name</label>
-                      <div className="h-10 bg-black/5 border border-white/5 rounded-lg flex items-center px-3 text-xs opacity-60">
-                        e.g. Chidi Benson
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[6px] font-bold uppercase tracking-widest opacity-40">WhatsApp Number</label>
-                      <div className="h-10 bg-black/5 border border-white/5 rounded-lg flex items-center px-3 text-xs opacity-60">
-                        080...
-                      </div>
-                    </div>
-                    <button 
-                      type="button"
-                      className={`w-full h-10 rounded-lg text-[8px] font-black uppercase tracking-[0.3em] shadow-lg transition-all duration-500 ${activeTheme.button}`}
-                    >
-                      Confirm Attendance
-                    </button>
+              {/* Right Column: 6-Image Memory Wall */}
+              <div className="md:col-span-3 space-y-4">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <span className="text-[#D4AF37] text-[7px] font-bold tracking-[0.3em] uppercase block">The Memory Wall</span>
+                    <h4 className="text-sm font-serif italic">Captured <span className="text-[#D4AF37]">Moments</span></h4>
                   </div>
+                  <ImageIcon className="w-4 h-4 opacity-40" />
+                </div>
+                
+                {/* 6-Image Grid */}
+                <div className="grid grid-cols-3 gap-3">
+                  {galleryImages.map((url, i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => setLightboxIndex(i)}
+                      className="aspect-[4/5] overflow-hidden rounded-lg border border-white/10 bg-white/5 cursor-pointer group relative"
+                    >
+                      <img 
+                        src={url} 
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                        alt="" 
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-[6px] font-black uppercase tracking-widest text-white bg-black/60 px-2 py-1 rounded">View</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -286,6 +311,58 @@ const ThemeSwapper = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal for Memory Wall */}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightboxIndex(null)}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <button 
+              onClick={() => setLightboxIndex(null)}
+              className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all z-[210]"
+            >
+              <X size={24} />
+            </button>
+
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-3xl w-full max-h-[80vh] flex items-center justify-center cursor-default"
+            >
+              <img 
+                src={galleryImages[lightboxIndex]} 
+                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                alt="Wedding Moment"
+              />
+
+              {/* Navigation Controls */}
+              <button 
+                onClick={handlePrevImage}
+                className="absolute left-4 w-10 h-10 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-all border border-white/10"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                onClick={handleNextImage}
+                className="absolute right-4 w-10 h-10 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-all border border-white/10"
+              >
+                <ChevronRight size={20} />
+              </button>
+
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500">
+                {lightboxIndex + 1} / {galleryImages.length}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
