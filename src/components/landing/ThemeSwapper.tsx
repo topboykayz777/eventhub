@@ -204,12 +204,12 @@ const ThemeSwapper = () => {
       <div className="max-w-6xl w-full space-y-12 relative z-10">
         {/* Section Header */}
         <div className="text-center space-y-4">
-          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Instant Transformation</span>
+          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Live Website Preview</span>
           <h2 className={`text-4xl md:text-6xl font-serif italic leading-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            One Click. <span className="text-[#D4AF37]">Infinite Elegance.</span>
+            Choose Your Event's <span className="text-[#D4AF37]">Visual Style</span>
           </h2>
           <p className={`max-w-xl mx-auto font-light tracking-wide text-sm md:text-base transition-colors duration-500 ${isDark ? 'text-zinc-400' : 'text-gray-600'}`}>
-            Change your event's look instantly. Tap any theme below to see the magic happen in real-time.
+            This is a live preview of a real event page. Tap any theme button below to instantly change the colors, fonts, and style of your website.
           </p>
         </div>
 
