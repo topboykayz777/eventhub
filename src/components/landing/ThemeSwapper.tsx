@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Sparkles, ImageIcon, MousePointer, QrCode, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { supabase } from '@/integrations/supabase/client';
+import { QRCodeCanvas } from 'qrcode.react';
 
 interface ThemeConfig {
   id: string;
@@ -105,7 +107,7 @@ const themes: ThemeConfig[] = [
   }
 ];
 
-const galleryImages = [
+const fallbackGallery = [
   "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80",
@@ -118,23 +120,75 @@ const ThemeSwapper = () => {
   const [activeTheme, setActiveTheme] = useState<ThemeConfig>(themes[0]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { resolvedTheme } = useTheme();
+  
+  // Dynamic event state with beautiful fallbacks
+  const [eventData, setEventData] = useState({
+    eventName: "The Balogun Wedding",
+    venue: "The Grand Ballroom, Eko Hotel, Lagos",
+    photoUrl: "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80",
+    galleryUrls: fallbackGallery,
+    slug: "the-balogun-wedding"
+  });
+
+  // Fetch real Balogun Wedding event details from Supabase
+  useEffect(() => {
+    const fetchRealEvent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .ilike('event_name', '%balogun%')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data && !error) {
+          // Pad gallery with fallbacks if there are fewer than 6 images
+          let mergedGallery = [...(data.gallery_urls || [])];
+          if (mergedGallery.length < 6) {
+            mergedGallery = [...mergedGallery, ...fallbackGallery.slice(0, 6 - mergedGallery.length)];
+          }
+
+          setEventData({
+            eventName: data.event_name,
+            venue: data.venue,
+            photoUrl: data.photo_url || fallbackGallery[0],
+            galleryUrls: mergedGallery.slice(0, 6),
+            slug: data.slug
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching Balogun event:", err);
+      }
+    };
+
+    fetchRealEvent();
+  }, []);
 
   // Invert the theme: if global is dark, section is light. If global is light, section is dark.
   const isInvertedDark = resolvedTheme === 'light';
 
+  const isVideo = (url: string) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.quicktime'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (lightboxIndex !== null) {
-      setLightboxIndex((lightboxIndex - 1 + galleryImages.length) % galleryImages.length);
+      setLightboxIndex((lightboxIndex - 1 + eventData.galleryUrls.length) % eventData.galleryUrls.length);
     }
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (lightboxIndex !== null) {
-      setLightboxIndex((lightboxIndex + 1) % galleryImages.length);
+      setLightboxIndex((lightboxIndex + 1) % eventData.galleryUrls.length);
     }
   };
+
+  const liveEventUrl = `https://theeventhub.com.ng/event/${eventData.slug}`;
 
   return (
     <section 
@@ -173,7 +227,7 @@ const ThemeSwapper = () => {
             <div className={`mx-auto border rounded-full px-4 py-0.5 text-[8px] font-mono tracking-wider transition-colors duration-500 ${
               isInvertedDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-gray-50 border-gray-200 text-gray-400'
             }`}>
-              theeventhub.com.ng/event/the-balogun-wedding
+              theeventhub.com.ng/event/{eventData.slug}
             </div>
           </div>
 
@@ -192,16 +246,28 @@ const ThemeSwapper = () => {
           >
             {/* Mockup Hero */}
             <div className="relative h-[200px] md:h-[280px] w-full overflow-hidden rounded-2xl border border-white/5">
-              <img 
-                src="https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80" 
-                className="w-full h-full object-cover brightness-75"
-                alt="The Balogun Wedding"
-              />
+              {isVideo(eventData.photoUrl) ? (
+                <video 
+                  src={eventData.photoUrl} 
+                  className="w-full h-full object-cover brightness-75" 
+                  autoPlay 
+                  muted 
+                  loop 
+                  playsInline 
+                  preload="auto"
+                />
+              ) : (
+                <img 
+                  src={eventData.photoUrl} 
+                  className="w-full h-full object-cover brightness-75"
+                  alt={eventData.eventName}
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-center md:text-left">
                 <span className="text-[#D4AF37] text-[7px] font-black uppercase tracking-[0.4em] block mb-1">• Event in Progress</span>
                 <h3 className="text-xl md:text-3xl font-serif italic text-white leading-tight">
-                  The <span className="text-[#D4AF37]">Balogun Wedding</span>
+                  {eventData.eventName}
                 </h3>
               </div>
             </div>
@@ -231,7 +297,7 @@ const ThemeSwapper = () => {
                       </div>
                       <div>
                         <p className="text-[6px] font-bold uppercase tracking-widest opacity-40">The Venue</p>
-                        <p className="text-xs font-serif italic">The Grand Ballroom, Eko Hotel, Lagos</p>
+                        <p className="text-xs font-serif italic">{eventData.venue}</p>
                       </div>
                     </div>
                   </div>
@@ -248,7 +314,12 @@ const ThemeSwapper = () => {
                     </div>
                   </div>
                   <div className="bg-white p-1.5 rounded-lg shrink-0 shadow-md">
-                    <QrCode size={48} className="text-black" />
+                    <QRCodeCanvas 
+                      value={liveEventUrl}
+                      size={48}
+                      level="H"
+                      includeMargin={false}
+                    />
                   </div>
                 </div>
               </div>
@@ -265,17 +336,29 @@ const ThemeSwapper = () => {
                 
                 {/* 6-Image Grid */}
                 <div className="grid grid-cols-3 gap-3">
-                  {galleryImages.map((url, i) => (
+                  {eventData.galleryUrls.map((url, i) => (
                     <div 
                       key={i} 
                       onClick={() => setLightboxIndex(i)}
                       className="aspect-[4/5] overflow-hidden rounded-lg border border-white/10 bg-white/5 cursor-pointer group relative"
                     >
-                      <img 
-                        src={url} 
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
-                        alt="" 
-                      />
+                      {isVideo(url) ? (
+                        <video 
+                          src={url} 
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                          muted 
+                          playsInline 
+                          autoPlay 
+                          loop 
+                          preload="auto"
+                        />
+                      ) : (
+                        <img 
+                          src={url} 
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                          alt="" 
+                        />
+                      )}
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <span className="text-[6px] font-black uppercase tracking-widest text-white bg-black/60 px-2 py-1 rounded">View</span>
                       </div>
@@ -365,11 +448,21 @@ const ThemeSwapper = () => {
               onClick={(e) => e.stopPropagation()}
               className="relative max-w-3xl w-full max-h-[80vh] flex items-center justify-center cursor-default"
             >
-              <img 
-                src={galleryImages[lightboxIndex]} 
-                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
-                alt="Wedding Moment"
-              />
+              {isVideo(eventData.galleryUrls[lightboxIndex]) ? (
+                <video 
+                  src={eventData.galleryUrls[lightboxIndex]} 
+                  className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                  controls
+                  autoPlay
+                  loop
+                />
+              ) : (
+                <img 
+                  src={eventData.galleryUrls[lightboxIndex]} 
+                  className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                  alt="Wedding Moment"
+                />
+              )}
 
               {/* Navigation Controls */}
               <button 
@@ -386,7 +479,7 @@ const ThemeSwapper = () => {
               </button>
 
               <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500">
-                {lightboxIndex + 1} / {galleryImages.length}
+                {lightboxIndex + 1} / {eventData.galleryUrls.length}
               </div>
             </motion.div>
           </motion.div>
