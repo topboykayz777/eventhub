@@ -7,6 +7,7 @@ import Hero from '@/components/landing/Hero';
 import TheHook from '@/components/landing/TheHook';
 import TheNarrative from '@/components/landing/TheNarrative';
 import ProofSlash from '@/components/landing/ProofSlash';
+import ThemeSwapper from '@/components/landing/ThemeSwapper';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Twitter, Instagram, Linkedin, MapPin, Sparkles } from 'lucide-react';
@@ -85,6 +86,11 @@ const Index = () => {
         {/* THE HOOK (The Problem) */}
         <div className="w-full bg-background">
            <TheHook />
+        </div>
+
+        {/* THE BESPOKE THEME SWAPPER */}
+        <div className="w-full bg-background">
+           <ThemeSwapper />
         </div>
 
         {/* THE IMMERSIVE NARRATIVE (The Narrative of Excellence) */}
