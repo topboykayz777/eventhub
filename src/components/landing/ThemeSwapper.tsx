@@ -165,8 +165,8 @@ const ThemeSwapper = () => {
     fetchRealEvent();
   }, []);
 
-  // Invert the theme: if global is dark, section is light. If global is light, section is dark.
-  const isInvertedDark = resolvedTheme === 'light';
+  // Follow the actual global theme directly (dark when global is dark, light when global is light)
+  const isDark = resolvedTheme === 'dark';
 
   const isVideo = (url: string) => {
     if (!url) return false;
@@ -193,7 +193,7 @@ const ThemeSwapper = () => {
   return (
     <section 
       className={`py-24 md:py-32 px-4 md:px-6 relative overflow-hidden w-full flex flex-col items-center border-b transition-colors duration-500 ${
-        isInvertedDark 
+        isDark 
           ? 'bg-[#050505] text-white border-zinc-800' 
           : 'bg-[#f8f8f8] text-gray-900 border-gray-200'
       }`}
@@ -205,27 +205,27 @@ const ThemeSwapper = () => {
         {/* Section Header */}
         <div className="text-center space-y-4">
           <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Instant Transformation</span>
-          <h2 className={`text-4xl md:text-6xl font-serif italic leading-tight transition-colors duration-500 ${isInvertedDark ? 'text-white' : 'text-gray-900'}`}>
+          <h2 className={`text-4xl md:text-6xl font-serif italic leading-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             One Click. <span className="text-[#D4AF37]">Infinite Elegance.</span>
           </h2>
-          <p className={`max-w-xl mx-auto font-light tracking-wide text-sm md:text-base transition-colors duration-500 ${isInvertedDark ? 'text-zinc-400' : 'text-gray-600'}`}>
+          <p className={`max-w-xl mx-auto font-light tracking-wide text-sm md:text-base transition-colors duration-500 ${isDark ? 'text-zinc-400' : 'text-gray-600'}`}>
             Change your event's look instantly. Tap any theme below to see the magic happen in real-time.
           </p>
         </div>
 
         {/* The Floating Mockup Event Page */}
         <div className={`relative w-full rounded-[2.5rem] border shadow-2xl overflow-hidden transition-colors duration-500 ${
-          isInvertedDark ? 'border-zinc-800 bg-zinc-950' : 'border-gray-200 bg-white'
+          isDark ? 'border-zinc-800 bg-zinc-950' : 'border-gray-200 bg-white'
         }`}>
           {/* Browser Header */}
           <div className={`h-10 border-b px-6 flex items-center gap-1.5 shrink-0 transition-colors duration-500 ${
-            isInvertedDark ? 'border-zinc-800 bg-zinc-900/50' : 'border-gray-200 bg-gray-100/50'
+            isDark ? 'border-zinc-800 bg-zinc-900/50' : 'border-gray-200 bg-gray-100/50'
           }`}>
             <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
             <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
             <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
             <div className={`mx-auto border rounded-full px-4 py-0.5 text-[8px] font-mono tracking-wider transition-colors duration-500 ${
-              isInvertedDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-gray-50 border-gray-200 text-gray-400'
+              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-gray-50 border-gray-200 text-gray-400'
             }`}>
               theeventhub.com.ng/event/{eventData.slug}
             </div>
