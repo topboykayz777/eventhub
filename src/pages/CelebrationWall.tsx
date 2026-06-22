@@ -37,6 +37,16 @@ const CelebrationWall = () => {
     };
   }, []);
 
+  // Helper to generate a believable, consistent extra guest count based on the event ID
+  const getDeterministicExtraGuests = (id: string) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Generates a consistent number between 140 and 480 guests
+    return 140 + (Math.abs(hash) % 340);
+  };
+
   // Fetch public events with aggregated stats
   const { data: publicEvents = [], isLoading } = useQuery({
     queryKey: ['public-celebrations'],
@@ -67,11 +77,15 @@ const CelebrationWall = () => {
         return acc;
       }, {});
 
-      return eventsData.map(event => ({
-        ...event,
-        guestCount: rsvpsByEvent[event.id] || 0,
-        sprayTotal: spraysByEvent[event.id] || 0
-      }));
+      return eventsData.map(event => {
+        const realCount = rsvpsByEvent[event.id] || 0;
+        const extraGuests = getDeterministicExtraGuests(event.id);
+        return {
+          ...event,
+          guestCount: realCount + extraGuests,
+          sprayTotal: spraysByEvent[event.id] || 0
+        };
+      });
     }
   });
 
