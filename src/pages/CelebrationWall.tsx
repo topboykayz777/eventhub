@@ -37,14 +37,25 @@ const CelebrationWall = () => {
     };
   }, []);
 
-  // Helper to generate a believable, consistent extra guest count based on the event ID
-  const getDeterministicExtraGuests = (id: string) => {
+  // Helper to generate a believable, consistent extra guest count based on the event ID and gallery size
+  const getDeterministicExtraGuests = (id: string, galleryUrls: string[] | null) => {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
-    // Generates a consistent number between 140 and 480 guests
-    return 140 + (Math.abs(hash) % 340);
+    const absHash = Math.abs(hash);
+    const galleryCount = galleryUrls ? galleryUrls.length : 0;
+
+    if (galleryCount >= 10) {
+      // High activity (many images): 350 to 650 guests
+      return 350 + (absHash % 300);
+    } else if (galleryCount > 0) {
+      // Medium activity (some images): 120 to 349 guests
+      return 120 + (absHash % 230);
+    } else {
+      // Low activity (no images): 15 to 119 guests
+      return 15 + (absHash % 105);
+    }
   };
 
   // Fetch public events with aggregated stats
@@ -79,7 +90,7 @@ const CelebrationWall = () => {
 
       return eventsData.map(event => {
         const realCount = rsvpsByEvent[event.id] || 0;
-        const extraGuests = getDeterministicExtraGuests(event.id);
+        const extraGuests = getDeterministicExtraGuests(event.id, event.gallery_urls);
         return {
           ...event,
           guestCount: realCount + extraGuests,
