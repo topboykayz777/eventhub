@@ -111,13 +111,13 @@ const fallbackGallery = [
   "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1520854221256-17451cc35953?auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80"
+  "https://images.unsplash.com/photo-1583939003579-715cb0215aed?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80"
 ];
 
 const ThemeSwapper = () => {
-  const [activeTheme, setActiveTheme] = useState<ThemeConfig>(themes[0]);
+  const [activeTheme, setActiveTheme] = useState('modern');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { resolvedTheme } = useTheme();
   
@@ -190,6 +190,8 @@ const ThemeSwapper = () => {
 
   const liveEventUrl = `https://theeventhub.com.ng/event/${eventData.slug}`;
 
+  const activeConfig = themes.find(t => t.id === activeTheme) || themes[0];
+
   return (
     <section 
       className={`py-24 md:py-32 px-4 md:px-6 relative overflow-hidden w-full flex flex-col items-center border-b transition-colors duration-500 ${
@@ -204,12 +206,12 @@ const ThemeSwapper = () => {
       <div className="max-w-6xl w-full space-y-12 relative z-10">
         {/* Section Header */}
         <div className="text-center space-y-4">
-          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Your Event, Live Forever</span>
+          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Share Your Celebration</span>
           <h2 className={`text-4xl md:text-6xl font-serif italic leading-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Get a Custom Link That <span className="text-[#D4AF37]">Stays Live Forever</span>
+            One Link. <span className="text-[#D4AF37]">Live Forever.</span>
           </h2>
           <p className={`max-w-xl mx-auto font-light tracking-wide text-sm md:text-base transition-colors duration-500 ${isDark ? 'text-zinc-400' : 'text-gray-600'}`}>
-            When you create your event on EventHub, you get a beautiful, shareable link for your guests. Best of all, your event page, guest registry, and memory wall stay live forever as a digital monument to your celebration.
+            Create your event page in minutes. Share your custom link with guests. Your RSVPs, photos, and memories stay online forever.
           </p>
         </div>
 
@@ -234,15 +236,15 @@ const ThemeSwapper = () => {
           {/* Mockup Content Area */}
           <motion.div 
             animate={{ 
-              backgroundColor: activeTheme.id === 'elegant' ? '#f8f8f8' : 
-                             activeTheme.id === 'traditional' ? '#064e3b' : 
-                             activeTheme.id === 'sahara' ? '#451a03' : 
-                             activeTheme.id === 'velvet' ? '#2e1065' : 
-                             activeTheme.id === 'garden' ? '#022c22' : 
-                             activeTheme.id === 'rose' ? '#831843' : '#050505' 
+              backgroundColor: activeConfig.id === 'elegant' ? '#f8f8f8' : 
+                             activeConfig.id === 'traditional' ? '#064e3b' : 
+                             activeConfig.id === 'sahara' ? '#451a03' : 
+                             activeConfig.id === 'velvet' ? '#2e1065' : 
+                             activeConfig.id === 'garden' ? '#022c22' : 
+                             activeConfig.id === 'rose' ? '#831843' : '#050505' 
             }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className={`p-6 md:p-10 ${activeTheme.text} ${activeTheme.fontFamily || 'font-sans'} transition-colors duration-700 space-y-8`}
+            className={`p-6 md:p-10 ${activeConfig.text} ${activeConfig.fontFamily || 'font-sans'} transition-colors duration-700 space-y-8`}
           >
             {/* Mockup Hero */}
             <div className="relative h-[200px] md:h-[280px] w-full overflow-hidden rounded-2xl border border-white/5">
@@ -277,7 +279,7 @@ const ThemeSwapper = () => {
               {/* Left Column: Details & QR Pass */}
               <div className="md:col-span-2 space-y-6">
                 {/* Particulars Card */}
-                <div className={`p-5 rounded-xl border ${activeTheme.card} transition-all duration-500`}>
+                <div className={`p-5 rounded-xl border ${activeConfig.card} transition-all duration-500`}>
                   <h4 className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-4 flex items-center gap-2">
                     <Calendar className="w-3 h-3" /> The Particulars
                   </h4>
@@ -304,7 +306,7 @@ const ThemeSwapper = () => {
                 </div>
 
                 {/* Digital QR Pass Mockup */}
-                <div className={`p-5 rounded-xl border ${activeTheme.card} transition-all duration-500 flex items-center justify-between gap-4`}>
+                <div className={`p-5 rounded-xl border ${activeConfig.card} transition-all duration-500 flex items-center justify-between gap-4`}>
                   <div className="space-y-2">
                     <span className="text-[#D4AF37] text-[6px] font-black uppercase tracking-[0.4em] block">Entry Pass</span>
                     <p className="text-sm font-serif italic leading-tight">Chief Balogun</p>
@@ -396,9 +398,9 @@ const ThemeSwapper = () => {
             {themes.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setActiveTheme(t)}
+                onClick={() => setActiveTheme(t.id)}
                 className={`snap-center shrink-0 relative px-5 py-3 rounded-full border transition-all duration-500 flex items-center gap-2.5 ${t.bg} ${t.text} ${t.border} ${
-                  activeTheme.id === t.id 
+                  activeTheme === t.id 
                     ? 'ring-2 ring-[#D4AF37]/50 scale-105 shadow-lg opacity-100' 
                     : 'opacity-80 hover:opacity-100'
                 }`}
