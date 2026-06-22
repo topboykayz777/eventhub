@@ -144,7 +144,7 @@ const ThemeSwapper = () => {
 
         if (data && !error) {
           // Pad gallery with fallbacks if there are fewer than 6 images
-          let mergedGallery = [...(data.gallery_urls || [])];
+          let mergedGallery = [...(data.gallery_urls || []).slice(0, 6)];
           if (mergedGallery.length < 6) {
             mergedGallery = [...mergedGallery, ...fallbackGallery.slice(0, 6 - mergedGallery.length)];
           }
@@ -153,7 +153,7 @@ const ThemeSwapper = () => {
             eventName: data.event_name,
             venue: data.venue,
             photoUrl: data.photo_url || fallbackGallery[0],
-            galleryUrls: mergedGallery.slice(0, 6),
+            galleryUrls: mergedGallery,
             slug: data.slug
           });
         }
@@ -388,7 +388,7 @@ const ThemeSwapper = () => {
             className="flex flex-col items-center gap-1 pointer-events-none"
           >
             <span className="bg-[#D4AF37] text-black text-[7px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
-              <MousePointer size={8} /> Swipe & Tap to Morph
+              <MousePointer size={8} /> Tap to change style
             </span>
             <div className="w-1.5 h-1.5 bg-[#D4AF37] rotate-45 -mt-1" />
           </motion.div>
