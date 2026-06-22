@@ -313,10 +313,10 @@ const ThemeSwapper = () => {
                       <span className="text-[8px] font-bold text-[#D4AF37]">05</span>
                     </div>
                   </div>
-                  <div className="bg-white p-1.5 rounded-lg shrink-0 shadow-md">
+                  <div className="bg-white p-2 rounded-xl flex items-center justify-center shadow-md shrink-0 w-14 h-14">
                     <QRCodeCanvas 
                       value={liveEventUrl}
-                      size={48}
+                      size={40}
                       level="H"
                       includeMargin={false}
                     />
@@ -397,12 +397,10 @@ const ThemeSwapper = () => {
               <button
                 key={t.id}
                 onClick={() => setActiveTheme(t)}
-                className={`snap-center shrink-0 relative px-5 py-3 rounded-full border transition-all duration-500 flex items-center gap-2.5 ${
+                className={`snap-center shrink-0 relative px-5 py-3 rounded-full border transition-all duration-500 flex items-center gap-2.5 ${t.bg} ${t.text} ${t.border} ${
                   activeTheme.id === t.id 
-                    ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-[0_0_20px_rgba(212,175,55,0.15)] scale-105' 
-                    : isInvertedDark 
-                      ? 'border-zinc-800 bg-zinc-900 text-white hover:border-[#D4AF37]/30' 
-                      : 'border-gray-200 bg-white text-gray-900 hover:border-[#D4AF37]/30'
+                    ? 'ring-2 ring-[#D4AF37]/50 scale-105 shadow-lg opacity-100' 
+                    : 'opacity-80 hover:opacity-100'
                 }`}
               >
                 {/* Color Pills */}
@@ -413,9 +411,7 @@ const ThemeSwapper = () => {
                     <div className="w-2.5 h-2.5 rounded-full border border-white/10 bg-white" />
                   )}
                 </div>
-                <span className={`text-[8px] font-black uppercase tracking-widest transition-colors duration-500 ${
-                  activeTheme.id === t.id ? 'text-white' : isInvertedDark ? 'text-white' : 'text-gray-900'
-                }`}>
+                <span className="text-[8px] font-black uppercase tracking-widest">
                   {t.label}
                 </span>
               </button>
@@ -448,21 +444,11 @@ const ThemeSwapper = () => {
               onClick={(e) => e.stopPropagation()}
               className="relative max-w-3xl w-full max-h-[80vh] flex items-center justify-center cursor-default"
             >
-              {isVideo(eventData.galleryUrls[lightboxIndex]) ? (
-                <video 
-                  src={eventData.galleryUrls[lightboxIndex]} 
-                  className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
-                  controls
-                  autoPlay
-                  loop
-                />
-              ) : (
-                <img 
-                  src={eventData.galleryUrls[lightboxIndex]} 
-                  className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
-                  alt="Wedding Moment"
-                />
-              )}
+              <img 
+                src={eventData.galleryUrls[lightboxIndex]} 
+                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                alt="Wedding Moment"
+              />
 
               {/* Navigation Controls */}
               <button 
