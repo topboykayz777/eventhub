@@ -204,12 +204,12 @@ const ThemeSwapper = () => {
       <div className="max-w-6xl w-full space-y-12 relative z-10">
         {/* Section Header */}
         <div className="text-center space-y-4">
-          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Live Website Preview</span>
+          <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Your Event, Live Forever</span>
           <h2 className={`text-4xl md:text-6xl font-serif italic leading-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Choose Your Event's <span className="text-[#D4AF37]">Visual Style</span>
+            Get a Custom Link That <span className="text-[#D4AF37]">Stays Live Forever</span>
           </h2>
           <p className={`max-w-xl mx-auto font-light tracking-wide text-sm md:text-base transition-colors duration-500 ${isDark ? 'text-zinc-400' : 'text-gray-600'}`}>
-            This is a live preview of a real event page. Tap any theme button below to instantly change the colors, fonts, and style of your website.
+            When you create your event on EventHub, you get a beautiful, shareable link for your guests. Best of all, your event page, guest registry, and memory wall stay live forever as a digital monument to your celebration.
           </p>
         </div>
 
