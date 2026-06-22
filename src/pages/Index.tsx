@@ -83,14 +83,14 @@ const Index = () => {
           </div>
         </section>
 
+        {/* THE BESPOKE THEME SWAPPER - Placed directly below Stats Strip */}
+        <div className="w-full bg-background">
+           <ThemeSwapper />
+        </div>
+
         {/* THE HOOK (The Problem) */}
         <div className="w-full bg-background">
            <TheHook />
-        </div>
-
-        {/* THE BESPOKE THEME SWAPPER */}
-        <div className="w-full bg-background">
-           <ThemeSwapper />
         </div>
 
         {/* THE IMMERSIVE NARRATIVE (The Narrative of Excellence) */}
