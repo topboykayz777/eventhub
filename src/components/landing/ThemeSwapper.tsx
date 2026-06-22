@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Sparkles, ImageIcon, MousePointer, QrCode, X, ChevronLeft, ChevronRight, Award } from 'lucide-react';
+import { Calendar, MapPin, Sparkles, ImageIcon, MousePointer, QrCode, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface ThemeConfig {
   id: string;
@@ -13,8 +14,8 @@ interface ThemeConfig {
   card: string;
   border: string;
   button: string;
-  pillColors: string[];
-  fontFamily: string;
+  pillColors?: string[];
+  fontFamily?: string;
 }
 
 const themes: ThemeConfig[] = [
@@ -37,8 +38,8 @@ const themes: ThemeConfig[] = [
     text: 'text-[#fdfcf0]',
     accent: 'text-[#D4AF37]',
     card: 'bg-black/20 border-[#D4AF37]/20',
-    border: 'border-[#D4AF37]/30',
-    button: 'bg-[#D4AF37] text-black hover:bg-[#B8860B]',
+    border: 'border-[#D4AF37]/20',
+    button: 'bg-[#064e3b] text-white',
     pillColors: ['bg-[#064e3b]', 'bg-[#D4AF37]'],
     fontFamily: 'font-serif'
   },
@@ -50,73 +51,76 @@ const themes: ThemeConfig[] = [
     accent: 'text-black',
     card: 'bg-white border-gray-200 shadow-sm',
     border: 'border-black/10',
-    button: 'bg-black text-white hover:bg-black/80',
+    button: 'bg-white text-black hover:bg-gray-100',
     pillColors: ['bg-[#f8f8f8]', 'bg-black'],
-    fontFamily: 'font-serif'
+    fontFamily: 'font-sans'
   },
   {
     id: 'sahara',
     label: 'Sahara Gold',
-    bg: 'bg-[#451a03]',
-    text: 'text-[#fef3c7]',
-    accent: 'text-[#fbbf24]',
-    card: 'bg-black/20 border-[#fbbf24]/20',
-    border: 'border-[#fbbf24]/30',
-    button: 'bg-[#fbbf24] text-black hover:bg-[#d97706]',
+    bg: "bg-[#451a03]",
+    text: "text-[#fef3c7]",
+    accent: "text-[#fbbf24]",
+    card: "bg-black/20 border-[#fbbf24]/10",
+    border: "border-[#fbbf24]/20",
+    button: "bg-[#fbbf24] text-black",
     pillColors: ['bg-[#451a03]', 'bg-[#fbbf24]'],
     fontFamily: 'font-serif'
   },
   {
     id: 'velvet',
     label: 'Midnight Velvet',
-    bg: 'bg-[#2e1065]',
-    text: 'text-[#f5f3ff]',
-    accent: 'text-[#D4AF37]',
-    card: 'bg-black/20 border-[#D4AF37]/20',
-    border: 'border-[#D4AF37]/30',
-    button: 'bg-[#D4AF37] text-black hover:bg-[#B8860B]',
+    bg: "bg-[#2e1065]",
+    text: "text-[#f5f3ff]",
+    accent: "text-[#D4AF37]",
+    card: "bg-black/20 border-[#D4AF37]/10",
+    border: "border-[#D4AF37]/20",
+    button: "bg-[#D4AF37] text-black",
     pillColors: ['bg-[#2e1065]', 'bg-[#D4AF37]'],
     fontFamily: 'font-serif'
   },
   {
     id: 'garden',
     label: 'Emerald Garden',
-    bg: 'bg-[#022c22]',
-    text: 'text-[#ecfdf5]',
-    accent: 'text-[#10b981]',
-    card: 'bg-black/20 border-[#10b981]/20',
-    border: 'border-[#10b981]/30',
-    button: 'bg-[#10b981] text-black hover:bg-[#059669]',
+    bg: "bg-[#022c22]",
+    text: "text-[#ecfdf5]",
+    accent: "text-[#10b981]",
+    card: "bg-black/20 border-[#10b981]/10",
+    border: "border-[#10b981]/20",
+    button: "bg-[#10b981] text-black",
     pillColors: ['bg-[#022c22]', 'bg-[#10b981]'],
     fontFamily: 'font-sans'
   },
   {
     id: 'rose',
     label: 'Sunset Rose',
-    bg: 'bg-[#831843]',
-    text: 'text-[#fdf2f8]',
-    card: 'bg-black/20 border-[#fbcfe8]/20',
-    accent: 'text-[#fbcfe8]',
-    border: 'border-[#fbcfe8]/30',
-    button: 'bg-[#fbcfe8] text-black hover:bg-[#f472b6]',
+    bg: "bg-[#831843]",
+    text: "text-[#fdf2f8]",
+    accent: "text-[#fbcfe8]",
+    card: "bg-black/20 border-[#fbcfe8]/20",
+    border: "border-[#fbcfe8]/30",
+    button: "bg-[#fbcfe8] text-black hover:bg-[#f472b6]",
     pillColors: ['bg-[#831843]', 'bg-[#fbcfe8]'],
-    fontFamily: 'font-serif'
+    fontFamily: 'font-sans'
   }
 ];
 
-// Curated premium Nigerian/African wedding imagery
 const galleryImages = [
-  "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80", // Traditional Yoruba/Nigerian couple
-  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80", // Luxury reception setup
-  "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80", // Elegant wedding details
-  "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80", // Joyful dancing/celebration
-  "https://images.unsplash.com/photo-1520854221256-17451cc35953?auto=format&fit=crop&q=80", // Beautiful bride portrait
-  "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80"  // Toasting/celebration moment
+  "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1520854221256-17451cc35953?auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80"
 ];
 
 const ThemeSwapper = () => {
   const [activeTheme, setActiveTheme] = useState<ThemeConfig>(themes[0]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const { resolvedTheme } = useTheme();
+
+  // Invert the theme: if global is dark, section is light. If global is light, section is dark.
+  const isInvertedDark = resolvedTheme === 'light';
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -133,57 +137,76 @@ const ThemeSwapper = () => {
   };
 
   return (
-    <section className="py-24 md:py-32 px-4 md:px-6 bg-background relative overflow-hidden w-full flex flex-col items-center border-b border-border">
+    <section 
+      className={`py-24 md:py-32 px-4 md:px-6 relative overflow-hidden w-full flex flex-col items-center border-b transition-colors duration-500 ${
+        isInvertedDark 
+          ? 'bg-[#050505] text-white border-zinc-800' 
+          : 'bg-[#f8f8f8] text-gray-900 border-gray-200'
+      }`}
+    >
       {/* Ambient Gold Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-6xl w-full space-y-12 relative z-10">
-        {/* Section Header - Simplistic, High-Impact English */}
+        {/* Section Header */}
         <div className="text-center space-y-4">
           <span className="text-[#D4AF37] text-[10px] font-black tracking-[0.5em] uppercase block">Instant Transformation</span>
-          <h2 className="text-4xl md:text-6xl font-serif italic text-foreground leading-tight">
+          <h2 className={`text-4xl md:text-6xl font-serif italic leading-tight transition-colors duration-500 ${isInvertedDark ? 'text-white' : 'text-gray-900'}`}>
             One Click. <span className="text-[#D4AF37]">Infinite Elegance.</span>
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto font-light tracking-wide text-sm md:text-base">
+          <p className={`max-w-xl mx-auto font-light tracking-wide text-sm md:text-base transition-colors duration-500 ${isInvertedDark ? 'text-zinc-400' : 'text-gray-600'}`}>
             Change your event's look instantly. Tap any theme below to see the magic happen in real-time.
           </p>
         </div>
 
-        {/* The Floating Mockup Event Page - Compact & Single Section */}
-        <div className="relative w-full rounded-[2.5rem] border border-border bg-card shadow-2xl overflow-hidden">
+        {/* The Floating Mockup Event Page */}
+        <div className={`relative w-full rounded-[2.5rem] border shadow-2xl overflow-hidden transition-colors duration-500 ${
+          isInvertedDark ? 'border-zinc-800 bg-zinc-950' : 'border-gray-200 bg-white'
+        }`}>
           {/* Browser Header */}
-          <div className="h-10 border-b border-border bg-muted/30 px-6 flex items-center gap-1.5 shrink-0">
+          <div className={`h-10 border-b px-6 flex items-center gap-1.5 shrink-0 transition-colors duration-500 ${
+            isInvertedDark ? 'border-zinc-800 bg-zinc-900/50' : 'border-gray-200 bg-gray-100/50'
+          }`}>
             <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
             <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
             <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
-            <div className="mx-auto bg-background/50 border border-border/50 rounded-full px-4 py-0.5 text-[8px] font-mono text-muted-foreground/60 tracking-wider">
-              theeventhub.com.ng/event/amina-farouq
+            <div className={`mx-auto border rounded-full px-4 py-0.5 text-[8px] font-mono tracking-wider transition-colors duration-500 ${
+              isInvertedDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-gray-50 border-gray-200 text-gray-400'
+            }`}>
+              theeventhub.com.ng/event/the-balogun-wedding
             </div>
           </div>
 
           {/* Mockup Content Area */}
           <motion.div 
-            animate={{ backgroundColor: activeTheme.id === 'elegant' ? '#f8f8f8' : activeTheme.id === 'traditional' ? '#064e3b' : activeTheme.id === 'sahara' ? '#451a03' : activeTheme.id === 'velvet' ? '#2e1065' : activeTheme.id === 'garden' ? '#022c22' : activeTheme.id === 'rose' ? '#831843' : '#050505' }}
+            animate={{ 
+              backgroundColor: activeTheme.id === 'elegant' ? '#f8f8f8' : 
+                             activeTheme.id === 'traditional' ? '#064e3b' : 
+                             activeTheme.id === 'sahara' ? '#451a03' : 
+                             activeTheme.id === 'velvet' ? '#2e1065' : 
+                             activeTheme.id === 'garden' ? '#022c22' : 
+                             activeTheme.id === 'rose' ? '#831843' : '#050505' 
+            }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className={`p-6 md:p-10 ${activeTheme.text} ${activeTheme.fontFamily} transition-colors duration-700 space-y-8`}
+            className={`p-6 md:p-10 ${activeTheme.text} ${activeTheme.fontFamily || 'font-sans'} transition-colors duration-700 space-y-8`}
           >
-            {/* Mockup Hero - Real Nigerian Wedding Couple */}
+            {/* Mockup Hero */}
             <div className="relative h-[200px] md:h-[280px] w-full overflow-hidden rounded-2xl border border-white/5">
               <img 
                 src="https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?auto=format&fit=crop&q=80" 
                 className="w-full h-full object-cover brightness-75"
-                alt="Amina & Farouq"
+                alt="The Balogun Wedding"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-center md:text-left">
                 <span className="text-[#D4AF37] text-[7px] font-black uppercase tracking-[0.4em] block mb-1">• Event in Progress</span>
                 <h3 className="text-xl md:text-3xl font-serif italic text-white leading-tight">
-                  The Wedding of <span className="text-[#D4AF37]">Amina & Farouq</span>
+                  The <span className="text-[#D4AF37]">Balogun Wedding</span>
                 </h3>
               </div>
             </div>
 
-            {/* Mockup Grid - Compact */}
+            {/* Mockup Grid */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
               {/* Left Column: Details & QR Pass */}
               <div className="md:col-span-2 space-y-6">
@@ -218,7 +241,7 @@ const ThemeSwapper = () => {
                 <div className={`p-5 rounded-xl border ${activeTheme.card} transition-all duration-500 flex items-center justify-between gap-4`}>
                   <div className="space-y-2">
                     <span className="text-[#D4AF37] text-[6px] font-black uppercase tracking-[0.4em] block">Entry Pass</span>
-                    <p className="text-sm font-serif italic leading-tight">Amina & Farouq</p>
+                    <p className="text-sm font-serif italic leading-tight">Chief Balogun</p>
                     <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-full">
                       <span className="text-[6px] font-bold uppercase tracking-widest opacity-50">Table</span>
                       <span className="text-[8px] font-bold text-[#D4AF37]">05</span>
@@ -264,7 +287,7 @@ const ThemeSwapper = () => {
           </motion.div>
         </div>
 
-        {/* Theme Selector Controls - Swipeable & Non-Scrollable */}
+        {/* Theme Selector Controls */}
         <div className="flex flex-col items-center space-y-4 relative w-full">
           {/* Animated Cursor Indicator */}
           <motion.div 
@@ -294,16 +317,22 @@ const ThemeSwapper = () => {
                 className={`snap-center shrink-0 relative px-5 py-3 rounded-full border transition-all duration-500 flex items-center gap-2.5 ${
                   activeTheme.id === t.id 
                     ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-[0_0_20px_rgba(212,175,55,0.15)] scale-105' 
-                    : 'border-border bg-card hover:border-[#D4AF37]/30'
+                    : isInvertedDark 
+                      ? 'border-zinc-800 bg-zinc-900 text-white hover:border-[#D4AF37]/30' 
+                      : 'border-gray-200 bg-white text-gray-900 hover:border-[#D4AF37]/30'
                 }`}
               >
                 {/* Color Pills */}
                 <div className="flex gap-0.5">
-                  {t.pillColors.map((color, idx) => (
+                  {t.pillColors?.map((color, idx) => (
                     <div key={idx} className={`w-2.5 h-2.5 rounded-full border border-white/10 ${color}`} />
-                  ))}
+                  )) || (
+                    <div className="w-2.5 h-2.5 rounded-full border border-white/10 bg-white" />
+                  )}
                 </div>
-                <span className="text-[8px] font-black uppercase tracking-widest text-foreground">
+                <span className={`text-[8px] font-black uppercase tracking-widest transition-colors duration-500 ${
+                  activeTheme.id === t.id ? 'text-white' : isInvertedDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   {t.label}
                 </span>
               </button>
