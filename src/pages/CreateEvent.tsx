@@ -241,14 +241,14 @@ const CreateEvent = () => {
               </div>
               <div className="space-y-3 flex flex-col items-center">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-center text-center">
-                  Access Level <InfoButton text="Select your orchestration tier. The Free Beta tier unlocks all premium features." />
+                  Access Level <InfoButton text="Select your orchestration tier. The Sovereign Suite unlocks all premium features." />
                 </Label>
                 <Select onValueChange={(v) => setFormData({ ...formData, plan: v })} defaultValue={formData.plan}>
                   <SelectTrigger className="h-16 bg-secondary border border-border rounded-[1.5rem] text-sm font-bold uppercase tracking-widest text-[#D4AF37] px-6">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border text-foreground rounded-2xl">
-                    <SelectItem value="beta">Free Beta Access (Full Suite)</SelectItem>
+                    <SelectItem value="beta">The Sovereign Suite (Complimentary Invitation)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

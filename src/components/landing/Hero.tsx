@@ -68,8 +68,7 @@ const Hero = () => {
           </h1>
           
           <p className="text-[11px] sm:text-sm md:text-base text-muted-foreground mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-serif italic font-bold tracking-wide px-4 text-center">
-            Nigeria's most exclusive digital command center for professional planners and high-society hosts. 
-            Orchestrate weddings, galas, and elite events with surgical precision.
+            Beautiful digital invitations, seamless QR code entry passes, and zero-commission digital spraying. Built exclusively for Nigeria's most prestigious celebrations.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8 w-full sm:w-auto">
