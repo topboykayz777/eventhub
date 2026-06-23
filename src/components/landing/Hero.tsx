@@ -67,7 +67,7 @@ const Hero = () => {
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          <p className="text-[11px] sm:text-sm md:text-base text-muted-foreground mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-serif italic font-bold tracking-wide px-4 text-center">
+          <p className="text-xs sm:text-sm md:text-lg text-slate-900 dark:text-slate-100 mb-12 md:mb-16 max-w-2xl mx-auto leading-relaxed font-serif italic font-extrabold tracking-wide px-4 text-center">
             Beautiful digital invitations, seamless QR code entry passes, and zero-commission digital spraying. Built exclusively for Nigeria's most prestigious celebrations.
           </p>
 
