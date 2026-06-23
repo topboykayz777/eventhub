@@ -181,6 +181,52 @@ const Dashboard = () => {
     }
   };
 
+  // FULL-SCREEN ONBOARDING WELCOME NUDGE
+  if (showOnboardingModal) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Ambient Gold Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none" />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full text-center space-y-8 relative z-10 bg-card border border-border p-10 md:p-16 rounded-[3rem] shadow-2xl"
+        >
+          <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto border border-[#D4AF37]/20">
+            <Sparkles className="text-[#D4AF37] w-10 h-10 animate-pulse" />
+          </div>
+          
+          <div className="space-y-4">
+            <h2 className="text-3xl md:text-4xl font-serif italic">Welcome to the Atelier!</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed font-light">
+              Add an upcoming event draft to your profile so clients see you're ready to run their Vibe Screen & QR passes.
+            </p>
+          </div>
+
+          <div className="space-y-4 pt-4">
+            <Button 
+              onClick={() => {
+                setShowOnboardingModal(false);
+                navigate('/create-event');
+              }}
+              className="w-full h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] transition-all shadow-lg"
+            >
+              Create Event Draft
+            </Button>
+            
+            <button 
+              onClick={() => setShowOnboardingModal(false)}
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors pt-2"
+            >
+              Skip to Dashboard
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
@@ -317,36 +363,6 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-
-      {/* ONBOARDING WELCOME NUDGE MODAL */}
-      <AnimatePresence>
-        {showOnboardingModal && (
-          <Dialog open={showOnboardingModal} onOpenChange={setShowOnboardingModal}>
-            <DialogContent className="bg-popover border-border text-foreground max-w-md w-[95vw] rounded-[2.5rem] p-10 shadow-2xl text-center">
-              <DialogHeader className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6 border border-[#D4AF37]/20">
-                  <Sparkles className="text-[#D4AF37] w-8 h-8 animate-pulse" />
-                </div>
-                <DialogTitle className="text-3xl font-serif italic mb-4">Welcome to the Atelier!</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-8">
-                <p className="text-sm text-muted-foreground leading-relaxed font-light">
-                  Add an upcoming event draft to your profile so clients see you're ready to run their Vibe Screen & QR passes.
-                </p>
-                <Button 
-                  onClick={() => {
-                    setShowOnboardingModal(false);
-                    navigate('/create-event');
-                  }}
-                  className="w-full h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] transition-all shadow-lg"
-                >
-                  Create Event Draft
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </AnimatePresence>
 
       <QRScannerOverlay isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleQRScan} />
       {activeEvent && <WhatsAppBlast isOpen={isBlastOpen} onClose={() => setIsBlastOpen(false)} event={activeEvent} rsvps={activeEvent.rsvps} />}
