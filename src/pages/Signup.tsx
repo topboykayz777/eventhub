@@ -55,6 +55,8 @@ const Signup = () => {
     if (error) {
       showError(error.message);
     } else if (data.user) {
+      // Set the onboarding marker so the dashboard knows to show the welcome nudge
+      localStorage.setItem('eventhub_just_signed_up', 'true');
       showSuccess("Verification email sent. Please check your inbox.");
     }
     
