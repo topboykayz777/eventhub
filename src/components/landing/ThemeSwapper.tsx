@@ -20,26 +20,12 @@ import { format } from 'date-fns';
 interface ThemeSwapperProps {}
 
 const themes = [
-  { id: 'modern', label: 'Midnight Noir', color: 'from-gray-900 to-black', icon: Sparkles },
-  { id: 'traditional', label: 'Royal Heritage', color: 'from-emerald-900 to-green-950', icon: Sparkles },
-  { id: 'elegant', label: 'Pure Ivory', color: 'from-slate-50 to-slate-200', icon: Sparkles, light: true },
-  { id: 'sahara', label: 'Sahara Gold', color: 'from-amber-600 to-orange-900', icon: Sparkles },
-  { id: 'velvet', label: 'Midnight Velvet', color: 'from-purple-900 to-indigo-950', icon: Sparkles },
-  { id: 'garden', label: 'Emerald Garden', color: 'from-teal-800 to-emerald-950', icon: Sparkles },
-  { id: 'oceanic', label: 'Oceanic Silk', color: 'from-blue-800 to-blue-950', icon: Sparkles },
-  { id: 'rose', label: 'Sunset Rose', color: 'from-rose-700 to-rose-950', icon: Sparkles },
-  { id: 'earth', label: 'Ancestral Earth', color: 'from-orange-900 to-stone-950', icon: Sparkles },
-  { id: 'silver', label: 'Celestial Silver', color: 'from-slate-400 to-slate-600', icon: Sparkles },
-  { id: 'dynasty', label: 'Crimson Dynasty', color: 'from-red-800 to-red-950', icon: Sparkles },
-  { id: 'vintage', label: 'Vintage Parchment', color: 'from-amber-50 to-orange-100', icon: Sparkles, light: true },
-  { id: 'neon', label: 'Electric Pulse', color: 'from-cyan-400 to-blue-600', icon: Sparkles },
-  { id: 'royal', label: 'Royal Amethyst', color: 'from-purple-700 to-fuchsia-950', icon: Sparkles },
-  { id: 'blossom', label: 'Sakura Spring', color: 'from-pink-50 to-rose-100', icon: Sparkles, light: true },
-  { id: 'tropic', label: 'Tropical Jungle', color: 'from-green-600 to-teal-900', icon: Sparkles },
-  { id: 'desert', label: 'Oasis Blue', color: 'from-sky-400 to-indigo-800', icon: Sparkles },
-  { id: 'glitch', label: 'Glitch Noir', color: 'from-red-600 to-black', icon: Sparkles },
-  { id: 'minimal', label: 'Bauhaus Minimal', color: 'from-blue-600 to-slate-900', icon: Sparkles },
-  { id: 'noir', label: 'Noir Cinema', color: 'from-gray-100 to-gray-400', icon: Sparkles, light: true }
+  { id: 'modern', label: 'Midnight Noir', color: 'from-gray-900 to-black', icon: Sparkles, pillColors: ['bg-gray-900', 'bg-black'] },
+  { id: 'traditional', label: 'Royal Heritage', color: 'from-emerald-900 to-green-950', icon: Sparkles, pillColors: ['bg-emerald-900', 'bg-green-950'] },
+  { id: 'elegant', label: 'Pure Ivory', color: 'from-slate-50 to-slate-200', icon: Sparkles, light: true, pillColors: ['bg-slate-50', 'bg-slate-200'] },
+  { id: 'sahara', label: 'Sahara Gold', color: 'from-amber-600 to-orange-900', icon: Sparkles, pillColors: ['bg-amber-600', 'bg-orange-900'] },
+  { id: 'velvet', label: 'Midnight Velvet', color: 'from-purple-900 to-indigo-950', icon: Sparkles, pillColors: ['bg-purple-900', 'bg-indigo-950'] },
+  { id: 'dynasty', label: 'Crimson Dynasty', color: 'from-red-800 to-red-950', icon: Sparkles }
 ];
 
 const ThemeSwapper = () => {
@@ -80,21 +66,7 @@ const ThemeSwapper = () => {
     elegant: { bg: "bg-[#f8f8f8]", accent: "#000000", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(0, 0, 0, 0.1)", text: "text-gray-900" },
     sahara: { bg: "bg-[#451a03]", accent: "#fbbf24", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 191, 36, 0.2)", text: "text-[#fef3c7]" },
     velvet: { bg: "bg-[#2e1065]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)", text: "text-[#f5f3ff]" },
-    garden: { bg: "bg-[#064e3b]", accent: "#10b981", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(16, 185, 129, 0.2)", text: "text-[#ecfdf5]" },
-    oceanic: { bg: "bg-[#1e3a8a]", accent: "#93c5fd", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(147, 197, 253, 0.2)", text: "text-[#eff6ff]" },
-    rose: { bg: "bg-[#831843]", accent: "#fbcfe8", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 207, 232, 0.2)", text: "text-[#fdf2f8]" },
-    earth: { bg: "bg-[#431407]", accent: "#fb923c", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(251, 146, 60, 0.2)", text: "text-[#fff7ed]" },
-    silver: { bg: "bg-[#1f2937]", accent: "#9ca3af", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(156, 163, 175, 0.2)", text: "text-[#f9fafb]" },
-    dynasty: { bg: "bg-[#7f1d1d]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)", text: "text-[#fef2f2]" },
-    vintage: { bg: "bg-[#fef3c7]", accent: "#92400e", glass: "rgba(255, 255, 255, 0.4)", border: "rgba(146, 64, 14, 0.2)", text: "text-[#451a03]" },
-    onyx: { bg: "bg-black", accent: "#06b6d4", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(6, 182, 212, 0.2)", text: "text-white" },
-    lavender: { bg: "bg-[#f5f3ff]", accent: "#8b5cf6", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(139, 92, 246, 0.2)", text: "text-[#4c1d95]" },
-    midnight: { bg: "bg-[#020617]", accent: "#38bdf8", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(56, 189, 248, 0.2)", text: "text-[#f8fafc]" },
-    champagne: { bg: "bg-[#fafaf9]", accent: "#d97706", glass: "rgba(255, 255, 255, 0.7)", border: "rgba(217, 119, 6, 0.2)", text: "text-[#44403c]" },
-    forest: { bg: "bg-[#022c22]", accent: "#10b981", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(16, 185, 129, 0.2)", text: "text-[#f0fdf4]" },
-    sunset: { bg: "bg-[#451a03]", accent: "#f97316", glass: "rgba(255, 255, 255, 0.05)", border: "rgba(249, 115, 22, 0.2)", text: "text-[#fff7ed]" },
-    marble: { bg: "bg-[#f9fafb]", accent: "#111827", glass: "rgba(255, 255, 255, 0.8)", border: "rgba(229, 231, 235, 1)", text: "text-[#111827]" },
-    platinum: { bg: "bg-[#f3f4f6]", accent: "#1f2937", glass: "rgba(255, 255, 255, 0.8)", border: "rgba(209, 213, 219, 1)", text: "text-[#1f2937]" }
+    dynasty: { bg: "bg-[#7f1d1d]", accent: "#D4AF37", glass: "rgba(0, 0, 0, 0.2)", border: "rgba(212, 175, 55, 0.2)", text: "text-[#fef2f2]" }
   };
 
   const style = themeStyles[activeTheme] || themeStyles.modern;
@@ -168,7 +140,13 @@ const ThemeSwapper = () => {
                       : 'opacity-80 hover:opacity-100'
                   }`}
                 >
-                  <div className="w-2.5 h-2.5 rounded-full border border-white/10 bg-white" />
+                  <div className="flex gap-0.5">
+                    {t.pillColors?.map((color, idx) => (
+                      <div key={idx} className={`w-2.5 h-2.5 rounded-full border border-white/10 ${color}`} />
+                    )) || (
+                      <div className="w-2.5 h-2.5 rounded-full border border-white/10 bg-white" />
+                    )}
+                  </div>
                   <span className="text-[8px] font-black uppercase tracking-widest">
                     {t.label}
                   </span>
@@ -197,8 +175,7 @@ const ThemeSwapper = () => {
                              activeTheme === 'traditional' ? '#064e3b' : 
                              activeTheme === 'sahara' ? '#451a03' : 
                              activeTheme === 'velvet' ? '#2e1065' : 
-                             activeTheme === 'garden' ? '#022c22' : 
-                             activeTheme === 'rose' ? '#831843' : '#050505' 
+                             activeTheme === 'dynasty' ? '#7f1d1d' : '#050505' 
             }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className={`p-6 md:p-10 ${style.text} font-sans transition-colors duration-700 space-y-8`}
