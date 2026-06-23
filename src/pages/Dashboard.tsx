@@ -180,10 +180,26 @@ const Dashboard = () => {
 
         <div className="space-y-12">
           {events.length === 0 && !isLoading && (
-            <div className="text-center py-40 border border-dashed border-border rounded-[3rem]">
-              <Sparkles className="w-12 h-12 text-muted-foreground/20 mx-auto mb-6" />
-              <p className="text-muted-foreground font-light italic">No orchestrations found. Begin your first celebration above.</p>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-24 px-8 border border-dashed border-[#D4AF37]/30 bg-[#D4AF37]/5 rounded-[3rem] max-w-3xl mx-auto space-y-8"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto border border-[#D4AF37]/20">
+                <Sparkles className="text-[#D4AF37] w-8 h-8 animate-pulse" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-3xl font-serif italic text-foreground">Congratulations on Joining the Elite! 🥂</h3>
+                <p className="text-muted-foreground text-sm max-w-md mx-auto font-light leading-relaxed">
+                  Your premium command center is fully prepared. Let's orchestrate your first masterpiece—click the button below to design your bespoke event page.
+                </p>
+              </div>
+              <Link to="/create-event" className="inline-block">
+                <Button className="bg-[#D4AF37] text-black rounded-xl px-10 py-6 text-[10px] font-black uppercase tracking-widest hover:bg-[#B8860B] shadow-lg">
+                  Create Your First Event
+                </Button>
+              </Link>
+            </motion.div>
           )}
           {events.map((event: any, index: number) => (
             <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className={`border ${event.isCompleted ? 'border-border/50 bg-muted/20' : 'border-border bg-card'} rounded-[3rem] overflow-hidden shadow-sm`}>

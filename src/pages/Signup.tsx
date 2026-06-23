@@ -55,7 +55,8 @@ const Signup = () => {
     if (error) {
       showError(error.message);
     } else if (data.user) {
-      showSuccess("Verification email sent. Please check your inbox.");
+      showSuccess("Welcome to the Elite! Your account has been created.");
+      navigate('/dashboard');
     }
     
     setLoading(false);
