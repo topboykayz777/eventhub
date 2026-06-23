@@ -23,14 +23,14 @@ import Profile from "./pages/Profile";
 import EditEvent from "./pages/EditEvent";
 import BudgetTracker from "./pages/BudgetTracker";
 import GuestRegistry from "./pages/GuestRegistry";
-import Privacy from "./pages/Privacy";
-import Support from "./pages/Support";
-import CelebrationWall from "./pages/CelebrationWall";
 import VendorDirectory from "./pages/VendorDirectory";
 import VendorProfile from "./pages/VendorProfile";
 import VibeScreen from "./pages/VibeScreen";
 import SprayPage from "./pages/SprayPage";
+import Support from "./pages/Support";
 import Guide from "./pages/Guide";
+import Privacy from "./pages/Privacy";
+import CelebrationWall from "./pages/CelebrationWall";
 import BlogList from "./pages/BlogList";
 import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
@@ -38,6 +38,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
       retry: 1,
     },
@@ -48,23 +50,18 @@ const AuthHandler = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // 1. Listen for auth changes globally
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // 1. Listen for the specific PASSWORD_RECOVERY event from Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         navigate('/reset-password');
-      } else if (event === 'SIGNED_IN') {
-        // If they just signed in (e.g. via email confirmation link or login),
-        // and they are on a public page like /login, /signup, or /, redirect to /dashboard
-        const path = window.location.pathname;
-        if (path === '/' || path === '/login' || path === '/signup') {
-          navigate('/dashboard');
-        }
       }
     });
 
     // 2. Fallback: Check the URL immediately for recovery parameters 
+    // This handles cases where the event fires before the component mounts or Supabase redirects to root
     const hash = window.location.hash;
     if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
+      // If we're on the root or login and have a recovery hash, force move to reset page
       if (window.location.pathname === '/' || window.location.pathname === '/login') {
         navigate('/reset-password');
       }

@@ -8,11 +8,10 @@ import InfoButton from '@/components/InfoButton';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showSuccess, showError } from '@/utils/toast';
-import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users, ScanLine, Info, X } from 'lucide-react';
+import { RefreshCw, Plus, Loader2, CheckCircle2, LayoutDashboard, Sparkles, Users, ScanLine, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionProvider';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import EventCard from '@/components/dashboard/EventCard';
 import ConciergeTools from '@/components/dashboard/ConciergeTools';
@@ -32,7 +31,6 @@ const Dashboard = () => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProcessingDraft, setIsProcessingDraft] = useState(false);
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
   useEffect(() => {
     if (!sessionLoading && !user) { navigate('/login'); }
@@ -75,7 +73,6 @@ const Dashboard = () => {
 
           if (!error && event) {
             localStorage.removeItem('eventhub_pending_draft');
-            localStorage.removeItem('eventhub_just_signed_up'); // Clear onboarding if they already have a draft
             showSuccess("Your draft event is now live! Sending you to activation.");
             navigate(`/payment/${event.id}`);
           } else {
@@ -93,17 +90,6 @@ const Dashboard = () => {
 
     if (user) processDraft();
   }, [user, navigate]);
-
-  // ONBOARDING WELCOME NUDGE DETECTION
-  useEffect(() => {
-    if (user && !sessionLoading) {
-      const justSignedUp = localStorage.getItem('eventhub_just_signed_up');
-      if (justSignedUp === 'true') {
-        setShowOnboardingModal(true);
-        localStorage.removeItem('eventhub_just_signed_up');
-      }
-    }
-  }, [user, sessionLoading]);
   
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['host-dashboard-data', user?.id],
@@ -147,14 +133,22 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from('rsvps')
         .update(isPlusOne ? { plus_one_checked_in: true } : { checked_in: true })
-        .eq('id', rsvpId);
+        .eq('id', rsvpId)
+        .select('guest_name, plus_one_name')
+        .maybeSingle();
 
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
-      showSuccess("Guest verified successfully.");
-    } catch (err: any) {
-      showError(err.message);
+      if (error || !data) { 
+        showError("Pass invalid."); 
+      } else { 
+        const checkInName = isPlusOne 
+          ? (data.plus_one_name || `${data.guest_name}'s Plus-One`)
+          : data.guest_name;
+          
+        showSuccess(`${checkInName} verified.`); 
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] }); 
+      }
+    } catch (err) { 
+      showError("Invalid pass."); 
     }
   };
 
@@ -164,100 +158,26 @@ const Dashboard = () => {
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
-  const toggleFinished = async (eventItem: any) => {
-    const isFinished = eventItem.is_finished;
-    try {
-      const { error } = await supabase
-        .from('events')
-        .update({ is_finished: !isFinished })
-        .eq('id', eventItem.id);
-
-      if (error) throw error;
-      
-      showSuccess(isFinished ? "Event reopened." : "Event marked as concluded.");
-      queryClient.invalidateQueries({ queryKey: ['host-dashboard-data'] });
-    } catch (err: any) {
-      showError(err.message);
-    }
-  };
-
-  // FULL-SCREEN ONBOARDING WELCOME NUDGE
-  if (showOnboardingModal) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        {/* Ambient Gold Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none" />
-        
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center space-y-8 relative z-10 bg-card border border-border p-10 md:p-16 rounded-[3rem] shadow-2xl"
-        >
-          <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto border border-[#D4AF37]/20">
-            <Sparkles className="text-[#D4AF37] w-10 h-10 animate-pulse" />
-          </div>
-          
-          <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-serif italic">Welcome to the Atelier!</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed font-light">
-              Add an upcoming event draft to your profile so clients see you're ready to run their Vibe Screen & QR passes.
-            </p>
-          </div>
-
-          <div className="space-y-4 pt-4">
-            <Button 
-              onClick={() => {
-                setShowOnboardingModal(false);
-                navigate('/create-event');
-              }}
-              className="w-full h-16 bg-[#D4AF37] hover:bg-[#B8860B] text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] transition-all shadow-lg"
-            >
-              Create Event Draft
-            </Button>
-            
-            <button 
-              onClick={() => setShowOnboardingModal(false)}
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors pt-2"
-            >
-              Skip to Dashboard
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    );
+  if (sessionLoading || (isLoading && events.length === 0) || isProcessingDraft) {
+    return <div className="flex items-center justify-center min-h-screen bg-background"><Loader2 className="w-12 h-12 animate-spin text-[#D4AF37]" /></div>;
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
       <Navbar />
-      
-      <div className="max-w-7xl mx-auto py-24 md:py-32 px-6">
-        
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
-          <div className="space-y-2">
-            <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.5em] block">Command Center</span>
-            <h1 className="text-4xl md:text-7xl font-serif italic leading-tight">The Dashboard</h1>
-          </div>
-          <div className="flex gap-4">
-            <Button 
-              onClick={handleManualRefresh} 
-              variant="outline" 
-              disabled={isRefreshing}
-              className="h-14 border-border bg-card text-foreground rounded-2xl px-6 hover:bg-muted transition-all"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button 
-              onClick={() => navigate('/create-event')}
-              className="bg-[#D4AF37] hover:bg-[#B8860B] text-black h-14 rounded-2xl px-8 text-[11px] font-black uppercase tracking-widest transition-all shadow-lg"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create Event
-            </Button>
+      <DigitalSpray eventIds={events.map((e: any) => e.id)} />
+      <div className="max-w-7xl mx-auto py-24 px-6">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 mb-24 text-center md:text-left">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Command Center</span>
+            <h1 className="text-4xl md:text-8xl font-serif italic">The <span className="text-[#D4AF37]">Orchestration</span></h1>
+          </motion.div>
+          <div className="flex gap-4 w-full md:w-auto">
+            <Button variant="outline" onClick={handleManualRefresh} className="flex-1 md:flex-none border-border bg-card rounded-2xl px-8 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-muted"><RefreshCw className={`w-4 h-4 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync</Button>
+            <Link to="/create-event" className="flex-1 md:flex-none"><Button className="w-full bg-[#D4AF37] text-black rounded-2xl px-12 py-7 text-[10px] font-black uppercase tracking-widest hover:bg-[#B8860B] shadow-lg"><Plus className="w-4 h-4 mr-3" /> New Event</Button></Link>
           </div>
         </div>
 
-        {/* EVENTS LIST */}
         <div className="space-y-12">
           {events.length === 0 && !isLoading && (
             <div className="text-center py-40 border border-dashed border-border rounded-[3rem]">
@@ -265,46 +185,46 @@ const Dashboard = () => {
               <p className="text-muted-foreground font-light italic">No orchestrations found. Begin your first celebration above.</p>
             </div>
           )}
-          {events.map((eventItem: any, index: number) => (
-            <motion.div key={eventItem.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className={`border ${eventItem.is_finished ? 'border-border/50 bg-muted/20' : 'border-border bg-card'} rounded-[3rem] overflow-hidden shadow-sm`}>
-              <div onClick={() => { const s = new Set(expandedEvents); s.has(eventItem.id) ? s.delete(eventItem.id) : s.add(eventItem.id); setExpandedEvents(s); }} className="p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-muted/30 transition-colors">
+          {events.map((event: any, index: number) => (
+            <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className={`border ${event.isCompleted ? 'border-border/50 bg-muted/20' : 'border-border bg-card'} rounded-[3rem] overflow-hidden shadow-sm`}>
+              <div onClick={() => { const s = new Set(expandedEvents); s.has(event.id) ? s.delete(event.id) : s.add(event.id); setExpandedEvents(s); }} className="p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8 cursor-pointer hover:bg-muted/30 transition-colors">
                 <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full md:w-auto text-center md:text-left">
                   <div className="relative shrink-0">
-                    {isVideo(eventItem.photo_url) ? (
+                    {isVideo(event.photo_url) ? (
                       <video 
-                        src={eventItem.photo_url} 
-                        className={`w-28 h-36 object-cover border border-border rounded-2xl ${eventItem.is_finished ? 'grayscale' : ''}`}
+                        src={event.photo_url} 
+                        className={`w-28 h-36 object-cover border border-border rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`}
                         autoPlay
                         muted
                         loop
                         playsInline
                       />
                     ) : (
-                      <img src={eventItem.photo_url} className={`w-28 h-36 object-cover border border-border rounded-2xl ${eventItem.is_finished ? 'grayscale' : ''}`} alt="" />
+                      <img src={event.photo_url} className={`w-28 h-36 object-cover border border-border rounded-2xl ${event.isCompleted ? 'grayscale' : ''}`} alt="" />
                     )}
-                    {eventItem.is_finished && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><CheckCircle2 className="text-white w-8 h-8" /></div>}
+                    {event.isCompleted && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><CheckCircle2 className="text-white w-8 h-8" /></div>}
                   </div>
                   <div>
-                    <h2 className={`text-3xl md:text-5xl font-serif italic mb-3 ${eventItem.is_finished ? 'text-muted-foreground' : 'text-foreground'}`}>{eventItem.event_name}</h2>
-                    <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{new Date(eventItem.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                    <h2 className={`text-3xl md:text-5xl font-serif italic mb-3 ${event.isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>{event.event_name}</h2>
+                    <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-12 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-border pt-6 md:pt-0">
                   <div className="text-center md:text-right">
                     <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Confirmed Guests</p>
-                    <p className="text-3xl font-serif italic text-[#D4AF37]">{eventItem.rsvps.length}</p>
+                    <p className="text-3xl font-serif italic text-[#D4AF37]">{event.rsvps.length}</p>
                   </div>
-                  <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10 px-8 py-5 rounded-full border border-[#D4AF37]/20">{expandedEvents.has(eventItem.id) ? 'Close' : 'Manage'}</Button>
+                  <Button variant="ghost" className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-[#D4AF37]/10 px-8 py-5 rounded-full border border-[#D4AF37]/20">{expandedEvents.has(event.id) ? 'Close' : 'Manage'}</Button>
                 </div>
               </div>
 
               <AnimatePresence>
-                {expandedEvents.has(eventItem.id) && (
+                {expandedEvents.has(event.id) && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                     <div className="p-8 md:p-20 border-t border-border bg-background/50 flex flex-col items-center w-full">
                       <div className="grid lg:grid-cols-12 gap-12 md:gap-20 w-full max-w-6xl items-start">
                         <div className="lg:col-span-4 flex justify-center w-full">
-                           <EventCard event={eventItem} />
+                           <EventCard event={event} />
                         </div>
                         <div className="lg:col-span-8 w-full flex flex-col items-center md:items-start">
                           <Tabs defaultValue="tools" className="w-full">
@@ -313,12 +233,12 @@ const Dashboard = () => {
                               <TabsTrigger value="guests" className="text-[10px] font-black uppercase tracking-[0.4em] pb-6 data-[state=active]:border-b-2 data-[state=active]:border-[#D4AF37] data-[state=active]:text-[#D4AF37] text-foreground/50 transition-all">Guest Management</TabsTrigger>
                             </TabsList>
                             <TabsContent value="tools" className="outline-none w-full">
-                              <ConciergeTools event={eventItem} onSendWhatsAppBlast={() => { setActiveEvent(eventItem); setIsBlastOpen(true); }} />
+                              <ConciergeTools event={event} onSendWhatsAppBlast={() => { setActiveEvent(event); setIsBlastOpen(true); }} />
                             </TabsContent>
                             <TabsContent value="guests" className="outline-none space-y-12 w-full">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
                                 <button 
-                                  onClick={() => navigate(`/guests/${eventItem.id}`)}
+                                  onClick={() => navigate(`/guests/${event.id}`)}
                                   className="bg-card border border-border p-8 md:p-10 rounded-[2rem] shadow-sm flex flex-col justify-center items-center md:items-start text-center md:text-left hover:bg-muted/50 transition-all group"
                                 >
                                   <div className="flex items-center mb-4">
@@ -328,7 +248,7 @@ const Dashboard = () => {
                                       <InfoButton text="The total number of unique guests who have successfully registered. Click to view full archive." />
                                     </div>
                                   </div>
-                                  <div className="text-2xl md:text-3xl font-serif italic text-foreground">{eventItem.rsvps.length} Unique Entries</div>
+                                  <div className="text-2xl md:text-3xl font-serif italic text-foreground">{event.rsvps.length} Unique Entries</div>
                                 </button>
                                 <div className="bg-card border border-border p-8 md:p-10 rounded-[2rem] shadow-sm flex flex-col justify-center items-center md:items-start text-center md:text-left">
                                   <div className="flex items-center mb-4">
@@ -336,20 +256,20 @@ const Dashboard = () => {
                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Active Suite</span>
                                     <InfoButton text="Your currently active orchestration tier. Your early entry badge unlocks the Industrial WhatsApp Dispatcher." />
                                   </div>
-                                  <div className="text-2xl md:text-3xl font-serif italic uppercase tracking-widest text-[#D4AF37]">{eventItem.plan} Plan</div>
+                                  <div className="text-2xl md:text-3xl font-serif italic uppercase tracking-widest text-[#D4AF37]">{event.plan} Plan</div>
                                 </div>
                               </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
                                 <div className="relative group w-full">
-                                  <button onClick={() => { setActiveEventId(eventItem.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] px-6">
+                                  <button onClick={() => { setActiveEventId(event.id); setIsScannerOpen(true); }} className="w-full bg-card border border-border h-40 flex flex-col items-center justify-center gap-6 hover:bg-muted/50 transition-all group rounded-[2rem] px-6">
                                     <ScanLine className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Scan QR Pass</span>
                                   </button>
                                   <div className="absolute top-4 right-4"><InfoButton text="Launch the red carpet scanner. Verify guest QR passes instantly for a seamless entry experience." /></div>
                                 </div>
 
-                                <BroadcastBox eventId={eventItem.id} currentMessage={eventItem.message} />
+                                <BroadcastBox eventId={event.id} currentMessage={event.message} />
                               </div>
                             </TabsContent>
                           </Tabs>
