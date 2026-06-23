@@ -67,8 +67,8 @@ const Hero = () => {
             <span className="text-[#D4AF37]">Celebration</span>
           </h1>
           
-          {/* Gleaming, high-contrast subheadline text */}
-          <p className="text-sm sm:text-base md:text-lg text-white font-serif italic font-bold tracking-wide px-6 py-4 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl max-w-3xl mx-auto leading-relaxed text-center mb-12 md:mb-16">
+          {/* Gleaming, high-contrast subheadline text without background box */}
+          <p className="text-sm sm:text-base md:text-lg font-serif italic font-bold tracking-wide max-w-3xl mx-auto leading-relaxed text-center mb-12 md:mb-16 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             <span className="bg-gradient-to-r from-white via-[#D4AF37] to-white bg-clip-text text-transparent bg-[size:200%_auto] animate-pulse">
               Beautiful digital invitations, seamless QR code entry passes, and zero-commission digital spraying. Built exclusively for Nigeria's most prestigious celebrations.
             </span>
