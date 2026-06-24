@@ -37,24 +37,24 @@ const CelebrationWall = () => {
     };
   }, []);
 
-  // Helper to generate a believable, consistent extra guest count based on the event ID and gallery size
-  const getDeterministicExtraGuests = (id: string, galleryUrls: string[] | null) => {
+  // Helper to generate a believable, consistent extra guest count based on the event ID
+  const getDeterministicExtraGuests = (id: string) => {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     const absHash = Math.abs(hash);
-    const galleryCount = galleryUrls ? galleryUrls.length : 0;
+    const roll = absHash % 100; // 0 to 99
 
-    if (galleryCount >= 10) {
-      // High activity (many images): 350 to 650 guests
-      return 350 + (absHash % 300);
-    } else if (galleryCount > 0) {
-      // Medium activity (some images): 120 to 349 guests
-      return 120 + (absHash % 230);
+    if (roll < 80) {
+      // 80% chance: under 120 guests (15 to 115)
+      return 15 + (absHash % 101);
+    } else if (roll < 95) {
+      // 15% chance: between 120 and 249 guests
+      return 120 + (absHash % 130);
     } else {
-      // Low activity (no images): 15 to 119 guests
-      return 15 + (absHash % 105);
+      // 5% chance: crossing 250 guests (250 to 450)
+      return 250 + (absHash % 201);
     }
   };
 
@@ -90,7 +90,7 @@ const CelebrationWall = () => {
 
       return eventsData.map(event => {
         const realCount = rsvpsByEvent[event.id] || 0;
-        const extraGuests = getDeterministicExtraGuests(event.id, event.gallery_urls);
+        const extraGuests = getDeterministicExtraGuests(event.id);
         return {
           ...event,
           guestCount: realCount + extraGuests,
@@ -202,10 +202,9 @@ const CelebrationWall = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="group relative bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full hover:border-[#D4AF37]/20 transition-all duration-500"
+                className="group relative bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 group"
               >
-                {/* Media Container */}
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-black">
+                <div className="aspect-[4/5] w-full overflow-hidden relative bg-black">
                   {isVideo(event.photo_url) ? (
                     <video 
                       src={event.photo_url} 
