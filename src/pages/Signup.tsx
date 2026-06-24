@@ -41,34 +41,24 @@ const Signup = () => {
 
     setLoading(true);
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            role: role,
-          }
-        }
-      });
-
-      if (error) {
-        showError(error.message);
-      } else if (data.user) {
-        if (data.session) {
-          showSuccess("Welcome to the Elite! Your account has been created.");
-          navigate('/dashboard');
-        } else {
-          showSuccess("Account created! Please click the verification link sent to your email to access your dashboard.");
-          navigate('/login');
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`,
+        data: {
+          role: role,
         }
       }
-    } catch (err: any) {
-      showError(err.message || "An unexpected error occurred.");
-    } finally {
-      setLoading(false);
+    });
+
+    if (error) {
+      showError(error.message);
+    } else if (data.user) {
+      showSuccess("Verification email sent. Please check your inbox.");
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -83,39 +73,33 @@ const Signup = () => {
         >
           <div className="text-center mb-12">
             <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 block">Membership</span>
-            <h1 className="text-4xl font-serif italic mb-4">Join the Elite</h1>
-            <p className="text-muted-foreground text-sm font-light tracking-wide">Create your account to begin orchestrating your celebration.</p>
+            <h1 className="text-4xl font-serif italic mb-4">Join EventHub</h1>
+            <p className="text-muted-foreground text-sm font-light tracking-wide">Select your path and create your account.</p>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-8">
-            {/* Role Selection */}
-            <div className="grid grid-cols-2 gap-4 p-1.5 bg-secondary rounded-2xl border border-border">
-              <button
-                type="button"
-                onClick={() => setRole('host')}
-                className={`py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                  role === 'host' 
-                    ? 'bg-[#D4AF37] text-black shadow-md' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <User size={14} /> Host Event
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('vendor')}
-                className={`py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                  role === 'vendor' 
-                    ? 'bg-[#D4AF37] text-black shadow-md' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Briefcase size={14} /> Vendor Partner
-              </button>
-            </div>
-          </form>
+          <div className="grid grid-cols-2 gap-4 mb-12">
+            <button 
+              onClick={() => setRole('host')}
+              className={`relative p-6 border transition-all text-left group rounded-2xl ${role === 'host' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-border hover:border-[#D4AF37]/30'}`}
+            >
+              <User className={`mb-4 ${role === 'host' ? 'text-[#D4AF37]' : 'text-muted-foreground'}`} />
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Host</p>
+              <p className="text-[8px] text-muted-foreground uppercase">Plan Events</p>
+              {role === 'host' && <div className="absolute top-2 right-2 text-[#D4AF37]"><Check size={12} /></div>}
+            </button>
 
-          <div className="relative mt-8">
+            <button 
+              onClick={() => setRole('vendor')}
+              className={`relative p-6 border transition-all text-left group rounded-2xl ${role === 'vendor' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-border hover:border-[#D4AF37]/30'}`}
+            >
+              <Briefcase className={`mb-4 ${role === 'vendor' ? 'text-[#D4AF37]' : 'text-muted-foreground'}`} />
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Vendor</p>
+              <p className="text-[8px] text-muted-foreground uppercase">List Services</p>
+              {role === 'vendor' && <div className="absolute top-2 right-2 text-[#D4AF37]"><Check size={12} /></div>}
+            </button>
+          </div>
+
+          <div className="relative">
             <AnimatePresence mode="wait">
               {role === 'vendor' ? (
                 <motion.div 
