@@ -37,25 +37,13 @@ const CelebrationWall = () => {
     };
   }, []);
 
-  // Helper to generate a believable, consistent extra guest count based on the event ID
-  const getDeterministicExtraGuests = (id: string) => {
+  // Helper to generate a deterministic offset based on event ID
+  const getDeterministicOffset = (id: string, max: number) => {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const absHash = Math.abs(hash);
-    const roll = absHash % 100; // 0 to 99
-
-    if (roll < 80) {
-      // 80% chance: under 120 guests (15 to 115)
-      return 15 + (absHash % 101);
-    } else if (roll < 95) {
-      // 15% chance: between 120 and 249 guests
-      return 120 + (absHash % 130);
-    } else {
-      // 5% chance: crossing 250 guests (250 to 450)
-      return 250 + (absHash % 201);
-    }
+    return Math.abs(hash) % max;
   };
 
   // Fetch public events with aggregated stats
@@ -88,13 +76,43 @@ const CelebrationWall = () => {
         return acc;
       }, {});
 
+      // Calculate thresholds based on spray totals
+      const sortedSprays = eventsData
+        .map(e => spraysByEvent[e.id] || 0)
+        .sort((a, b) => a - b);
+
+      const totalCount = sortedSprays.length;
+      const p85Index = Math.floor(totalCount * 0.85);
+      const p98Index = Math.floor(totalCount * 0.98);
+
+      const p85Threshold = sortedSprays[p85Index] || 0;
+      const p98Threshold = sortedSprays[p98Index] || 0;
+
       return eventsData.map(event => {
         const realCount = rsvpsByEvent[event.id] || 0;
-        const extraGuests = getDeterministicExtraGuests(event.id);
+        const sprayTotal = spraysByEvent[event.id] || 0;
+        const offset = getDeterministicOffset(event.id, 1000);
+        
+        let extraGuests = 0;
+
+        if (sprayTotal === 0) {
+          // No money sprayed -> bottom 85% (under 120 guests)
+          extraGuests = 15 + (offset % 101); // 15 to 115
+        } else if (p98Threshold > 0 && sprayTotal >= p98Threshold) {
+          // Top 2% of sprayers -> top tier (crossing 250 guests)
+          extraGuests = 250 + (offset % 201); // 250 to 450
+        } else if (p85Threshold > 0 && sprayTotal < p85Threshold) {
+          // Bottom 85% of sprayers -> bottom tier (under 120 guests)
+          extraGuests = 15 + (offset % 101); // 15 to 115
+        } else {
+          // Middle tier (120 to 249 guests)
+          extraGuests = 120 + (offset % 130); // 120 to 249
+        }
+
         return {
           ...event,
           guestCount: realCount + extraGuests,
-          sprayTotal: spraysByEvent[event.id] || 0
+          sprayTotal
         };
       });
     }
