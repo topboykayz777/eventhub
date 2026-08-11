@@ -33,6 +33,7 @@ import Privacy from "./pages/Privacy";
 import CelebrationWall from "./pages/CelebrationWall";
 import BlogList from "./pages/BlogList";
 import BlogPost from "./pages/BlogPost";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -58,10 +59,8 @@ const AuthHandler = () => {
     });
 
     // 2. Fallback: Check the URL immediately for recovery parameters 
-    // This handles cases where the event fires before the component mounts or Supabase redirects to root
     const hash = window.location.hash;
     if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
-      // If we're on the root or login and have a recovery hash, force move to reset page
       if (window.location.pathname === '/' || window.location.pathname === '/login') {
         navigate('/reset-password');
       }
@@ -99,6 +98,7 @@ const AppRoutes = () => {
       <Route path="/celebrations" element={<CelebrationWall />} />
       <Route path="/blog" element={<BlogList />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/admin" element={<AdminDashboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
